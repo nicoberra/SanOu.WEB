@@ -798,6 +798,34 @@ section { padding: 90px 0; }
     transform: translateY(-4px);
     box-shadow: 0 16px 40px rgba(0,0,0,0.4);
 }
+.product-card.out-of-stock {
+    position: relative;
+    opacity: 0.6;
+    pointer-events: none;
+}
+.product-card.out-of-stock::after {
+    content: 'SIN STOCK';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    width: 150%;
+    text-align: center;
+    background: #cc0000;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    padding: 10px 0;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+.product-card.out-of-stock .btn-add-cart,
+.product-card.out-of-stock .btn-quick-buy {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
 .product-info {
     padding: 20px;
     flex: 1;

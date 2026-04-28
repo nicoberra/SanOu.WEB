@@ -686,7 +686,7 @@ function renderProducts(filter) {
     }
 
     grid.innerHTML = list.map(p => `
-        <div class="product-card" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
+        <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
             ${cardMedia(p)}
             <div class="product-info">
                 <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
@@ -695,10 +695,10 @@ function renderProducts(filter) {
                 <div class="specs-table">${specsRows(p.specs)}</div>
                 ${priceHTML(p)}
                 <div class="product-buttons" onclick="event.stopPropagation()">
-                    <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})">
+                    <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
                         Agregar al carrito
                     </button>
-                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})">
+                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
                         Compra rápida
                     </button>
                 </div>
@@ -909,11 +909,17 @@ async function loadPricesFromSheet() {
         const text = await res.text();
         const rows = text.trim().split('\n').slice(1); // saltar encabezado
         rows.forEach(row => {
-            const lastComma = row.lastIndexOf(',');
-            const nombre = row.slice(0, lastComma).trim().replace(/^"|"$/g, '');
-            const precio = row.slice(lastComma + 1).trim();
+            const parts = row.split(',');
+            const last = parts[parts.length - 1].trim().toLowerCase();
+            const isStockCol = last === 'si' || last === 'no' || last === 'true' || last === 'false';
+            const inStock = isStockCol ? (last === 'si' || last === 'true') : true;
+            const precio = isStockCol ? parts[parts.length - 2].trim() : parts[parts.length - 1].trim();
+            const nombre = parts.slice(0, isStockCol ? parts.length - 2 : parts.length - 1).join(',').trim().replace(/^"|"$/g, '');
             const product = products.find(p => p.name.toLowerCase() === nombre.toLowerCase());
-            if (product && precio) product.price = parseInt(precio);
+            if (product) {
+                if (precio) product.price = parseInt(precio);
+                product.inStock = inStock;
+            }
         });
     } catch (e) {
         console.warn('No se pudieron cargar precios desde Google Sheets:', e);
