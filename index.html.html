@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SanOu - Equípate con herramientas de verdad</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        🚚 Envíos a todo el país &nbsp;|&nbsp; ⚡ Respuesta rápida por WhatsApp &nbsp;|&nbsp; 🔧 Herramientas profesionales
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+    <div class="modal" id="productModal">
+        <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+
+    <!-- Cart Overlay -->
+    <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+
+    <!-- Cart Sidebar -->
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <div class="cart-header-text">
+                <h2>Tu carrito</h2>
+                <p>Armá el pedido y enviá la compra por WhatsApp.</p>
+            </div>
+            <button class="cart-close" onclick="closeCart()">Cerrar</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty">
+                <p>Todavía no agregaste productos.</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total-row" id="cartTotalRow" style="display:none">
+                <span>Total estimado:</span>
+                <span class="cart-total-price" id="cartTotal">$0</span>
+            </div>
+            <div class="cart-footer-btns">
+                <button class="btn-vaciar" onclick="clearCart()">Vaciar</button>
+                <button class="btn-enviar-compra" onclick="checkoutWhatsApp()">Enviar compra</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <a href="#inicio" class="logo-img-link">
+                <img src="Logo San Ou.png" alt="SanOu" class="header-logo">
+            </a>
+            <nav class="nav" id="nav">
+                <a href="#inicio" class="nav-link">Inicio</a>
+                <a href="#productos" class="nav-link">Productos</a>
+                <a href="#nosotros" class="nav-link">Nosotros</a>
+                <a href="#contacto" class="nav-link">Contacto</a>
+            </nav>
+            <div class="header-right">
+                <div class="social-icons">
+                    <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Me%20gustaría%20hacer%20una%20consulta." target="_blank" class="social-icon si-wa" title="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.instagram.com/sanou.arg" target="_blank" class="social-icon si-ig" title="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://www.facebook.com/profile.php?id=61578990548942" target="_blank" class="social-icon si-fb" title="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                </div>
+                <button class="cart-btn" onclick="openCart()">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+                <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="inicio">
+        <div class="hero-bg"></div>
+        <div class="hero-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+        <div class="container">
+            <div class="hero-inner">
+                <!-- iPhone mockup -->
+                <div class="iphone-wrap">
+                    <div class="iphone">
+                        <div class="iphone-notch"></div>
+                        <div class="iphone-btn iphone-btn-power"></div>
+                        <div class="iphone-btn iphone-btn-vol1"></div>
+                        <div class="iphone-btn iphone-btn-vol2"></div>
+                        <div class="iphone-screen">
+                            <video autoplay muted loop playsinline>
+                                <source src="video1 70mm.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                        <div class="iphone-indicator"></div>
+                    </div>
+                </div>
+                <!-- Texto -->
+                <div class="hero-content">
+                    <img src="Logo San Ou.png" alt="SanOu" class="hero-logo">
+                    <div class="hero-slogan-block">
+                        <span class="hero-slogan-white">Equípate con</span>
+                        <span class="hero-slogan-yellow">herramientas de verdad</span>
+                    </div>
+                    <p class="hero-sub">Consúltanos y encontrá el equipo ideal para tu trabajo</p>
+                    <div class="hero-buttons">
+                        <a href="#productos" class="btn-primary">
+                            Ver Productos <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Me%20gustaría%20saber%20más%20sobre%20sus%20productos." target="_blank" class="btn-wa-hero">
+                            <i class="fab fa-whatsapp"></i> Consultar ahora
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRODUCTOS DESTACADOS -->
+    <section class="featured" id="destacados">
+        <div class="container">
+            <h2 class="section-title text-center featured-title">¡Productos Destacados!</h2>
+            <div class="featured-track" id="featuredTrack"></div>
+            <div class="featured-dots" id="featuredDots"></div>
+        </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="categories" id="categorias">
+        <div class="container">
+            <h2 class="section-title text-center">Categorías</h2>
+            <div class="categories-grid">
+                <div class="category-card" onclick="filterProducts('pinzas')" data-cat="pinzas"><h3>Pinzas</h3></div>
+                <div class="category-card" onclick="filterProducts('dobladoras')" data-cat="dobladoras"><h3>Dobladoras de Caño</h3></div>
+                <div class="category-card" onclick="filterProducts('cortahierro')" data-cat="cortahierro"><h3>Corta Hierro</h3></div>
+                <div class="category-card" onclick="filterProducts('mordazas')" data-cat="mordazas"><h3>Mordazas de Torno</h3></div>
+                <div class="category-card" onclick="filterProducts('bombas')" data-cat="bombas"><h3>Bomba Hidráulica</h3></div>
+                <div class="category-card" onclick="filterProducts('sacabocados')" data-cat="sacabocados"><h3>Sacabocados</h3></div>
+                <div class="category-card" onclick="filterProducts('cilindros')" data-cat="cilindros"><h3>Cilindros Hidráulicos</h3></div>
+                <div class="category-card" onclick="filterProducts('cortadoras')" data-cat="cortadoras"><h3>Cortadora para Barras de Cobre/Aluminio</h3></div>
+                <div class="category-card" onclick="filterProducts('extractores')" data-cat="extractores"><h3>Extractor Hidráulico</h3></div>
+                <div class="category-card" onclick="filterProducts('punzonadoras')" data-cat="punzonadoras"><h3>Punzonadoras</h3></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- POR QUÉ ELEGIRNOS -->
+    <section class="why-us">
+        <div class="container">
+            <h2 class="section-title">¿Por qué elegir San Ou?</h2>
+            <p class="why-us-text">En San Ou ofrecemos herramientas hidráulicas pensadas para trabajos exigentes, con calidad, confiabilidad y asesoramiento directo para que encuentres exactamente lo que necesitás.</p>
+        </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section class="products" id="productos">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nuestros Productos</h2>
+                <div class="filter-bar" id="filterBar">
+                    <button class="filter-btn active" data-filter="all" onclick="filterProducts('all')">Todos</button>
+                    <button class="filter-btn" data-filter="pinzas" onclick="filterProducts('pinzas')">Pinzas</button>
+                    <button class="filter-btn" data-filter="dobladoras" onclick="filterProducts('dobladoras')">Dobladoras de caño</button>
+                    <button class="filter-btn" data-filter="cortahierro" onclick="filterProducts('cortahierro')">Corta hierro</button>
+                    <button class="filter-btn" data-filter="mordazas" onclick="filterProducts('mordazas')">Mordazas de torno</button>
+                    <button class="filter-btn" data-filter="bombas" onclick="filterProducts('bombas')">Bomba hidráulica</button>
+                    <button class="filter-btn" data-filter="sacabocados" onclick="filterProducts('sacabocados')">Sacabocados</button>
+                    <button class="filter-btn" data-filter="cilindros" onclick="filterProducts('cilindros')">Cilindros hidráulicos</button>
+                    <button class="filter-btn" data-filter="cortadoras" onclick="filterProducts('cortadoras')">Cortadora para barras, de cobre/aluminio</button>
+                    <button class="filter-btn" data-filter="extractores" onclick="filterProducts('extractores')">Extractor hidráulico</button>
+                    <button class="filter-btn" data-filter="punzonadoras" onclick="filterProducts('punzonadoras')">Punzonadoras</button>
+                </div>
+            </div>
+            <div class="products-grid" id="productsGrid"></div>
+        </div>
+    </section>
+
+    <!-- CTA PEDIDO -->
+    <section class="cta-pedido">
+        <div class="container">
+            <div class="cta-pedido-inner">
+                <div class="cta-pedido-text">
+                    <h3>¿Listo para avanzar con tu pedido?</h3>
+                    <p>Revisá los productos que elegiste, ajustá cantidades y enviá tu pedido por WhatsApp. Te respondemos rápido con precio, disponibilidad y opciones de entrega.</p>
+                </div>
+                <button class="btn-cta-pedido" onclick="openCart()">Cotizar pedido</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- UBICACIÓN + ESPACIO DERECHO -->
+    <section class="ubicacion-row">
+        <div class="container">
+            <div class="ubicacion-grid">
+                <div class="ubicacion-card">
+                    <div class="ubicacion-header">
+                        <span>NUESTRA UBICACIÓN</span>
+                        <i class="fas fa-location-dot"></i>
+                    </div>
+                    <div class="ubicacion-map">
+                        <iframe
+                            src="https://maps.google.com/maps?q=Marcelo+Camboa+6306,+Buenos+Aires,+Argentina&output=embed"
+                            width="100%" height="220" style="border:0;" allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                    <div class="ubicacion-info">
+                        <div class="ubicacion-details">
+                            <strong>SAN OU</strong>
+                            <p>Marcelo Camboa 6306,<br>Buenos Aires, Argentina</p>
+                        </div>
+                        <a href="https://www.google.com/maps/search/?api=1&query=Marcelo+Camboa+6306,+Buenos+Aires,+Argentina" target="_blank" class="btn-mapa">
+                            <i class="fas fa-map-location-dot"></i> Mapa
+                        </a>
+                    </div>
+                </div>
+                <div class="ubicacion-right">
+                    <div class="mail-card">
+                        <div class="mail-card-header">
+                            <div class="mail-window-controls">
+                                <span class="wc-red"></span>
+                                <span class="wc-yellow"></span>
+                                <span class="wc-green"></span>
+                            </div>
+                            <span class="mail-card-title">Cotización Mayorista</span>
+                        </div>
+                        <div class="mail-card-body">
+                            <div class="mail-field">
+                                <span class="mail-label">Para</span>
+                                <span class="mail-value">sanou.argentina@gmail.com</span>
+                            </div>
+                            <div class="mail-divider"></div>
+                            <div class="mail-field">
+                                <span class="mail-label">Asunto</span>
+                                <span class="mail-value">Cotización de pedido mayorista</span>
+                            </div>
+                            <div class="mail-divider"></div>
+                            <div class="mail-message">
+                                Hola! Me comunico para consultar por un <strong>pedido mayorista</strong> de herramientas hidráulicas San Ou.<br><br>
+                                ¿Podrían informarme sobre precios mayoristas, disponibilidad y condiciones de entrega?<br><br>
+                                Quedo a la espera. Muchas gracias.
+                            </div>
+                        </div>
+                        <div class="mail-card-footer">
+                            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sanou.argentina%40gmail.com&su=Cotizaci%C3%B3n%20de%20pedido%20mayorista&body=Hola%21%20Me%20comunico%20para%20consultar%20por%20un%20pedido%20mayorista%20de%20herramientas%20hidr%C3%A1ulicas%20San%20Ou.%0A%0A%C2%BFPodr%C3%ADan%20informarme%20sobre%20precios%20mayoristas%2C%20disponibilidad%20y%20condiciones%20de%20entrega%3F%0A%0AQuedo%20a%20la%20espera.%20Muchas%20gracias." target="_blank" class="btn-enviar-mail">
+                                <i class="fas fa-paper-plane"></i> Enviar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES STRIP -->
+    <section class="features-strip">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>Compra simple</h4>
+                    <p>Elegí los productos y enviá tu pedido en un solo mensaje por WhatsApp.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Uso profesional</h4>
+                    <p>Equipos para trabajos exigentes.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Respuesta rápida</h4>
+                    <p>Gestión de compra rápida por WhatsApp.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Envíos</h4>
+                    <p>A todo el país.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BANNER -->
+    <div class="full-banner">
+        <img src="Banner 1.png" alt="SanOu Herramientas">
+    </div>
+
+    <!-- NOSOTROS -->
+    <section class="about" id="nosotros">
+        <div class="container">
+            <h2 class="section-title text-center">Nosotros</h2>
+            <div class="about-split">
+                <div class="about-photo">
+                    <img src="nosotros.png" alt="San Ou" onerror="this.parentElement.classList.add('about-photo-placeholder')">
+                </div>
+                <div class="about-text">
+                    <p>Somos una marca de herramientas hidráulicas e industriales pensada para quienes trabajan todos los días y necesitan equipos que respondan de verdad. Acompañamos a electricistas, técnicos, talleres y empresas con productos confiables, buena atención y asesoramiento personalizado en cada compra.</p>
+                    <p>Además de nuestra línea principal de herramientas, también ofrecemos productos de otros rubros, manteniendo siempre el mismo compromiso: calidad, stock y soluciones pensadas para que cada cliente encuentre lo que necesita.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CÓMO COMPRAR -->
+    <section class="how-to-buy" id="contacto">
+        <div class="container">
+            <h2 class="section-title">Cómo comprar</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <h4>Elegí productos</h4>
+                    <p>Recorré los productos y agregá al carrito uno o varios modelos según tu necesidad.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <h4>Ajustá cantidades</h4>
+                    <p>Dentro del carrito podés sumar o restar unidades antes de enviar el pedido.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <h4>Enviá el pedido</h4>
+                    <p>El botón final abre WhatsApp con tu número y el mensaje ya escrito con todos los productos.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">4</div>
+                    <h4>Gestioná la venta</h4>
+                    <p>Chateá con nuestros vendedores sobre precios y envío o retiro en nuestro depósito.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="#inicio" class="logo-img-link">
+                        <img src="Logo San Ou.png" alt="SanOu" class="footer-logo">
+                    </a>
+                    <div class="footer-social-icons">
+                        <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Me%20gustaría%20hacer%20una%20consulta." target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://www.instagram.com/sanou.arg" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.facebook.com/profile.php?id=61578990548942" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.tiktok.com/@san.ou" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contacto</h4>
+                    <ul class="contact-list">
+                        <li><a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Me%20gustaría%20hacer%20una%20consulta." target="_blank"><span class="cl-green">WhatsApp:</span> 11 3175-1517</a></li>
+                        <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=sanou.argentina%40gmail.com" target="_blank">Mail: sanou.argentina@gmail.com</a></li>
+                        <li>Buenos Aires, Argentina</li>
+                        <li><a href="https://www.google.com/maps/search/?api=1&query=Marcelo+Camboa+6306,+Buenos+Aires,+Argentina" target="_blank">Dirección: Marcelo Camboa 6306</a></li>
+                    </ul>
+                </div>
+                <div class="footer-nav">
+                    <h4>Navegación</h4>
+                    <a href="#inicio">Inicio</a>
+                    <a href="#productos">Productos</a>
+                    <a href="#nosotros">Nosotros</a>
+                    <a href="#contacto">Contacto</a>
+                </div>
+                <div class="footer-cats">
+                    <h4>Categorías</h4>
+                    <a href="#productos" onclick="filterProducts('pinzas')">Pinzas</a>
+                    <a href="#productos" onclick="filterProducts('dobladoras')">Dobladoras de caño</a>
+                    <a href="#productos" onclick="filterProducts('bombas')">Bomba hidráulica</a>
+                    <a href="#productos" onclick="filterProducts('cilindros')">Cilindros hidráulicos</a>
+                    <a href="#productos" onclick="filterProducts('cortadoras')">Cortadora barras Cu/Al</a>
+                    <a href="#productos" onclick="filterProducts('extractores')">Extractor hidráulico</a>
+                    <a href="#productos" onclick="filterProducts('punzonadoras')">Punzonadoras</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 SanOu. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp flotante -->
+    <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Me%20gustaría%20hacer%20una%20consulta." target="_blank" class="wa-float" title="Escribinos por WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script src="script.js"></script>
+</body>
+</html>
