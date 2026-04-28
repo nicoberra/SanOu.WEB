@@ -1828,16 +1828,21 @@ section { padding: 90px 0; }
     .category-card { padding: 18px 10px; }
     .category-card h3 { font-size: 0.8rem; }
 
-    /* Filter bar - scroll horizontal */
+    /* Filter bar - 2 filas scroll horizontal */
     .filter-bar {
-        flex-wrap: nowrap;
+        display: grid;
+        grid-template-rows: repeat(2, auto);
+        grid-auto-flow: column;
+        grid-auto-columns: max-content;
+        gap: 8px;
         overflow-x: auto;
         padding-bottom: 8px;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
+        flex-wrap: unset;
     }
     .filter-bar::-webkit-scrollbar { display: none; }
-    .filter-btn { flex-shrink: 0; padding: 6px 13px; font-size: 0.72rem; }
+    .filter-btn { flex-shrink: 0; padding: 6px 13px; font-size: 0.72rem; max-width: 160px; }
 
     /* Products */
     .products-grid { grid-template-columns: 1fr; }
