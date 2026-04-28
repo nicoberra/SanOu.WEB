@@ -917,7 +917,7 @@ async function loadPricesFromSheet() {
             const nombre = parts.slice(0, isStockCol ? parts.length - 2 : parts.length - 1).join(',').trim().replace(/^"|"$/g, '');
             const product = products.find(p => p.name.toLowerCase() === nombre.toLowerCase());
             if (product) {
-                if (precio) product.price = parseInt(precio);
+                if (precio) product.price = parseInt(precio.replace(/\./g, '').replace(/,/g, ''));
                 product.inStock = inStock;
             }
         });
