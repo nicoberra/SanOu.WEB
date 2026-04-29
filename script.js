@@ -380,7 +380,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas' }
       ]
     },
-    { id: 38, name: 'Mordaza de Torno 315mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 315 mm', imgs: 0, folder: '315MM', ext: 'webp',
+    { id: 38, name: 'Mordaza de Torno 315mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 315 mm', imgs: 3, folder: '315MM', ext: 'webp',
       desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 315 mm' },
