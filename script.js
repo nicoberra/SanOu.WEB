@@ -380,6 +380,24 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas' }
       ]
     },
+    { id: 38, name: 'Mordaza de Torno 315mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 315 mm', imgs: 0, folder: '315MM', ext: 'webp',
+      desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.',
+      specs: [
+        { l: 'Diámetro exterior', v: 'Ø 315 mm' },
+        { l: 'Pasaje de barra', v: 'Ø 100 mm' },
+        { l: 'Mordazas', v: '3 autocentrantes' }
+      ],
+      allSpecs: [
+        { l: 'Diámetro exterior', v: 'Ø 315 mm' },
+        { l: 'Pasaje de barra', v: 'Ø 100 mm' },
+        { l: 'Mordazas', v: '3 autocentrantes' },
+        { l: 'Fijación', v: '3 bulones M16 sobre entrecentro Ø 285 mm' },
+        { l: 'Toma mínima (ext.)', v: 'Ø 10 mm' },
+        { l: 'Toma máxima (ext.)', v: 'Ø 140 mm' },
+        { l: 'Toma máx. 2° escalón', v: 'Ø 315 mm' },
+        { l: 'Incluye', v: '2 juegos de mordazas, manija y manual' }
+      ]
+    },
     // Bomba hidráulica
     { id: 13, name: 'Bomba Hidráulica Manual HHB-700', category: 'bombas', price: 100000, icon: 'fa-droplet', badge: 'Manual 700 bar', imgs: 2, folder: 'HHB-700', ext: 'jpeg',
       desc: 'Bomba hidráulica manual de alta presión. Manguera de 1.8m incluida con acople rápido R2 3/8". Ideal para cilindros y herramientas hidráulicas San Ou.',
