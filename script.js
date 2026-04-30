@@ -548,7 +548,7 @@ const products = [
       ]
     },
     // Extractores hidráulicos
-    { id: 34, name: 'Extractor Hidráulico HHL-5', category: 'extractores', price: 100000, icon: 'fa-up-from-bracket', badge: '5 Toneladas', catFolder: 'Extractor hidraulico', imgs: 3, folder: 'HHL-5', ext: 'webp',
+    { id: 34, name: 'Extractor Hidráulico HHL-5', category: 'extractores', extraCategories: ['motores'], price: 100000, icon: 'fa-up-from-bracket', badge: '5 Toneladas', catFolder: 'Extractor hidraulico', imgs: 3, folder: 'HHL-5', ext: 'webp',
       desc: 'Extractor hidráulico de rodamientos con bomba integrada. Funciona con 2 o 3 patas. Apertura regulable.',
       specs: [
         { l: 'Capacidad', v: '5 Ton' },
@@ -561,6 +561,84 @@ const products = [
         { l: 'Apertura', v: '50–200 mm' },
         { l: 'Patas', v: '2 o 3 patas intercambiables' },
         { l: 'Bomba', v: 'Integrada' }
+      ]
+    },
+    // Herramientas para vehículos
+    { id: 39, name: 'Multiplicador de Fuerza Torque Camión Tractor 7500 Nm', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '7500 Nm', imgs: 3, folder: 'Multiplicador De Fuerza Torque Camion Tractor 7500nm', ext: 'webp', catFolder: 'Herramientas para vehículos',
+      desc: 'Multiplicador de torque manual para aflojar y ajustar tuercas de alta exigencia en camiones, tractores, colectivos y maquinaria pesada.',
+      specs: [
+        { l: 'Torque máximo', v: '7500 Nm' },
+        { l: 'Relación de fuerza', v: '1:78' },
+        { l: 'Encastre', v: '1 pulgada' }
+      ],
+      allSpecs: [
+        { l: 'Torque máximo', v: '7500 Nm' },
+        { l: 'Accionamiento', v: 'Manual por palanca' },
+        { l: 'Encastre', v: '1 pulgada' },
+        { l: 'Relación de fuerza', v: '1:78' },
+        { l: 'Largo aproximado', v: '330 mm' },
+        { l: 'Peso aproximado', v: '9 a 10 kg' },
+        { l: 'Material', v: 'Acero reforzado' },
+        { l: 'Tubos incluidos', v: '32 mm y 33 mm' },
+        { l: 'Aplicación', v: 'Camiones, tractores, colectivos, trailers, maquinaria pesada' },
+        { l: 'Presentación', v: 'Kit en maletín plástico' }
+      ]
+    },
+    { id: 40, name: 'Kit Extractor de Rulemanes Cepo Grande 75 mm a 105 mm 9 Pzs', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '75–105 mm', imgs: 3, folder: 'Kit Extractor De Rulemanes Cepo Grande 75 Mm A 105 Mm 9 Pzs', ext: 'webp', catFolder: 'Herramientas para vehículos',
+      desc: 'Kit extractor de rulemanes y rodamientos tipo cepo. Extrae rulemanes, poleas, engranajes y piezas ajustadas a presión. 9 piezas en maletín.',
+      specs: [
+        { l: 'Rango de apertura', v: '75 mm a 105 mm' },
+        { l: 'Cantidad de piezas', v: '9 piezas' },
+        { l: 'Tipo de agarre', v: 'Separador 2 garras / cepo' }
+      ],
+      allSpecs: [
+        { l: 'Tipo de extractor', v: 'Cepo / separador de rulemanes' },
+        { l: 'Rango de apertura', v: '75 mm a 105 mm' },
+        { l: 'Cantidad de piezas', v: '9 piezas' },
+        { l: 'Tipo de agarre', v: 'Separador de 2 garras / cepo' },
+        { l: 'Función reversible', v: 'Sí' },
+        { l: 'Largo tornillo principal', v: 'Aprox. 300 mm' },
+        { l: 'Largo de garras', v: 'Aprox. 180 mm' },
+        { l: 'Peso aproximado', v: '5 a 6,5 kg' },
+        { l: 'Material', v: 'Acero reforzado' },
+        { l: 'Aplicación', v: 'Mecánica automotor, talleres, maquinaria e industria' },
+        { l: 'Presentación', v: 'Kit en maletín plástico' }
+      ]
+    },
+    { id: 41, name: 'Extractor Rulemanes 3 Garras Interior/Exterior', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '3 garras', imgs: 3, folder: 'Extractor Rulemanes 3 Garras Interior exterior', ext: 'webp', catFolder: 'Herramientas para vehículos',
+      desc: 'Kit extractor de rulemanes de 3 garras interior y exterior. Extrae rodamientos, bujes, poleas y piezas ajustadas a presión. Maletín plástico rojo.',
+      specs: [
+        { l: 'Tipo de agarre', v: '3 garras' },
+        { l: 'Función interior', v: 'Sí' },
+        { l: 'Función exterior', v: 'Sí' }
+      ],
+      allSpecs: [
+        { l: 'Tipo de extractor', v: '3 garras interior y exterior' },
+        { l: 'Reversible', v: 'Sí' },
+        { l: 'Material', v: 'Acero reforzado' },
+        { l: 'Accesorios incluidos', v: 'Extractores de garras, barra/percutor deslizante, adaptadores y maletín' },
+        { l: 'Aplicación', v: 'Mecánica automotor, talleres, maquinaria e industria' },
+        { l: 'Presentación', v: 'Maletín plástico rojo' }
+      ]
+    },
+    { id: 42, name: 'Extractor de Inyectores Diésel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '21 piezas', imgs: 3, folder: 'Extractor De Inyectores Diesel', ext: 'webp', catFolder: 'Herramientas para vehículos',
+      desc: 'Extractor neumático de inyectores diésel. Retira inyectores trabados o atascados en motores common rail sin martillo de inercia manual.',
+      specs: [
+        { l: 'Presión de trabajo', v: '5 a 8 bar / 72–116 PSI' },
+        { l: 'Cantidad de piezas', v: '21 piezas' },
+        { l: 'Compatibilidad', v: 'Bosch, Delphi, Denso, Siemens' }
+      ],
+      allSpecs: [
+        { l: 'Sistema de trabajo', v: 'Neumático / a golpe por vibración' },
+        { l: 'Accionamiento', v: 'Por aire comprimido' },
+        { l: 'Presión de trabajo', v: '72 a 116 PSI / 5 a 8 bar' },
+        { l: 'Torque de trabajo', v: 'Aprox. 20 a 30 Nm' },
+        { l: 'Cantidad de piezas', v: '21 piezas' },
+        { l: 'Compatibilidad', v: 'Inyectores Bosch, Delphi, Denso y Siemens' },
+        { l: 'Tipo de inyectores', v: 'Diésel / common rail' },
+        { l: 'Adaptadores incluidos', v: 'M8, M12, M16, M17, M18, M20, M22, M25, M26, M27, M29 y M31' },
+        { l: 'Material', v: 'Acero' },
+        { l: 'Presentación', v: 'Kit completo en maletín' }
       ]
     },
 ];
@@ -576,6 +654,7 @@ const CAT_NAMES = {
     cortadoras:   'Cortadora para barras de cobre/aluminio',
     extractores:  'Extractor hidráulico',
     punzonadoras: 'Punzonadoras',
+    motores:      'Herramientas para vehículos',
 };
 
 // ─── ESTADO ─────────────────────────────────────────────────────
@@ -695,7 +774,7 @@ function carouselGo(idx) {
 }
 
 function renderProducts(filter) {
-    const list = filter === 'all' ? products : products.filter(p => p.category === filter);
+    const list = filter === 'all' ? products : products.filter(p => p.category === filter || (p.extraCategories && p.extraCategories.includes(filter)));
     const grid = document.getElementById('productsGrid');
 
     if (list.length === 0) {
@@ -965,7 +1044,7 @@ function renderFeatured() {
             `<div class="featured-spec-row"><span>${s.l}</span><span>${s.v}</span></div>`
         ).join('');
         return `
-        <div class="featured-slide${i === 0 ? ' active' : ''}" onclick="openModal(${p.id})">
+        <div class="featured-slide${i === 0 ? ' active' : ''}" data-id="${p.id}" style="cursor:pointer">
             <div class="featured-media">${imgHTML}</div>
             <div class="featured-info">
                 <span class="featured-badge">${p.badge || ''}</span>
@@ -983,6 +1062,30 @@ function renderFeatured() {
     ).join('');
 
     featuredTimer = setInterval(() => featuredGo((featuredCurrent + 1) % items.length), 15000);
+
+    // Swipe táctil
+    let touchStartX = 0;
+    let featuredSwiped = false;
+    track.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        featuredSwiped = false;
+    }, { passive: true });
+    track.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) < 40) return;
+        featuredSwiped = true;
+        const total = FEATURED_IDS.length;
+        if (diff > 0) featuredGo((featuredCurrent + 1) % total);
+        else featuredGo((featuredCurrent - 1 + total) % total);
+    }, { passive: true });
+    track.addEventListener('click', e => {
+        if (featuredSwiped) { featuredSwiped = false; return; }
+        const slide = e.target.closest('.featured-slide');
+        if (slide) {
+            const id = parseInt(slide.dataset.id);
+            if (id) openModal(id);
+        }
+    });
 }
 
 function featuredGo(idx) {
