@@ -1797,7 +1797,7 @@ section { padding: 90px 0; }
         display: none;
         flex-direction: column;
         position: fixed;
-        top: 66px; left: 0; right: 0;
+        top: 0; left: 0; right: 0;
         background: var(--black);
         padding: 20px 24px;
         border-bottom: 2px solid var(--yellow);

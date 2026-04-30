@@ -981,9 +981,13 @@ function quickBuy(id) {
 // ─── MENÚ MOBILE ────────────────────────────────────────────────
 function toggleMenu() {
     const nav = document.getElementById('nav');
+    const header = document.querySelector('.header');
     const icon = document.getElementById('menuToggle').querySelector('i');
     nav.classList.toggle('open');
     icon.className = nav.classList.contains('open') ? 'fas fa-times' : 'fas fa-bars';
+    if (nav.classList.contains('open')) {
+        nav.style.top = header.getBoundingClientRect().bottom + 'px';
+    }
 }
 
 document.querySelectorAll('.nav-link').forEach(link => {
