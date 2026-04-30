@@ -1805,7 +1805,7 @@ section { padding: 90px 0; }
         gap: 18px;
         justify-self: unset;
     }
-    .nav.open { display: flex; }
+    .header .container .nav.open { display: flex; }
     .menu-toggle { display: block; }
     .social-icons { display: none; }
     .header .container .header-right { justify-self: end; }
