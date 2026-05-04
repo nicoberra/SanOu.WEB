@@ -584,7 +584,7 @@ const products = [
         { l: 'Presentación', v: 'Kit en maletín plástico' }
       ]
     },
-    { id: 40, name: 'Kit Extractor de Rulemanes Cepo Grande 75 mm a 105 mm 9 Pzs', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '75–105 mm', imgs: 3, folder: 'Kit Extractor De Rulemanes Cepo Grande 75 Mm A 105 Mm 9 Pzs', ext: 'webp', catFolder: 'Herramientas para vehículos',
+    { id: 40, name: 'Kit Extractor de Rulemanes Cepo Grande 75 mm a 105 mm 9 Pzas', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '75–105 mm', imgs: 3, folder: 'Kit Extractor De Rulemanes Cepo Grande 75 Mm A 105 Mm 9 Pzs', ext: 'webp', catFolder: 'Herramientas para vehículos',
       desc: 'Kit extractor de rulemanes y rodamientos tipo cepo. Extrae rulemanes, poleas, engranajes y piezas ajustadas a presión. 9 piezas en maletín.',
       specs: [
         { l: 'Rango de apertura', v: '75 mm a 105 mm' },
@@ -605,7 +605,7 @@ const products = [
         { l: 'Presentación', v: 'Kit en maletín plástico' }
       ]
     },
-    { id: 41, name: 'Extractor Rulemanes 3 Garras Interior/Exterior', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '3 garras', imgs: 3, folder: 'Extractor Rulemanes 3 Garras Interior exterior', ext: 'webp', catFolder: 'Herramientas para vehículos',
+    { id: 41, name: 'Extractor Rulemanes 3 Garras Kit Interior/Exterior', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '3 garras', imgs: 3, folder: 'Extractor Rulemanes 3 Garras Interior exterior', ext: 'webp', catFolder: 'Herramientas para vehículos',
       desc: 'Kit extractor de rulemanes de 3 garras interior y exterior. Extrae rodamientos, bujes, poleas y piezas ajustadas a presión. Maletín plástico rojo.',
       specs: [
         { l: 'Tipo de agarre', v: '3 garras' },
@@ -621,7 +621,7 @@ const products = [
         { l: 'Presentación', v: 'Maletín plástico rojo' }
       ]
     },
-    { id: 42, name: 'Extractor de Inyectores Diésel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '21 piezas', imgs: 3, folder: 'Extractor De Inyectores Diesel', ext: 'webp', catFolder: 'Herramientas para vehículos',
+    { id: 42, name: 'Extractor de Inyectores Diesel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '21 piezas', imgs: 3, folder: 'Extractor De Inyectores Diesel', ext: 'webp', catFolder: 'Herramientas para vehículos',
       desc: 'Extractor neumático de inyectores diésel. Retira inyectores trabados o atascados en motores common rail sin martillo de inercia manual.',
       specs: [
         { l: 'Presión de trabajo', v: '5 a 8 bar / 72–116 PSI' },
