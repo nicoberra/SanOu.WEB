@@ -676,12 +676,12 @@ function specsRows(specs) {
 }
 
 function priceHTML(p) {
-    return p.price > 0
-        ? `<div class="product-price-bar">
+    if (!(p.price > 0)) return '';
+    const oldHTML = p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : '';
+    return `<div class="product-price-bar">
                <span class="price-label">Precio</span>
-               <span class="price-amount">${fmt(p.price)}</span>
-           </div>`
-        : '';
+               <div class="price-values">${oldHTML}<span class="price-amount">${fmt(p.price)}</span></div>
+           </div>`;
 }
 
 function getImgs(p) {
@@ -818,7 +818,7 @@ function openModal(id) {
                 <h2 class="modal-title">${p.name}</h2>
                 <p class="modal-desc">${p.desc}</p>
                 <div class="specs-table modal-specs">${specsRows(p.allSpecs || p.specs)}</div>
-                ${p.price > 0 ? `<div class="product-price-bar"><span class="price-label">Precio</span><span class="price-amount">${fmt(p.price)}</span></div>` : '<div class="modal-consultar">Consultar precio por WhatsApp</div>'}
+                ${p.price > 0 ? `<div class="product-price-bar"><span class="price-label">Precio</span><div class="price-values">${p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="price-amount">${fmt(p.price)}</span></div></div>` : '<div class="modal-consultar">Consultar precio por WhatsApp</div>'}
                 <div class="modal-buttons">
                     <button class="btn-add-cart" onclick="addToCart(${p.id}); closeModal()">
                         Agregar al carrito
@@ -1010,15 +1010,39 @@ async function loadPricesFromSheet() {
         const text = await res.text();
         const rows = text.trim().split('\n').slice(1); // saltar encabezado
         rows.forEach(row => {
+            if (!row.trim()) return;
             const parts = row.split(',');
-            const last = parts[parts.length - 1].trim().toLowerCase();
-            const isStockCol = last === 'si' || last === 'no' || last === 'true' || last === 'false';
-            const inStock = isStockCol ? (last === 'si' || last === 'true') : true;
-            const precio = isStockCol ? parts[parts.length - 2].trim() : parts[parts.length - 1].trim();
-            const nombre = parts.slice(0, isStockCol ? parts.length - 2 : parts.length - 1).join(',').trim().replace(/^"|"$/g, '');
+            // Buscar columna de stock (TRUE/FALSE/si/no) de derecha a izquierda
+            let stockIdx = -1;
+            for (let i = parts.length - 1; i >= 0; i--) {
+                const val = parts[i].trim().toLowerCase();
+                if (val === 'true' || val === 'false' || val === 'si' || val === 'no') {
+                    stockIdx = i;
+                    break;
+                }
+            }
+            if (stockIdx < 1) return;
+            const inStock = ['true', 'si'].includes(parts[stockIdx].trim().toLowerCase());
+            const precio = parts[stockIdx - 1].trim();
+            const nombre = parts.slice(0, stockIdx - 1).join(',').trim().replace(/^"|"$/g, '');
+            const oldPriceRaw = parts.slice(stockIdx + 1).join(',').trim();
             const product = products.find(p => p.name.toLowerCase() === nombre.toLowerCase());
             if (product) {
-                if (precio) product.price = parseInt(precio.replace(/[$\.,]/g, ''));
+                const priceVal    = precio      ? parseInt(precio.replace(/[$\.,]/g, ''))      : 0;
+                const oldPriceVal = oldPriceRaw ? parseInt(oldPriceRaw.replace(/[$\.,]/g, '')) : 0;
+                if (priceVal > 0 && oldPriceVal > 0) {
+                    // Ambos precios: muestra el actual + tachado
+                    product.price    = priceVal;
+                    product.oldPrice = oldPriceVal;
+                } else if (priceVal > 0) {
+                    // Solo precio actual
+                    product.price    = priceVal;
+                    product.oldPrice = 0;
+                } else if (oldPriceVal > 0) {
+                    // Solo precio ML: usarlo como precio principal
+                    product.price    = oldPriceVal;
+                    product.oldPrice = 0;
+                }
                 product.inStock = inStock;
             }
         });

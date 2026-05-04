@@ -894,6 +894,19 @@ section { padding: 90px 0; }
     letter-spacing: 1px;
     line-height: 1;
 }
+.price-values {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.price-old {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    color: #555;
+    text-decoration: line-through;
+    letter-spacing: 1px;
+    line-height: 1;
+}
 .product-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
