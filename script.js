@@ -621,6 +621,22 @@ const products = [
         { l: 'Presentación', v: 'Maletín plástico rojo' }
       ]
     },
+    { id: 43, name: 'Juego Extractores de Rótulas Extremos Pitman Universal 5 Pz', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '5 piezas', imgs: 3, folder: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', ext: 'webp', catFolder: 'Herramientas para vehículos',
+      desc: 'Juego extractor de rótulas, extremos y pitman universal. 5 piezas de metal para autos y camionetas. Modelo MK14050.',
+      specs: [
+        { l: 'Modelo', v: 'MK14050' },
+        { l: 'Cantidad de piezas', v: '5 piezas' },
+        { l: 'Usos', v: 'Autos y camionetas' }
+      ],
+      allSpecs: [
+        { l: 'Modelo', v: 'MK14050' },
+        { l: 'Cantidad de piezas', v: '5 piezas' },
+        { l: 'Material', v: 'Metal' },
+        { l: 'Formas de las piezas', v: 'Variables' },
+        { l: 'Usos recomendados', v: 'Autos y camionetas' },
+        { l: 'Accesorios incluidos', v: '5 piezas' }
+      ]
+    },
     { id: 42, name: 'Extractor de Inyectores Diesel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '21 piezas', imgs: 3, folder: 'Extractor De Inyectores Diesel', ext: 'webp', catFolder: 'Herramientas para vehículos',
       desc: 'Extractor neumático de inyectores diésel. Retira inyectores trabados o atascados en motores common rail sin martillo de inercia manual.',
       specs: [
