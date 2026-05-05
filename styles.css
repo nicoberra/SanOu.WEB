@@ -93,6 +93,7 @@ body {
     border-bottom: 2px solid var(--yellow);
     padding: 0;
     transition: padding 0.3s;
+
 }
 .header .container {
     padding-top: 0;
@@ -174,6 +175,57 @@ body {
     font-size: 0.7rem;
     font-weight: 900;
 }
+
+/* ── BUSCADOR HEADER ── */
+.header-search-row {
+    padding: 8px 24px 10px;
+    display: flex;
+    justify-content: center;
+}
+.header-search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--black-3);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 50px;
+    padding: 0 6px 0 16px;
+    width: 100%;
+    max-width: 600px;
+    transition: border-color 0.3s;
+}
+.header-search-bar:focus-within {
+    border-color: var(--yellow);
+}
+.header-search-icon {
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+.header-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--white);
+    font-size: 0.92rem;
+    font-family: 'Inter', sans-serif;
+    padding: 9px 0;
+}
+.header-search-input::placeholder { color: var(--gray); }
+.header-search-btn {
+    background: var(--yellow);
+    color: var(--black);
+    border: none;
+    border-radius: 50px;
+    padding: 7px 18px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+.header-search-btn:hover { background: var(--yellow-dark); }
 
 .menu-toggle {
     display: none;

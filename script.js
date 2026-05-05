@@ -862,7 +862,50 @@ function filterProducts(filter) {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.filter === filter);
     });
+    document.getElementById('searchInput').value = '';
     renderProducts(filter);
+    document.getElementById('productos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── BUSCADOR ────────────────────────────────────────────────────
+function searchProducts(query) {
+    const q = query.trim().toLowerCase();
+    if (!q) return;
+    const grid = document.getElementById('productsGrid');
+    const list = products.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.desc.toLowerCase().includes(q) ||
+        (CAT_NAMES[p.category] || '').toLowerCase().includes(q) ||
+        (p.badge || '').toLowerCase().includes(q)
+    );
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    if (list.length === 0) {
+        grid.innerHTML = `<p style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px 0">No se encontraron productos para "<strong style="color:var(--white)">${query}</strong>".</p>`;
+    } else {
+        grid.innerHTML = list.map(p => `
+            <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
+                ${cardMedia(p)}
+                <div class="product-info">
+                    <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
+                    <h3 class="product-name">${p.name}</h3>
+                    <p class="product-desc">${p.desc}</p>
+                    <div class="specs-table">${specsRows(p.specs)}</div>
+                    ${priceHTML(p)}
+                    <div class="product-buttons" onclick="event.stopPropagation()">
+                        <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
+                            Agregar al carrito
+                        </button>
+                        <button class="btn-quick-buy" onclick="quickBuy(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
+                            Compra rápida
+                        </button>
+                    </div>
+                    <button class="btn-ver-detalle" onclick="event.stopPropagation(); openModal(${p.id})">
+                        Ver más detalles <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
     document.getElementById('productos').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
