@@ -85,14 +85,14 @@
                 </button>
             </div>
         </div>
-        <div class="header-search-row">
-            <div class="header-search-bar">
-                <i class="fas fa-search header-search-icon"></i>
-                <input type="text" id="searchInput" class="header-search-input" placeholder="Buscar productos..." onkeydown="if(event.key==='Enter') searchProducts(this.value)" autocomplete="off">
-                <button class="header-search-btn" onclick="searchProducts(document.getElementById('searchInput').value)">Buscar</button>
-            </div>
-        </div>
     </header>
+    <div class="header-search-row">
+        <div class="header-search-bar">
+            <i class="fas fa-search header-search-icon"></i>
+            <input type="text" id="searchInput" class="header-search-input" placeholder="Buscar productos..." onkeydown="if(event.key==='Enter') searchProducts(this.value)" autocomplete="off">
+            <button class="header-search-btn" onclick="searchProducts(document.getElementById('searchInput').value)">Buscar</button>
+        </div>
+    </div>
 
     <!-- HERO -->
     <section class="hero" id="inicio">

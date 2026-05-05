@@ -178,9 +178,11 @@ body {
 
 /* ── BUSCADOR HEADER ── */
 .header-search-row {
-    padding: 8px 24px 10px;
+    background: var(--black-2);
+    padding: 12px 24px;
     display: flex;
     justify-content: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .header-search-bar {
     display: flex;
