@@ -1651,6 +1651,20 @@ section { padding: 90px 0; }
     line-height: 1.6;
 }
 
+/* ── BANNER ENVÍOS ── */
+.envios-banner-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 32px 24px 0;
+}
+.envios-banner-img {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    display: block;
+    border-radius: 16px;
+}
+
 /* ── BANNER ── */
 .full-banner {
     width: 100%;
