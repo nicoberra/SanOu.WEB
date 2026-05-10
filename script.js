@@ -1184,5 +1184,41 @@ function featuredGo(idx) {
     featuredCurrent = idx;
 }
 
+// ─── WHATSAPP WIDGET ─────────────────────────────────────────────
+(function() {
+    const timeEl = document.getElementById('waBubbleTime');
+    if (timeEl) {
+        const now = new Date();
+        timeEl.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    }
+})();
+
+function toggleWaWidget() {
+    const popup = document.getElementById('waWidgetPopup');
+    if (!popup) return;
+    const isOpen = popup.classList.contains('open');
+    if (isOpen) {
+        popup.style.opacity = '0';
+        popup.style.transform = 'scale(0.85) translateY(20px)';
+        setTimeout(() => { popup.classList.remove('open'); }, 280);
+    } else {
+        popup.classList.add('open');
+        // forzar reflow para que la transición funcione
+        requestAnimationFrame(() => {
+            popup.style.opacity = '1';
+            popup.style.transform = 'scale(1) translateY(0)';
+        });
+        document.getElementById('waWidgetInput').focus();
+    }
+}
+
+function sendWaMessage() {
+    const input = document.getElementById('waWidgetInput');
+    const msg = input.value.trim();
+    const text = msg ? encodeURIComponent(msg) : encodeURIComponent('Hola SanOu! Me gustaría hacer una consulta.');
+    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + text, '_blank');
+    input.value = '';
+}
+
 // ─── INIT ────────────────────────────────────────────────────────
 loadPricesFromSheet().then(() => { renderProducts('all'); renderFeatured(); });

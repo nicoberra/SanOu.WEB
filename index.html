@@ -427,10 +427,41 @@
         </div>
     </footer>
 
-    <!-- WhatsApp flotante -->
+    <!-- WhatsApp flotante (solo mobile) -->
     <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Me%20gustaría%20hacer%20una%20consulta." target="_blank" class="wa-float" title="Escribinos por WhatsApp">
         <i class="fab fa-whatsapp"></i>
     </a>
+
+    <!-- WhatsApp Chat Widget (solo desktop) -->
+    <div class="wa-widget" id="waWidget">
+        <div class="wa-widget-popup" id="waWidgetPopup">
+            <div class="wa-widget-header">
+                <div class="wa-widget-avatar">N</div>
+                <div class="wa-widget-info">
+                    <strong>Nicolás Ventas</strong>
+                    <span><span class="wa-online-dot"></span> Disponible ahora</span>
+                </div>
+                <button class="wa-widget-close" onclick="toggleWaWidget()">✕</button>
+            </div>
+            <div class="wa-widget-body">
+                <div class="wa-widget-bubble">
+                    <p class="wa-bubble-name">Nicolás Ventas</p>
+                    <p class="wa-bubble-msg">Hola, estoy disponible. ¿Te puedo ayudar en algo? 😊</p>
+                    <span class="wa-bubble-time" id="waBubbleTime"></span>
+                </div>
+            </div>
+            <div class="wa-widget-footer">
+                <input type="text" id="waWidgetInput" class="wa-widget-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') sendWaMessage()">
+                <button class="wa-widget-send" onclick="sendWaMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="wa-widget-brand"><i class="fab fa-whatsapp"></i> Atendido por WhatsApp</div>
+        </div>
+        <button class="wa-widget-btn" id="waWidgetBtn" onclick="toggleWaWidget()">
+            <i class="fab fa-whatsapp"></i>
+        </button>
+    </div>
 
     <script src="script.js"></script>
 </body>
