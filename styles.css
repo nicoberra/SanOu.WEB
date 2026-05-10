@@ -944,6 +944,9 @@ section { padding: 90px 0; }
     flex-direction: column;
     gap: 10px;
 }
+.product-info .specs-table {
+    flex: 1;
+}
 .product-badge {
     display: inline-block;
     background: rgba(255,215,0,0.12);
@@ -988,7 +991,6 @@ section { padding: 90px 0; }
     border: 1px solid rgba(255,215,0,0.35);
     border-radius: 10px;
     padding: 10px 14px;
-    margin-top: auto;
 }
 .price-label {
     font-size: 0.78rem;
@@ -1001,6 +1003,7 @@ section { padding: 90px 0; }
 .price-amount {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.7rem;
+    white-space: nowrap;
     color: var(--yellow);
     letter-spacing: 1px;
     line-height: 1;
@@ -1008,11 +1011,15 @@ section { padding: 90px 0; }
 .price-values {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    min-width: 0;
+    flex-shrink: 1;
+    overflow: hidden;
 }
 .price-old {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+    white-space: nowrap;
     color: #555;
     text-decoration: line-through;
     letter-spacing: 1px;
@@ -1022,7 +1029,6 @@ section { padding: 90px 0; }
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin-top: auto;
 }
 .btn-add-cart {
     background: var(--yellow);
