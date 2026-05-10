@@ -1276,12 +1276,22 @@ body{font-family:Arial,sans-serif;background:#fff;color:#111}
 /* FOOTER */
 .cat-footer{background:#0D0D0D;color:#aaa;text-align:center;padding:18px;font-size:0.78rem;margin-top:4px}
 .cat-footer b{color:#FFD700}
+/* DOWNLOAD BAR */
+.dl-bar{position:sticky;top:0;z-index:999;background:#FFD700;display:flex;align-items:center;justify-content:center;gap:16px;padding:12px 24px;box-shadow:0 2px 12px rgba(0,0,0,0.2)}
+.dl-bar p{font-size:0.85rem;font-weight:600;color:#0D0D0D}
+.dl-btn{background:#0D0D0D;color:#FFD700;border:none;padding:10px 26px;border-radius:50px;font-size:0.95rem;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:8px;letter-spacing:1px;transition:opacity 0.2s;white-space:nowrap}
+.dl-btn:hover{opacity:0.85}
 @media print{
+    .dl-bar{display:none}
     body{background:#fff}
     .cover{page-break-after:always}
     .pc{page-break-inside:avoid}
 }
 </style></head><body>
+<div class="dl-bar">
+    <p>📄 Para guardar el catálogo: hacé clic en el botón y luego seleccioná <strong>"Guardar como PDF"</strong></p>
+    <button class="dl-btn" onclick="window.print()">⬇ Descargar PDF</button>
+</div>
 <div class="cover">
     <img src="${logoUrl}" alt="SanOu" onerror="this.style.display='none'">
     <p class="slogan"><span class="slogan-white">Equípate con</span><span class="slogan-yellow">herramientas de verdad</span></p>
@@ -1365,3 +1375,15 @@ function sendWaMessage() {
 
 // ─── INIT ────────────────────────────────────────────────────────
 loadPricesFromSheet().then(() => { renderProducts('all'); renderFeatured(); });
+
+// Abrir widget WhatsApp automáticamente al entrar (solo desktop)
+window.addEventListener('load', () => {
+    if (window.innerWidth >= 769) {
+        setTimeout(() => {
+            const popup = document.getElementById('waWidgetPopup');
+            if (popup && !popup.classList.contains('open')) {
+                toggleWaWidget();
+            }
+        }, 2500);
+    }
+});
