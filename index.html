@@ -164,7 +164,15 @@
     <section class="featured" id="destacados">
         <div class="container">
             <h2 class="section-title text-center featured-title">¡Productos Destacados!</h2>
-            <div class="featured-track" id="featuredTrack"></div>
+            <div class="featured-wrapper">
+                <button class="featured-arrow featured-arrow-left" onclick="featuredGo((featuredCurrent - 1 + FEATURED_IDS.length) % FEATURED_IDS.length)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="featured-track" id="featuredTrack"></div>
+                <button class="featured-arrow featured-arrow-right" onclick="featuredGo((featuredCurrent + 1) % FEATURED_IDS.length)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
             <div class="featured-dots" id="featuredDots"></div>
         </div>
     </section>
