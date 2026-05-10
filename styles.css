@@ -659,16 +659,34 @@ section { padding: 90px 0; }
     background: var(--black-3);
     border: 1px solid rgba(255,215,0,0.1);
     border-radius: 14px;
-    padding: 28px 18px;
+    padding: 0;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    height: 130px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+}
+.category-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.1) 100%);
+    transition: background 0.3s;
+    z-index: 1;
+}
+.category-card:hover::before {
+    background: linear-gradient(to top, rgba(230,184,0,0.6) 0%, rgba(0,0,0,0.3) 100%);
 }
 .category-card:hover {
     border-color: var(--yellow);
-    background: rgba(255,215,0,0.04);
     transform: translateY(-6px);
-    box-shadow: 0 12px 35px rgba(255,215,0,0.12);
+    box-shadow: 0 12px 35px rgba(255,215,0,0.2);
 }
 .cat-icon {
     font-size: 2rem;
@@ -676,17 +694,37 @@ section { padding: 90px 0; }
     margin-bottom: 12px;
 }
 .category-card h3 {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 4px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    padding: 0 10px;
 }
 .category-card span {
     font-size: 0.72rem;
     color: var(--gray);
     letter-spacing: 0.5px;
+    position: relative;
+    z-index: 2;
 }
+
+/* Imágenes de fondo por categoría */
+[data-cat="pinzas"]      { background-image: url('productos/Pinzas/HHY-70A/1.jpeg'); }
+[data-cat="dobladoras"]  { background-image: url('productos/Dobladoras/HHW-2J/1.webp'); }
+[data-cat="cortahierro"] { background-image: url('productos/cortahierro/Cortadora de Varilla 22mm/1.jpeg'); }
+[data-cat="mordazas"]    { background-image: url('productos/mordazas/80MM/1.webp'); }
+[data-cat="bombas"]      { background-image: url('productos/bombas/HHB-700/1.jpeg'); }
+[data-cat="sacabocados"] { background-image: url('productos/sacabocados/HHK-8/1.jpeg'); }
+[data-cat="cilindros"]   { background-image: url('productos/cilindros/HHYG-10D/1.jpeg'); }
+[data-cat="cortadoras"]  { background-image: url('productos/cortadora para barras de cobrealuminio/120HS/1.webp'); }
+[data-cat="extractores"] { background-image: url('productos/Extractor hidraulico/HHL-5/1.webp'); }
+[data-cat="punzonadoras"]{ background-image: url('productos/Punzadoras/HHM-60/1.webp'); }
+[data-cat="motores"]     { background-image: url('productos/Herramientas para vehículos/Multiplicador De Fuerza Torque Camion Tractor 7500nm/1.webp'); }
 
 /* ── PRODUCTS ── */
 .products { background: var(--black); }
