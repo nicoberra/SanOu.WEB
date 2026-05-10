@@ -1368,7 +1368,8 @@ function toggleWaWidget() {
 function sendWaMessage() {
     const input = document.getElementById('waWidgetInput');
     const msg = input.value.trim();
-    const text = msg ? encodeURIComponent(msg) : encodeURIComponent('Hola SanOu! Me gustaría hacer una consulta.');
+    const prefix = 'Hola San Ou!! quisiera hacer una consulta.\n\n';
+    const text = encodeURIComponent(msg ? prefix + msg : prefix);
     window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + text, '_blank');
     input.value = '';
 }
