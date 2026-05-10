@@ -1184,6 +1184,149 @@ function featuredGo(idx) {
     featuredCurrent = idx;
 }
 
+// ─── CATÁLOGO PDF ────────────────────────────────────────────────
+function openCatalog() {
+    const base = window.location.href.replace(/[^\/]*$/, '');
+
+    function firstImg(p) {
+        const catFolder = p.catFolder || p.category;
+        const folder    = p.folder || p.name;
+        if (Array.isArray(p.imgs)) return base + `productos/${catFolder}/${folder}/${p.imgs[0]}`;
+        const ext = p.ext || 'jpg';
+        return base + `productos/${catFolder}/${folder}/1.${ext}`;
+    }
+
+    const catOrder = ['pinzas','dobladoras','cortahierro','mordazas','bombas','sacabocados','cilindros','cortadoras','extractores','punzonadoras','motores'];
+
+    let body = '';
+    catOrder.forEach(cat => {
+        const prods = products.filter(p => p.category === cat || (p.extraCategories || []).includes(cat));
+        if (!prods.length) return;
+        body += `<div class="cat-section">
+            <div class="cat-header">${CAT_NAMES[cat] || cat}</div>
+            <div class="prods-grid">`;
+        prods.forEach(p => {
+            const img = firstImg(p);
+            const price = p.price ? `$${p.price.toLocaleString('es-AR')}` : 'Consultar precio';
+            const allSpecsList = p.allSpecs || p.specs || [];
+            const specs = allSpecsList.map(s =>
+                `<tr><td class="sl">${s.l}</td><td class="sv">${s.v}</td></tr>`).join('');
+            body += `<div class="pc">
+                <div class="pi"><img src="${img}" alt="${p.name}" onerror="this.src='';this.parentElement.innerHTML='<div class=ni>⚙</div>'"></div>
+                <div class="pd">
+                    <span class="pb">${p.badge || CAT_NAMES[p.category] || ''}</span>
+                    <h3 class="pn">${p.name}</h3>
+                    ${p.desc ? `<p class="pdesc">${p.desc}</p>` : ''}
+                    ${specs ? `<table class="st"><tbody>${specs}</tbody></table>` : ''}
+                    <div class="pp">${price}</div>
+                </div>
+            </div>`;
+        });
+        body += `</div></div>`;
+    });
+
+    const logoUrl = base + 'Logo San Ou.png';
+    const html = `<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<title>Catálogo SanOu 2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#fff;color:#111}
+/* COVER */
+.cover{background:#0D0D0D;color:#fff;padding:80px 40px;text-align:center;page-break-after:always;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cover img{height:180px;margin-bottom:10px}
+.cover .slogan{font-size:1.6rem;font-weight:900;margin-bottom:32px;line-height:1.3}
+.cover .slogan-white{color:#fff}
+.cover .slogan-yellow{color:#FFD700;display:block}
+.cover .line{width:80px;height:4px;background:#FFD700;margin:22px auto}
+.cover h1{font-size:3.2rem;color:#FFD700;letter-spacing:6px;margin-bottom:6px}
+.cover .sub{color:#aaa;font-size:1rem;margin-bottom:4px}
+.cover .contact{margin-top:36px;width:100%;max-width:780px}
+.cover .contact-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,auto);gap:14px;text-align:left}
+.cover .contact-item{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,215,0,0.2);border-radius:10px;padding:16px 20px}
+.cover .contact-icon{font-size:1.5rem;width:32px;height:32px;text-align:center;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.icon-wa{color:#25D366}
+.icon-mail{color:#1a73e8}
+.icon-web{color:#aaa}
+.icon-loc{color:#ea4335}
+.icon-ig{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.icon-tt{color:#fff}
+.cover .contact-label{font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
+.cover .contact-val{font-size:1rem;color:#fff;font-weight:700;white-space:nowrap}
+/* SECTION */
+.cat-section{margin-bottom:2px}
+.cat-header{background:#FFD700;color:#0D0D0D;font-size:1rem;font-weight:900;padding:9px 18px;text-transform:uppercase;letter-spacing:2px}
+/* GRID */
+.prods-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#ddd;margin-bottom:1px}
+/* CARD */
+.pc{background:#fff;display:flex;flex-direction:column;page-break-inside:avoid}
+.pi{width:100%;height:165px;overflow:hidden;background:#f5f5f5;display:flex;align-items:center;justify-content:center}
+.pi img{width:100%;height:100%;object-fit:contain}
+.ni{font-size:3rem;color:#ccc;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+.pd{padding:11px;display:flex;flex-direction:column;gap:5px;flex:1}
+.pb{display:inline-block;background:#FFF8CC;color:#7a5c00;border:1px solid #FFD700;border-radius:3px;font-size:0.6rem;font-weight:700;padding:2px 7px;text-transform:uppercase;letter-spacing:1px}
+.pn{font-size:0.88rem;font-weight:800;line-height:1.3;color:#111}
+.pdesc{font-size:0.68rem;color:#777;line-height:1.4}
+.st{width:100%;border-collapse:collapse;font-size:0.67rem;margin-top:2px}
+.st tr{border-bottom:1px solid #f0f0f0}
+.sl{color:#999;padding:3px 4px 3px 0;font-weight:600;width:52%}
+.sv{color:#333;font-weight:700;text-align:right;padding:3px 0}
+.pp{margin-top:auto;padding-top:7px;font-size:0.95rem;font-weight:900;color:#7a5c00;border-top:1px solid #f0f0f0}
+/* FOOTER */
+.cat-footer{background:#0D0D0D;color:#aaa;text-align:center;padding:18px;font-size:0.78rem;margin-top:4px}
+.cat-footer b{color:#FFD700}
+@media print{
+    body{background:#fff}
+    .cover{page-break-after:always}
+    .pc{page-break-inside:avoid}
+}
+</style></head><body>
+<div class="cover">
+    <img src="${logoUrl}" alt="SanOu" onerror="this.style.display='none'">
+    <p class="slogan"><span class="slogan-white">Equípate con</span><span class="slogan-yellow">herramientas de verdad</span></p>
+    <div class="line"></div>
+    <h1>CATÁLOGO</h1>
+    <p class="sub">Herramientas hidráulicas e industriales</p>
+    <div class="line"></div>
+    <div class="contact">
+        <div class="contact-grid">
+            <div class="contact-item">
+                <span class="contact-icon"><i class="fab fa-whatsapp icon-wa"></i></span>
+                <div><div class="contact-label">WhatsApp</div><div class="contact-val">+54 9 11 3175-1517</div></div>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon"><i class="fas fa-envelope icon-mail"></i></span>
+                <div><div class="contact-label">Email</div><div class="contact-val">sanou.argentina@gmail.com</div></div>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon"><i class="fas fa-globe icon-web"></i></span>
+                <div><div class="contact-label">Web</div><div class="contact-val">sanou.com.ar</div></div>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon"><i class="fas fa-location-dot icon-loc"></i></span>
+                <div><div class="contact-label">Dirección</div><div class="contact-val">Marcelo Camboa 6306, Bs. As.</div></div>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon"><i class="fab fa-instagram icon-ig"></i></span>
+                <div><div class="contact-label">Instagram</div><div class="contact-val">@sanou.arg</div></div>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon"><i class="fab fa-tiktok icon-tt"></i></span>
+                <div><div class="contact-label">TikTok</div><div class="contact-val">@san.ou</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+${body}
+<div class="cat-footer"><b>SanOu</b> — Herramientas hidráulicas profesionales &nbsp;|&nbsp; sanou.com.ar &nbsp;|&nbsp; +54 9 11 3175-1517</div>
+</body></html>`;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+}
+
 // ─── WHATSAPP WIDGET ─────────────────────────────────────────────
 (function() {
     const timeEl = document.getElementById('waBubbleTime');
