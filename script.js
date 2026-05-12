@@ -693,10 +693,18 @@ function specsRows(specs) {
 
 function priceHTML(p) {
     if (!(p.price > 0)) return '';
-    const oldHTML = p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : '';
+    if (p.oldPrice > 0) {
+        return `<div class="product-price-bar">
+                   <span class="price-label">Precio</span>
+                   <div class="price-values price-values--stack">
+                       <span class="price-old">${fmt(p.oldPrice)}</span>
+                       <span class="price-amount">${fmt(p.price)}</span>
+                   </div>
+               </div>`;
+    }
     return `<div class="product-price-bar">
                <span class="price-label">Precio</span>
-               <div class="price-values">${oldHTML}<span class="price-amount">${fmt(p.price)}</span></div>
+               <div class="price-values"><span class="price-amount">${fmt(p.price)}</span></div>
            </div>`;
 }
 
