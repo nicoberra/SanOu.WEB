@@ -857,12 +857,14 @@ function openModal(id) {
     document.getElementById('modalOverlay').classList.add('active');
     document.getElementById('productModal').classList.add('active');
     document.body.style.overflow = 'hidden';
+    history.replaceState(null, '', '#producto-' + id);
 }
 
 function closeModal() {
     document.getElementById('modalOverlay').classList.remove('active');
     document.getElementById('productModal').classList.remove('active');
     document.body.style.overflow = '';
+    history.replaceState(null, '', window.location.pathname);
 }
 
 // ─── FILTRAR ────────────────────────────────────────────────────
@@ -1383,7 +1385,17 @@ function sendWaMessage() {
 }
 
 // ─── INIT ────────────────────────────────────────────────────────
-loadPricesFromSheet().then(() => { renderProducts('all'); renderFeatured(); });
+loadPricesFromSheet().then(() => {
+    renderProducts('all');
+    renderFeatured();
+    // Abrir producto si viene en la URL (#producto-ID)
+    const hash = window.location.hash;
+    const match = hash.match(/^#producto-(\d+)$/);
+    if (match) {
+        const id = parseInt(match[1]);
+        setTimeout(() => openModal(id), 500);
+    }
+});
 
 // Abrir widget WhatsApp automáticamente al entrar (solo desktop)
 window.addEventListener('load', () => {
