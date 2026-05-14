@@ -1194,6 +1194,50 @@ function featuredGo(idx) {
     featuredCurrent = idx;
 }
 
+// ─── FILTER DROPDOWN ─────────────────────────────────────────────
+function toggleFilterDropdown() {
+    const menu  = document.getElementById('filterDropdownMenu');
+    const btn   = document.getElementById('filterDropdownBtn');
+    const arrow = document.getElementById('filterArrow');
+    const open  = menu.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    arrow.classList.toggle('open', open);
+}
+
+function selectFilter(cat, label) {
+    document.getElementById('filterDropdownLabel').textContent = label;
+    document.querySelectorAll('.filter-option').forEach(o => o.classList.toggle('active', o.dataset.filter === cat));
+    toggleFilterDropdown();
+    filterProducts(cat);
+}
+
+// Cerrar al hacer click fuera
+document.addEventListener('click', e => {
+    const wrap = document.getElementById('filterBar');
+    if (wrap && !wrap.contains(e.target)) {
+        document.getElementById('filterDropdownMenu')?.classList.remove('open');
+        document.getElementById('filterDropdownBtn')?.classList.remove('open');
+        document.getElementById('filterArrow')?.classList.remove('open');
+    }
+});
+
+// ─── MAYORISTAS ──────────────────────────────────────────────────
+function enviarMayorista() {
+    const nombre    = document.getElementById('mayoristaNombre').value.trim();
+    const localidad = document.getElementById('mayoristaLocalidad').value.trim();
+    const rubro     = document.getElementById('mayoristaRubro').value.trim();
+    const msg       = document.getElementById('mayoristaMsg').value.trim();
+
+    let texto = `🏪 *Consulta de Revendedor / Mayorista*\n\n`;
+    if (nombre)    texto += `👤 *Nombre:* ${nombre}\n`;
+    if (localidad) texto += `📍 *Localidad:* ${localidad}\n`;
+    if (rubro)     texto += `🔧 *Rubro:* ${rubro}\n`;
+    if (msg)       texto += `\n💬 *Mensaje:*\n${msg}\n`;
+    texto += `\n¡Quiero más información sobre precios mayoristas y cómo ser revendedor de San Ou!`;
+
+    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(texto), '_blank');
+}
+
 // ─── CATÁLOGO PDF ────────────────────────────────────────────────
 function openCatalog() {
     const base = window.location.href.replace(/[^\/]*$/, '');
@@ -1235,7 +1279,7 @@ function openCatalog() {
         body += `</div></div>`;
     });
 
-    const logoUrl = base + 'Logo San Ou.png';
+    const logoUrl = base + 'Logo 2.png';
     const html = `<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8">
 <title>Catálogo SanOu 2026</title>

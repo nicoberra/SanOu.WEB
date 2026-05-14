@@ -248,6 +248,36 @@ body {
 }
 .header-search-btn:hover { background: var(--yellow-dark); }
 
+.btn-trabajá {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--white);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 50px;
+    padding: 8px 18px;
+    background: rgba(255,255,255,0.06);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn-trabajá i {
+    font-size: 0.95rem;
+    color: var(--white);
+    opacity: 0.85;
+}
+.btn-trabajá:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.45);
+}
+@media (max-width: 768px) {
+    .btn-trabajá { display: none; }
+}
+
 .menu-toggle {
     display: none;
     background: transparent;
@@ -757,35 +787,68 @@ section { padding: 90px 0; }
     display: inline-block;
 }
 
-.filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+.filter-dropdown-wrap {
+    position: relative;
     margin-top: 20px;
+    width: 100%;
+    max-width: 340px;
 }
-.filter-btn {
+.filter-dropdown-btn {
+    width: 100%;
     background: var(--black-3);
-    color: var(--gray-light);
-    border: 1px solid var(--black-4);
-    padding: 7px 18px;
-    border-radius: 50px;
-    cursor: pointer;
-    font-size: 0.8rem;
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 12px;
+    padding: 13px 18px;
+    color: var(--white);
+    font-size: 0.9rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.25s;
-    white-space: normal;
-    text-align: center;
-    max-width: 200px;
-    line-height: 1.3;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: border-color 0.2s, background 0.2s;
+    font-family: 'Inter', sans-serif;
 }
-.filter-btn:hover,
-.filter-btn.active {
-    background: var(--yellow);
-    color: var(--black);
-    border-color: var(--yellow);
+.filter-dropdown-btn:hover { border-color: var(--yellow); background: var(--black-4); }
+.filter-dropdown-btn.open { border-color: var(--yellow); border-radius: 12px 12px 0 0; }
+.filter-dropdown-arrow {
+    font-size: 0.75rem;
+    color: var(--yellow);
+    transition: transform 0.25s;
+    flex-shrink: 0;
 }
+.filter-dropdown-arrow.open { transform: rotate(180deg); }
+.filter-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: var(--black-3);
+    border: 1px solid var(--yellow);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    z-index: 100;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+}
+.filter-dropdown-menu.open { display: block; }
+.filter-option {
+    padding: 11px 18px;
+    color: var(--gray-light);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s, color 0.15s;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.filter-option:last-child { border-bottom: none; }
+.filter-option i { color: var(--yellow); font-size: 0.8rem; width: 16px; text-align: center; }
+.filter-option:hover { background: rgba(255,215,0,0.08); color: var(--white); }
+.filter-option.active { background: rgba(255,215,0,0.12); color: var(--yellow); font-weight: 800; }
 
 .products-grid {
     display: grid;
@@ -1699,6 +1762,128 @@ section { padding: 90px 0; }
 .contact-list a { color: inherit; text-decoration: none; transition: color 0.2s; }
 .contact-list a:hover { color: var(--yellow); }
 
+/* ── MAYORISTAS / REVENDEDORES ── */
+.mayoristas {
+    background: var(--black-2);
+    padding: 90px 0;
+    border-top: 2px dashed rgba(255,215,0,0.35);
+    border-bottom: 2px dashed rgba(255,215,0,0.35);
+}
+.mayoristas-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+.mayoristas-left .section-title { margin-bottom: 14px; }
+.mayoristas-sub {
+    color: var(--gray-light);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 32px;
+}
+.mayoristas-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.mayorista-benefit {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+.mb-icon {
+    width: 42px; height: 42px;
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--yellow);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.mayorista-benefit strong {
+    display: block;
+    color: var(--white);
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin-bottom: 3px;
+}
+.mayorista-benefit p {
+    color: var(--gray);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+.mayoristas-form-card {
+    background: var(--black-3);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 20px;
+    padding: 36px 32px;
+}
+.mayoristas-form-card h3 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 8px;
+}
+.mayoristas-form-card > p {
+    color: var(--gray);
+    font-size: 0.88rem;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+.mayoristas-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.mayorista-input {
+    background: var(--black-4);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--white);
+    font-size: 0.88rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+}
+.mayorista-input:focus { border-color: rgba(255,215,0,0.5); }
+.mayorista-input::placeholder { color: var(--gray); }
+.mayorista-textarea { resize: none; }
+.btn-mayorista-wa {
+    background: #25D366;
+    color: #fff;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.2s;
+    text-decoration: none;
+}
+.btn-mayorista-wa:hover { opacity: 0.88; }
+.btn-mayorista-mail {
+    background: var(--black-4);
+    color: var(--gray-light);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+}
+.btn-mayorista-mail:hover { border-color: var(--yellow); color: var(--yellow); }
+@media (max-width: 900px) {
+    .mayoristas-inner { grid-template-columns: 1fr; gap: 40px; }
+}
+
 /* ── CÓMO COMPRAR ── */
 .how-to-buy .section-title {
     background: linear-gradient(90deg, #fff8c0, var(--yellow));
@@ -2217,21 +2402,8 @@ section { padding: 90px 0; }
     .category-card { padding: 18px 10px; }
     .category-card h3 { font-size: 0.8rem; }
 
-    /* Filter bar - 2 filas scroll horizontal */
-    .filter-bar {
-        display: grid;
-        grid-template-rows: repeat(2, auto);
-        grid-auto-flow: column;
-        grid-auto-columns: max-content;
-        gap: 8px;
-        overflow-x: auto;
-        padding-bottom: 8px;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        flex-wrap: unset;
-    }
-    .filter-bar::-webkit-scrollbar { display: none; }
-    .filter-btn { flex-shrink: 0; padding: 6px 13px; font-size: 0.72rem; max-width: 160px; }
+    /* Filter dropdown mobile */
+    .filter-dropdown-wrap { max-width: 100%; }
 
     /* Products */
     .products-grid { grid-template-columns: 1fr; }

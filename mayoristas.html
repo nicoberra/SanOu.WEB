@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mayoristas y Revendedores — SanOu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .mayoristas-page {
+            min-height: 100vh;
+            background: var(--black);
+            padding: 0 0 80px;
+        }
+        .mayoristas-hero {
+            background: #0D0D0D;
+            border-bottom: 2px solid var(--yellow);
+            padding: 70px 0 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .mayoristas-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 50%, rgba(255,215,0,0.07) 0%, transparent 70%);
+        }
+        .brush-banner {
+            display: inline-block;
+            background: var(--yellow);
+            color: #000;
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            padding: 10px 36px;
+            position: relative;
+            margin-bottom: 28px;
+            clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+        }
+        .hero-main-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.6rem, 4vw, 3rem);
+            line-height: 1.15;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .hero-main-title .t-yellow { color: var(--yellow); }
+        .hero-main-title .t-white  { color: #fff; }
+        .mayoristas-hero p {
+            color: var(--gray-light);
+            font-size: 1rem;
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.7;
+            position: relative;
+        }
+        .mayoristas-body {
+            padding: 70px 0;
+        }
+        .mayoristas-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+        .mayoristas-sub {
+            color: var(--gray-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+        .mayoristas-benefits {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .mayorista-benefit {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .mb-icon {
+            width: 46px; height: 46px;
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.25);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--yellow);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .mayorista-benefit strong {
+            display: block;
+            color: var(--white);
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .mayorista-benefit p {
+            color: var(--gray);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .mayoristas-form-card {
+            background: var(--black-2);
+            border: 1px solid rgba(255,215,0,0.2);
+            border-radius: 20px;
+            padding: 40px 36px;
+        }
+        .mayoristas-form-card h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        .mayoristas-form-card > p {
+            color: var(--gray);
+            font-size: 0.88rem;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .mayoristas-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .mayorista-input {
+            background: var(--black-3);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 13px 16px;
+            color: var(--white);
+            font-size: 0.88rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        .mayorista-input:focus { border-color: rgba(255,215,0,0.5); }
+        .mayorista-input::placeholder { color: var(--gray); }
+        .mayorista-textarea { resize: none; }
+        .btn-mayorista-wa {
+            background: #25D366;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: opacity 0.2s;
+            text-decoration: none;
+            margin-top: 4px;
+        }
+        .btn-mayorista-wa:hover { opacity: 0.88; }
+        .btn-mayorista-mail {
+            background: var(--black-3);
+            color: var(--gray-light);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 13px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-mayorista-mail:hover { border-color: var(--yellow); color: var(--yellow); }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--yellow);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
+            margin-bottom: 40px;
+            transition: opacity 0.2s;
+        }
+        .back-btn:hover { opacity: 0.75; }
+        @media (max-width: 900px) {
+            .mayoristas-inner { grid-template-columns: 1fr; gap: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        🚚 Envíos a todo el país &nbsp;|&nbsp; ⚡ Respuesta rápida por WhatsApp &nbsp;|&nbsp; 🔧 Herramientas profesionales
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo-img-link">
+                <img src="Logo 2.png" alt="SanOu" class="header-logo">
+            </a>
+            <nav class="nav">
+                <a href="index.html#inicio" class="nav-link">Inicio</a>
+                <a href="index.html#productos" class="nav-link">Productos</a>
+                <a href="index.html#nosotros" class="nav-link">Nosotros</a>
+                <a href="index.html#contacto" class="nav-link">Contacto</a>
+            </nav>
+            <div class="header-right">
+                <div class="social-icons">
+                    <a href="https://wa.me/5491131751517" target="_blank" class="social-icon si-wa"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://www.instagram.com/sanou.arg" target="_blank" class="social-icon si-ig"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61578990548942" target="_blank" class="social-icon si-fb"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="mayoristas-page">
+        <!-- Hero -->
+        <div class="mayoristas-hero">
+            <div class="container">
+                <div class="brush-banner">⚡ Programa de revendedores</div>
+                <h1 class="hero-main-title">
+                    <span class="t-yellow">Sumá ingresos extra</span><br>
+                    <span class="t-white">junto a nosotros!!</span>
+                </h1>
+                <p>Accedé a precios mayoristas, stock prioritario y soporte dedicado para hacer crecer tu negocio con San Ou.</p>
+            </div>
+        </div>
+
+        <!-- Cuerpo -->
+        <div class="mayoristas-body">
+            <div class="container">
+                <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+                <div class="mayoristas-inner">
+                    <!-- Beneficios -->
+                    <div class="mayoristas-left">
+                        <h3 class="section-title" style="font-size:1.8rem; margin-bottom:20px;">¿Por qué ser revendedor?</h3>
+                        <div class="mayoristas-benefits">
+                            <div class="mayorista-benefit">
+                                <div class="mb-icon"><i class="fas fa-tag"></i></div>
+                                <div>
+                                    <strong>Precios mayoristas</strong>
+                                    <p>Márgenes reales para que tu negocio sea rentable desde el primer pedido.</p>
+                                </div>
+                            </div>
+                            <div class="mayorista-benefit">
+                                <div class="mb-icon"><i class="fas fa-boxes-stacked"></i></div>
+                                <div>
+                                    <strong>Stock disponible</strong>
+                                    <p>Acceso prioritario a todo el catálogo con disponibilidad inmediata.</p>
+                                </div>
+                            </div>
+                            <div class="mayorista-benefit">
+                                <div class="mb-icon"><i class="fas fa-headset"></i></div>
+                                <div>
+                                    <strong>Soporte dedicado</strong>
+                                    <p>Atención personalizada con respuesta rápida para revendedores.</p>
+                                </div>
+                            </div>
+                            <div class="mayorista-benefit">
+                                <div class="mb-icon"><i class="fas fa-truck"></i></div>
+                                <div>
+                                    <strong>Envíos a todo el país</strong>
+                                    <p>Despachamos a cualquier punto del país para que llegues a más clientes.</p>
+                                </div>
+                            </div>
+                            <div class="mayorista-benefit">
+                                <div class="mb-icon"><i class="fas fa-handshake"></i></div>
+                                <div>
+                                    <strong>Relación directa</strong>
+                                    <p>Trabajás con el equipo de San Ou de forma directa, sin intermediarios.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario -->
+                    <div class="mayoristas-right">
+                        <div class="mayoristas-form-card">
+                            <h3>Quiero ser revendedor</h3>
+                            <p>Completá tus datos y te contactamos con toda la información.</p>
+                            <div class="mayoristas-form">
+                                <input type="text" id="mayoristaNombre" placeholder="Tu nombre completo" class="mayorista-input">
+                                <input type="text" id="mayoristaLocalidad" placeholder="Ciudad / Localidad" class="mayorista-input">
+                                <input type="text" id="mayoristaRubro" placeholder="Tu rubro o negocio" class="mayorista-input">
+                                <textarea id="mayoristaMsg" placeholder="¿Qué productos te interesan?" class="mayorista-input mayorista-textarea" rows="3"></textarea>
+                                <button class="btn-mayorista-wa" onclick="enviarMayorista()">
+                                    <i class="fab fa-whatsapp"></i> Enviar consulta por WhatsApp
+                                </button>
+                                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sanou.argentina%40gmail.com&su=Consulta%20mayorista%20%2F%20Revendedor" target="_blank" class="btn-mayorista-mail">
+                                    <i class="fas fa-envelope"></i> Enviar por Email
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp flotante -->
+    <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Quiero%20información%20sobre%20precios%20mayoristas." target="_blank" class="wa-float">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script>
+        const WHATSAPP_NUMBER = '5491131751517';
+        function enviarMayorista() {
+            const nombre    = document.getElementById('mayoristaNombre').value.trim();
+            const localidad = document.getElementById('mayoristaLocalidad').value.trim();
+            const rubro     = document.getElementById('mayoristaRubro').value.trim();
+            const msg       = document.getElementById('mayoristaMsg').value.trim();
+            let texto = '🏪 *Consulta de Revendedor / Mayorista*\n\n';
+            if (nombre)    texto += `👤 *Nombre:* ${nombre}\n`;
+            if (localidad) texto += `📍 *Localidad:* ${localidad}\n`;
+            if (rubro)     texto += `🔧 *Rubro:* ${rubro}\n`;
+            if (msg)       texto += `\n💬 *Mensaje:*\n${msg}\n`;
+            texto += '\n¡Quiero más información sobre precios mayoristas y cómo ser revendedor de San Ou!';
+            window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(texto), '_blank');
+        }
+    </script>
+</body>
+</html>

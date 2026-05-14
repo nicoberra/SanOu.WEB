@@ -76,7 +76,7 @@
     <header class="header" id="header">
         <div class="container">
             <a href="#inicio" class="logo-img-link">
-                <img src="Logo San Ou.png" alt="SanOu" class="header-logo">
+                <img src="Logo 2.png" alt="SanOu" class="header-logo">
             </a>
             <nav class="nav" id="nav">
                 <button class="btn-catalogo" onclick="openCatalog()">CATÁLOGO <i class="fas fa-download"></i></button>
@@ -108,6 +108,10 @@
         </div>
     </header>
     <div class="header-search-row">
+        <a href="mayoristas.html" class="btn-trabajá">
+            <i class="fas fa-handshake"></i>
+            <span>Trabajá con nosotros</span>
+        </a>
         <div class="header-search-bar">
             <i class="fas fa-search header-search-icon"></i>
             <input type="text" id="searchInput" class="header-search-input" placeholder="Buscar productos..." onkeydown="if(event.key==='Enter') searchProducts(this.value)" autocomplete="off">
@@ -142,7 +146,7 @@
                 </div>
                 <!-- Texto -->
                 <div class="hero-content">
-                    <img src="Logo San Ou.png" alt="SanOu" class="hero-logo">
+                    <img src="Logo 2.png" alt="SanOu" class="hero-logo">
                     <div class="hero-slogan-block">
                         <span class="hero-slogan-white">Equípate con</span>
                         <span class="hero-slogan-yellow">herramientas de verdad</span>
@@ -211,19 +215,25 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Nuestros Productos</h2>
-                <div class="filter-bar" id="filterBar">
-                    <button class="filter-btn active" data-filter="all" onclick="filterProducts('all')">Todos</button>
-                    <button class="filter-btn" data-filter="pinzas" onclick="filterProducts('pinzas')">Pinzas</button>
-                    <button class="filter-btn" data-filter="dobladoras" onclick="filterProducts('dobladoras')">Dobladoras de caño</button>
-                    <button class="filter-btn" data-filter="cortahierro" onclick="filterProducts('cortahierro')">Corta hierro</button>
-                    <button class="filter-btn" data-filter="mordazas" onclick="filterProducts('mordazas')">Mordazas de torno</button>
-                    <button class="filter-btn" data-filter="bombas" onclick="filterProducts('bombas')">Bomba hidráulica</button>
-                    <button class="filter-btn" data-filter="sacabocados" onclick="filterProducts('sacabocados')">Sacabocados</button>
-                    <button class="filter-btn" data-filter="cilindros" onclick="filterProducts('cilindros')">Cilindros hidráulicos</button>
-                    <button class="filter-btn" data-filter="cortadoras" onclick="filterProducts('cortadoras')">Cortadora para barras, de cobre/aluminio</button>
-                    <button class="filter-btn" data-filter="extractores" onclick="filterProducts('extractores')">Extractor hidráulico</button>
-                    <button class="filter-btn" data-filter="punzonadoras" onclick="filterProducts('punzonadoras')">Punzonadoras</button>
-                    <button class="filter-btn" data-filter="motores" onclick="filterProducts('motores')">Herramientas para vehículos</button>
+                <div class="filter-dropdown-wrap" id="filterBar">
+                    <button class="filter-dropdown-btn" onclick="toggleFilterDropdown()" id="filterDropdownBtn">
+                        <span id="filterDropdownLabel">Todas las categorías</span>
+                        <i class="fas fa-chevron-down filter-dropdown-arrow" id="filterArrow"></i>
+                    </button>
+                    <div class="filter-dropdown-menu" id="filterDropdownMenu">
+                        <div class="filter-option active" data-filter="all" onclick="selectFilter('all', 'Todas las categorías')">Todas las categorías</div>
+                        <div class="filter-option" data-filter="pinzas" onclick="selectFilter('pinzas', 'Pinzas')">Pinzas</div>
+                        <div class="filter-option" data-filter="dobladoras" onclick="selectFilter('dobladoras', 'Dobladoras de caño')">Dobladoras de caño</div>
+                        <div class="filter-option" data-filter="cortahierro" onclick="selectFilter('cortahierro', 'Corta hierro')">Corta hierro</div>
+                        <div class="filter-option" data-filter="mordazas" onclick="selectFilter('mordazas', 'Mordazas de torno')">Mordazas de torno</div>
+                        <div class="filter-option" data-filter="bombas" onclick="selectFilter('bombas', 'Bomba hidráulica')">Bomba hidráulica</div>
+                        <div class="filter-option" data-filter="sacabocados" onclick="selectFilter('sacabocados', 'Sacabocados')">Sacabocados</div>
+                        <div class="filter-option" data-filter="cilindros" onclick="selectFilter('cilindros', 'Cilindros hidráulicos')">Cilindros hidráulicos</div>
+                        <div class="filter-option" data-filter="cortadoras" onclick="selectFilter('cortadoras', 'Cortadora barras Cu/Al')">Cortadora barras Cu/Al</div>
+                        <div class="filter-option" data-filter="extractores" onclick="selectFilter('extractores', 'Extractor hidráulico')">Extractor hidráulico</div>
+                        <div class="filter-option" data-filter="punzonadoras" onclick="selectFilter('punzonadoras', 'Punzonadoras')">Punzonadoras</div>
+                        <div class="filter-option" data-filter="motores" onclick="selectFilter('motores', 'Herramientas para vehículos')">Herramientas para vehículos</div>
+                    </div>
                 </div>
             </div>
             <div class="products-grid" id="productsGrid"></div>
@@ -385,7 +395,7 @@
             <div class="footer-top">
                 <div class="footer-brand">
                     <a href="#inicio" class="logo-img-link">
-                        <img src="Logo San Ou.png" alt="SanOu" class="footer-logo">
+                        <img src="Logo 2.png" alt="SanOu" class="footer-logo">
                     </a>
                     <div class="footer-social-icons">
                         <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Me%20gustaría%20hacer%20una%20consulta." target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
