@@ -29,6 +29,23 @@ button, a { -webkit-tap-highlight-color: transparent; }
     text-transform: uppercase;
     position: relative;
     z-index: 1001;
+    overflow: hidden;
+}
+.topbar-truck {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 140%;
+    width: auto;
+    pointer-events: none;
+    animation: truckDrive 12s linear infinite;
+    right: -300px;
+}
+@keyframes truckDrive {
+    0%   { right: -300px; opacity: 0; }
+    5%   { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { right: 110%; opacity: 0; }
 }
 
 body {
@@ -699,6 +716,7 @@ section { padding: 90px 0; }
     letter-spacing: 2px;
     margin-bottom: 14px;
 }
+
 
 /* ── CATEGORIES ── */
 .categories {
