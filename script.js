@@ -240,7 +240,7 @@ const products = [
       ]
     },
     // Corta hierro
-    { id: 7, name: 'Cortadora Hidráulica HHG-16', category: 'cortahierro', price: 100000, icon: 'fa-bolt', badge: 'hasta Ø16 mm', imgs: 2, folder: 'Cortadora de Varilla 16mm', ext: 'webp',
+    { id: 7, name: 'Cortadora Hidráulica HHG-16', category: 'cortahierro', price: 100000, icon: 'fa-bolt', badge: 'hasta Ø16 mm', imgs: ['1.png','2.jpeg','3.webp'], folder: 'Cortadora de Varilla 16mm', catFolder: 'cortahierro',
       desc: 'Cortadora hidráulica de varillas de acero. Corte limpio sin deformación. Compacta y liviana.',
       specs: [
         { l: 'Diámetro máx.', v: 'Ø 16 mm' },

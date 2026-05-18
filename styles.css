@@ -38,7 +38,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
     height: 140%;
     width: auto;
     pointer-events: none;
-    animation: truckDrive 12s linear infinite;
+    animation: truckDrive 6s linear infinite;
     right: -300px;
 }
 @keyframes truckDrive {
