@@ -1284,6 +1284,7 @@ function openCatalog() {
 <meta charset="UTF-8">
 <title>Catálogo SanOu 2026</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Arial,sans-serif;background:#fff;color:#111}
@@ -1343,8 +1344,8 @@ body{font-family:Arial,sans-serif;background:#fff;color:#111}
 }
 </style></head><body>
 <div class="dl-bar">
-    <p>📄 Para guardar el catálogo: hacé clic en el botón y luego seleccioná <strong>"Guardar como PDF"</strong></p>
-    <button class="dl-btn" onclick="window.print()">⬇ Descargar PDF</button>
+    <p>📄 El catálogo completo de San Ou con todos los productos y precios.</p>
+    <button class="dl-btn" id="dlBtn" onclick="descargarPDF()">⬇ Descargar PDF</button>
 </div>
 <div class="cover">
     <img src="${logoUrl}" alt="SanOu" onerror="this.style.display='none'">
@@ -1384,6 +1385,26 @@ body{font-family:Arial,sans-serif;background:#fff;color:#111}
 </div>
 ${body}
 <div class="cat-footer"><b>SanOu</b> — Herramientas hidráulicas profesionales &nbsp;|&nbsp; sanou.com.ar &nbsp;|&nbsp; +54 9 11 3175-1517</div>
+<script>
+function descargarPDF() {
+    const btn = document.getElementById('dlBtn');
+    btn.textContent = '⏳ Generando...';
+    btn.disabled = true;
+    const bar = document.querySelector('.dl-bar');
+    bar.style.display = 'none';
+    html2pdf().set({
+        margin: 0,
+        filename: 'catalogo-sanou.pdf',
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(document.body).save().then(() => {
+        bar.style.display = 'flex';
+        btn.textContent = '⬇ Descargar PDF';
+        btn.disabled = false;
+    });
+}
+<\/script>
 </body></html>`;
 
     const win = window.open('', '_blank');
