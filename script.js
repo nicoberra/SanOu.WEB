@@ -1390,10 +1390,6 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
     .pc{page-break-inside:avoid}
 }
 </style></head><body>
-<div class="dl-bar">
-    <p>📄 El catálogo completo de San Ou con todos los productos y precios.</p>
-    <button class="dl-btn" id="dlBtn" onclick="descargarPDF()">⬇ Descargar PDF</button>
-</div>
 <div class="cover">
     <img src="${logoUrl}" alt="SanOu" onerror="this.style.display='none'">
     <p class="slogan"><span class="slogan-white">Equípate con</span><span class="slogan-yellow">herramientas de verdad</span></p>
