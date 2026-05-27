@@ -220,6 +220,32 @@ const products = [
         { l: 'Medidas de empaque', v: '94 × 40 × 21 cm' }
       ]
     },
+    { id: 44, name: 'Dobladora de Caños Manual HHW-25S', category: 'dobladoras', price: 100000, icon: 'fa-arrows-turn-right', badge: '10–25 mm', imgs: 3, folder: 'HHW25S', ext: 'webp', catFolder: 'Dobladoras',
+      desc: 'Dobladora manual de caños con 7 conformadores incluidos (10 a 25 mm). Flexión hasta 180°, resultados óptimos sin deformaciones ni ondulaciones. Matrices de acero casi irrompibles. Viene en maletín de plástico moldeado resistente. Aplicaciones universales: curvas en U, contracurvas, cuello de cisne y curvas de conexión en todos los niveles.',
+      specs: [
+        { l: 'Rango de doblado', v: '10 mm – 25 mm' },
+        { l: 'Ángulo máximo', v: '180°' },
+        { l: 'Conformadores incluidos', v: '7 piezas' }
+      ],
+      allSpecs: [
+        { l: 'Modelo', v: 'HHW-25S' },
+        { l: 'Tipo', v: 'Manual' },
+        { l: 'Rango de doblado', v: '10 mm – 25 mm' },
+        { l: 'Ángulo máximo', v: '180°' },
+        { l: 'Espesor de pared', v: '0,8 mm – 2 mm' },
+        { l: 'Conformadores', v: '3/8" (10mm) / 1/2" (12mm) / 9/16" (14mm) / 5/8" (16mm) / 3/4" (19mm) / 7/8" (22mm) / 1" (25mm)' },
+        { l: 'Radio de curva (10mm)', v: 'R 4 cm — Ø int. 8 cm' },
+        { l: 'Radio de curva (12mm)', v: 'R 5 cm — Ø int. 10 cm' },
+        { l: 'Radio de curva (14mm)', v: 'R 6 cm — Ø int. 12 cm' },
+        { l: 'Radio de curva (16mm)', v: 'R 7 cm — Ø int. 14 cm' },
+        { l: 'Radio de curva (19mm)', v: 'R 8 cm — Ø int. 16 cm' },
+        { l: 'Radio de curva (22mm)', v: 'R 9,5 cm — Ø int. 19 cm' },
+        { l: 'Radio de curva (25mm)', v: 'R 10 cm — Ø int. 20 cm' },
+        { l: 'Peso', v: '25 kg' },
+        { l: 'Medidas de empaque', v: '660 × 460 × 180 mm' },
+        { l: 'Incluye', v: 'Maletín de plástico moldeado resistente' }
+      ]
+    },
     { id: 6, name: 'Dobladora de Barras HHM-150W', category: 'dobladoras', price: 100000, icon: 'fa-arrows-turn-right', badge: 'Barras Cu/Al', imgs: 3, folder: 'HHM-150W', ext: 'webp', catFolder: 'Dobladoras',
       desc: 'Dobladora hidráulica para barras planas de cobre/aluminio. Ideal para tableros eléctricos, celdas y puesta a tierra.',
       specs: [
