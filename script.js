@@ -1234,6 +1234,12 @@ function selectFilter(cat, label) {
     document.getElementById('filterDropdownLabel').textContent = label;
     document.querySelectorAll('.filter-option').forEach(o => o.classList.toggle('active', o.dataset.filter === cat));
     toggleFilterDropdown();
+    // Actualizar URL con la categoría seleccionada
+    if (cat === 'all') {
+        history.replaceState(null, '', window.location.pathname);
+    } else {
+        history.replaceState(null, '', '#categoria-' + cat);
+    }
     filterProducts(cat);
 }
 
@@ -1494,10 +1500,27 @@ function sendWaMessage() {
 
 // ─── INIT ────────────────────────────────────────────────────────
 loadPricesFromSheet().then(() => {
+    const hash = window.location.hash;
+
+    // Abrir categoría si viene en la URL (#categoria-XXX)
+    const catMatch = hash.match(/^#categoria-(\w+)$/);
+    if (catMatch) {
+        const cat = catMatch[1];
+        const label = CAT_NAMES[cat];
+        if (label) {
+            renderProducts(cat);
+            renderFeatured();
+            document.getElementById('filterDropdownLabel').textContent = label;
+            document.querySelectorAll('.filter-option').forEach(o => o.classList.toggle('active', o.dataset.filter === cat));
+            setTimeout(() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+            return;
+        }
+    }
+
     renderProducts('all');
     renderFeatured();
+
     // Abrir producto si viene en la URL (#producto-ID)
-    const hash = window.location.hash;
     const match = hash.match(/^#producto-(\d+)$/);
     if (match) {
         const id = parseInt(match[1]);
