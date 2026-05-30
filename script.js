@@ -295,7 +295,7 @@ const products = [
       ]
     },
     // Mordazas de torno
-    { id: 10, name: 'Mordaza de Torno 80mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 80 mm', imgs: ['1.webp','2.png','3.webp'], folder: '80MM',
+    { id: 10, name: 'Mordaza de Torno 80mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 80 mm', imgs: ['1.jpeg','2.png','5.webp'], folder: '80MM',
       desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro', v: 'Ø 80 mm' },
@@ -312,7 +312,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas, manija y bulones' }
       ]
     },
-    { id: 11, name: 'Mordaza de Torno 100mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 100 mm', imgs: 1, folder: '100MM', ext: 'webp',
+    { id: 11, name: 'Mordaza de Torno 100mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 100 mm', imgs: ['1.jpeg','2.webp'], folder: '100MM',
       desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Alta precisión, velocidad máxima 3.500 rpm. Para torno paralelo mecánico.',
       specs: [
         { l: 'Diámetro', v: 'Ø 100 mm' },
@@ -333,7 +333,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas, manija y bulones' }
       ]
     },
-    { id: 12, name: 'Mordaza de Torno 125mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 125 mm', imgs: 2, folder: '125MM', ext: 'webp',
+    { id: 12, name: 'Mordaza de Torno 125mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 125 mm', imgs: ['1.jpeg','2.webp'], folder: '125MM',
       desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro', v: 'Ø 125 mm' },
@@ -352,7 +352,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas' }
       ]
     },
-    { id: 35, name: 'Mordaza de Torno 160mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 160 mm', imgs: 3, folder: '160MM', ext: 'webp',
+    { id: 35, name: 'Mordaza de Torno 160mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 160 mm', imgs: ['1.jpeg','2.jpg','3.jpg','4.webp'], folder: '160MM',
       desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico, montaje directo.',
       specs: [
         { l: 'Diámetro', v: 'Ø 160 mm' },
@@ -372,7 +372,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual, manija y bulones' }
       ]
     },
-    { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: 1, folder: '200MM', ext: 'webp',
+    { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: ['1.webp','2.jpeg'], folder: '200MM',
       desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Alta precisión para tornos grandes.',
       specs: [
         { l: 'Diámetro', v: 'Ø 200 mm' },
@@ -392,7 +392,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual, manija y bulones' }
       ]
     },
-    { id: 37, name: 'Mordaza de Torno 250mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 250 mm', imgs: 2, folder: '250MM', ext: 'webp',
+    { id: 37, name: 'Mordaza de Torno 250mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 250 mm', imgs: ['1.jpeg','2.webp'], folder: '250MM',
       desc: 'Plato de 3 mordazas autocentrantes de gran capacidad para tornos industriales.',
       specs: [
         { l: 'Diámetro', v: 'Ø 250 mm' },
@@ -406,7 +406,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas' }
       ]
     },
-    { id: 38, name: 'Mordaza de Torno 315mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 315 mm', imgs: 3, folder: '315MM', ext: 'webp',
+    { id: 38, name: 'Mordaza de Torno 315mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 315 mm', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: '315MM',
       desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 315 mm' },
@@ -590,7 +590,7 @@ const products = [
       ]
     },
     // Herramientas para vehículos
-    { id: 39, name: 'Multiplicador de Fuerza Torque Camión Tractor 7500 Nm', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '7500 Nm', imgs: 3, folder: 'Multiplicador De Fuerza Torque Camion Tractor 7500nm', ext: 'webp', catFolder: 'Herramientas para vehículos',
+    { id: 39, name: 'Multiplicador de Fuerza Torque Camión Tractor 7500 Nm', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '7500 Nm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Multiplicador De Fuerza Torque Camion Tractor 7500nm', catFolder: 'Herramientas para vehículos',
       desc: 'Multiplicador de torque manual para aflojar y ajustar tuercas de alta exigencia en camiones, tractores, colectivos y maquinaria pesada.',
       specs: [
         { l: 'Torque máximo', v: '7500 Nm' },
@@ -610,7 +610,7 @@ const products = [
         { l: 'Presentación', v: 'Kit en maletín plástico' }
       ]
     },
-    { id: 40, name: 'Kit Extractor de Rulemanes Cepo Grande 75 mm a 105 mm 9 Pzas', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '75–105 mm', imgs: 3, folder: 'Kit Extractor De Rulemanes Cepo Grande 75 Mm A 105 Mm 9 Pzs', ext: 'webp', catFolder: 'Herramientas para vehículos',
+    { id: 40, name: 'Kit Extractor de Rulemanes Cepo Grande 75 mm a 105 mm 9 Pzas', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '75–105 mm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Kit Extractor De Rulemanes Cepo Grande 75 Mm A 105 Mm 9 Pzs', catFolder: 'Herramientas para vehículos',
       desc: 'Kit extractor de rulemanes y rodamientos tipo cepo. Extrae rulemanes, poleas, engranajes y piezas ajustadas a presión. 9 piezas en maletín.',
       specs: [
         { l: 'Rango de apertura', v: '75 mm a 105 mm' },
@@ -631,7 +631,7 @@ const products = [
         { l: 'Presentación', v: 'Kit en maletín plástico' }
       ]
     },
-    { id: 41, name: 'Extractor Rulemanes 3 Garras Kit Interior/Exterior', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '3 garras', imgs: 3, folder: 'Extractor Rulemanes 3 Garras Interior exterior', ext: 'webp', catFolder: 'Herramientas para vehículos',
+    { id: 41, name: 'Extractor Rulemanes 3 Garras Kit Interior/Exterior', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '3 garras', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Extractor Rulemanes 3 Garras Interior exterior', catFolder: 'Herramientas para vehículos',
       desc: 'Kit extractor de rulemanes de 3 garras interior y exterior. Extrae rodamientos, bujes, poleas y piezas ajustadas a presión. Maletín plástico rojo.',
       specs: [
         { l: 'Tipo de agarre', v: '3 garras' },
@@ -647,7 +647,7 @@ const products = [
         { l: 'Presentación', v: 'Maletín plástico rojo' }
       ]
     },
-    { id: 43, name: 'Juego Extractores de Rótulas Extremos Pitman Universal 5 Pz', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '5 piezas', imgs: 3, folder: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', ext: 'webp', catFolder: 'Herramientas para vehículos',
+    { id: 43, name: 'Juego Extractores de Rótulas Extremos Pitman Universal 5 Pz', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '5 piezas', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', catFolder: 'Herramientas para vehículos',
       desc: 'Juego extractor de rótulas, extremos y pitman universal. 5 piezas de metal para autos y camionetas. Modelo MK14050.',
       specs: [
         { l: 'Modelo', v: 'MK14050' },
@@ -663,7 +663,7 @@ const products = [
         { l: 'Accesorios incluidos', v: '5 piezas' }
       ]
     },
-    { id: 42, name: 'Extractor de Inyectores Diesel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '21 piezas', imgs: 3, folder: 'Extractor De Inyectores Diesel', ext: 'webp', catFolder: 'Herramientas para vehículos',
+    { id: 42, name: 'Extractor de Inyectores Diesel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '21 piezas', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: 'Extractor De Inyectores Diesel', catFolder: 'Herramientas para vehículos',
       desc: 'Extractor neumático de inyectores diésel. Retira inyectores trabados o atascados en motores common rail sin martillo de inercia manual.',
       specs: [
         { l: 'Presión de trabajo', v: '5 a 8 bar / 72–116 PSI' },
