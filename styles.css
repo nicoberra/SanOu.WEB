@@ -838,7 +838,7 @@ section { padding: 90px 0; }
 [data-cat="cortadoras"]  { background-image: url('productos/cortadora para barras de cobrealuminio/120HS/1.webp'); }
 [data-cat="extractores"] { background-image: url('productos/Extractor hidraulico/HHL-5/1.webp'); }
 [data-cat="punzonadoras"]{ background-image: url('productos/Punzadoras/HHM-60/1.webp'); }
-[data-cat="motores"]     { background-image: url('productos/Herramientas para vehículos/Multiplicador De Fuerza Torque Camion Tractor 7500nm/1.jpeg'); }
+[data-cat="motores"]     { background-image: url('productos/Herramientas para vehículos/categoria.webp'); }
 
 /* ── PRODUCTS ── */
 .products { background: var(--black); }
@@ -2785,3 +2785,93 @@ section { padding: 90px 0; }
     .footer-top { grid-template-columns: 1fr; }
     .footer { padding: 40px 0 20px; }
 }
+
+/* ── EMAIL CAPTURE BAR ── */
+.email-capture-bar {
+    background: linear-gradient(135deg, var(--black-3) 0%, #1a1a00 100%);
+    border-top: 2px solid var(--yellow);
+    border-bottom: 2px solid var(--yellow);
+    padding: 28px 0;
+}
+.ecb-inner {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+.ecb-text {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 220px;
+}
+.ecb-icon {
+    font-size: 2rem;
+    color: var(--yellow);
+    flex-shrink: 0;
+}
+.ecb-text strong {
+    display: block;
+    color: var(--white);
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+.ecb-text span {
+    color: var(--gray-light);
+    font-size: 0.88rem;
+}
+.ecb-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 2;
+    min-width: 280px;
+}
+.ecb-input {
+    flex: 1;
+    min-width: 130px;
+    background: var(--black-4);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 8px;
+    color: var(--white);
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.ecb-input:focus { border-color: var(--yellow); }
+.ecb-input::placeholder { color: var(--gray); }
+.ecb-btn {
+    background: var(--yellow);
+    color: var(--black);
+    border: none;
+    border-radius: 8px;
+    padding: 11px 20px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s, transform 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.ecb-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.ecb-registered {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--yellow);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 8px 0;
+}
+.ecb-registered i { font-size: 1.5rem; }
+@media (max-width: 700px) {
+    .ecb-inner { flex-direction: column; align-items: flex-start; }
+    .ecb-form { width: 100%; }
+    .ecb-input { min-width: 100px; }
+}
+

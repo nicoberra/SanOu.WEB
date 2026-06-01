@@ -32,6 +32,9 @@ function cerrarIosNotif() {
 
 // Mostrar notificación iOS al entrar (solo si no dejó email antes)
 window.addEventListener('load', () => {
+    // Actualizar sección visible de registro
+    actualizarSeccionRegistro();
+
     if (klUserEmail) return;
     setTimeout(() => {
         const n = document.getElementById('iosNotif');
@@ -40,6 +43,42 @@ window.addEventListener('load', () => {
         setTimeout(() => cerrarIosNotif(), 6000);
     }, 3500);
 });
+
+function actualizarSeccionRegistro() {
+    const inner      = document.getElementById('ecbInner');
+    const registered = document.getElementById('ecbRegistered');
+    const msg        = document.getElementById('ecbRegisteredMsg');
+    if (!inner || !registered) return;
+    if (klUserEmail) {
+        inner.style.display      = 'none';
+        registered.style.display = 'flex';
+        if (msg) msg.textContent = klUserName
+            ? `¡Hola, ${klUserName}! Ya estás registrado. Te avisamos si dejás productos en tu carrito.`
+            : '¡Ya estás registrado! Te avisamos si dejás productos en tu carrito.';
+    } else {
+        inner.style.display      = '';
+        registered.style.display = 'none';
+    }
+}
+
+function registrarseDesdeSeccion(e) {
+    e.preventDefault();
+    const email  = document.getElementById('ecbEmail').value.trim();
+    const nombre = document.getElementById('ecbNombre').value.trim();
+    if (!email) return;
+
+    klUserEmail = email;
+    klUserName  = nombre;
+    localStorage.setItem('kl_email', email);
+    if (nombre) localStorage.setItem('kl_name', nombre);
+
+    klPush(['identify', { '$email': email, '$first_name': nombre || '' }]);
+
+    actualizarSeccionRegistro();
+    cerrarIosNotif();
+    cerrarKlModal();
+    klTrackCart();
+}
 
 function klPush(args) {
     if (window.klaviyo) window.klaviyo.push(args);
@@ -61,6 +100,7 @@ function guardarEmailKlaviyo(e) {
     klPush(['identify', { '$email': email, '$first_name': nombre || '' }]);
 
     cerrarKlModal();
+    actualizarSeccionRegistro();
     klTrackCart();
 
     // Si había una compra rápida pendiente, ejecutarla ahora

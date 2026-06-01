@@ -172,6 +172,30 @@
         </div>
     </section>
 
+    <!-- CAPTURA EMAIL VISIBLE -->
+    <section class="email-capture-bar" id="registrate">
+        <div class="container">
+            <div class="ecb-inner" id="ecbInner">
+                <div class="ecb-text">
+                    <span class="ecb-icon"><i class="fas fa-bell"></i></span>
+                    <div>
+                        <strong>¡Guardá tu carrito y recibí ofertas!</strong>
+                        <span>Dejá tu mail y te avisamos si dejás productos sin comprar.</span>
+                    </div>
+                </div>
+                <form class="ecb-form" onsubmit="registrarseDesdeSeccion(event)">
+                    <input type="text" id="ecbNombre" placeholder="Tu nombre" class="ecb-input" autocomplete="given-name">
+                    <input type="email" id="ecbEmail" placeholder="Tu email *" class="ecb-input" required autocomplete="email">
+                    <button type="submit" class="ecb-btn">Registrarme <i class="fas fa-arrow-right"></i></button>
+                </form>
+            </div>
+            <div class="ecb-registered" id="ecbRegistered" style="display:none">
+                <i class="fas fa-check-circle"></i>
+                <span id="ecbRegisteredMsg">¡Ya estás registrado! Te avisamos si dejás productos en tu carrito.</span>
+            </div>
+        </div>
+    </section>
+
     <!-- PRODUCTOS DESTACADOS -->
     <section class="featured" id="destacados">
         <div class="container">
