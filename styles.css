@@ -701,6 +701,29 @@ section { padding: 90px 0; }
     margin-bottom: 10px;
 }
 .section-title em { font-style: normal; color: var(--yellow); }
+
+/* ── TÍTULO NOSOTROS ── */
+.about-title {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 16px;
+    background: linear-gradient(90deg, #fff 0%, #FFD700 50%, #fff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.about-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: var(--yellow);
+    border-radius: 2px;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
+}
 .text-center { text-align: center; }
 
 .section-badge {
