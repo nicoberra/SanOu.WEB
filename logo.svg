@@ -16,52 +16,52 @@
 
     <!-- ── GRADIENTES TUERCA — alto contraste, como la referencia ── -->
 
-    <!-- Cara SUPERIOR: muy iluminada, blanco puro -->
+    <!-- Cara SUPERIOR: blanco casi puro -->
     <linearGradient id="g-nt" x1="0.5" y1="1" x2="0.5" y2="0">
-      <stop offset="0%"   stop-color="#bbbbbb"/>
+      <stop offset="0%"   stop-color="#a8a8a8"/>
       <stop offset="100%" stop-color="#ffffff"/>
     </linearGradient>
 
-    <!-- Cara SUPERIOR-DERECHA: brillante (recibe luz directa) -->
+    <!-- Cara SUPERIOR-DERECHA: máximo brillo (fuente de luz) -->
     <linearGradient id="g-ntr" x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0%"   stop-color="#cccccc"/>
+      <stop offset="0%"   stop-color="#c0c0c0"/>
       <stop offset="100%" stop-color="#ffffff"/>
     </linearGradient>
 
-    <!-- Cara DERECHA: media, reflexión lateral -->
+    <!-- Cara DERECHA: media-brillante -->
     <linearGradient id="g-nr" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%"   stop-color="#c8c8c8"/>
-      <stop offset="100%" stop-color="#787878"/>
+      <stop offset="0%"   stop-color="#d0d0d0"/>
+      <stop offset="100%" stop-color="#686868"/>
     </linearGradient>
 
-    <!-- Cara INFERIOR-DERECHA: transición a sombra -->
+    <!-- Cara INFERIOR-DERECHA: transición fuerte a sombra -->
     <linearGradient id="g-nbr" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%"   stop-color="#707070"/>
-      <stop offset="100%" stop-color="#303030"/>
+      <stop offset="0%"   stop-color="#606060"/>
+      <stop offset="100%" stop-color="#1c1c1c"/>
     </linearGradient>
 
-    <!-- Cara INFERIOR: muy oscura, en sombra -->
+    <!-- Cara INFERIOR: casi negro, sombra fuerte -->
     <linearGradient id="g-nb" x1="0.5" y1="0" x2="0.5" y2="1">
-      <stop offset="0%"   stop-color="#484848"/>
-      <stop offset="100%" stop-color="#181818"/>
+      <stop offset="0%"   stop-color="#383838"/>
+      <stop offset="100%" stop-color="#0c0c0c"/>
     </linearGradient>
 
-    <!-- Cara INFERIOR-IZQUIERDA: sombra -->
+    <!-- Cara INFERIOR-IZQUIERDA: muy oscura -->
     <linearGradient id="g-nbl" x1="1" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#505050"/>
-      <stop offset="100%" stop-color="#202020"/>
+      <stop offset="0%"   stop-color="#404040"/>
+      <stop offset="100%" stop-color="#121212"/>
     </linearGradient>
 
-    <!-- Cara IZQUIERDA: semisombra -->
+    <!-- Cara IZQUIERDA: semisombra-media -->
     <linearGradient id="g-nl" x1="1" y1="0" x2="0" y2="0">
-      <stop offset="0%"   stop-color="#a0a0a0"/>
-      <stop offset="100%" stop-color="#505050"/>
+      <stop offset="0%"   stop-color="#b0b0b0"/>
+      <stop offset="100%" stop-color="#484848"/>
     </linearGradient>
 
     <!-- Cara SUPERIOR-IZQUIERDA: semiluminada -->
     <linearGradient id="g-ntl" x1="1" y1="1" x2="0" y2="0">
-      <stop offset="0%"   stop-color="#acacac"/>
-      <stop offset="100%" stop-color="#e4e4e4"/>
+      <stop offset="0%"   stop-color="#989898"/>
+      <stop offset="100%" stop-color="#e8e8e8"/>
     </linearGradient>
 
     <!-- Agujero negro profundo -->
@@ -171,10 +171,10 @@
       clip-path="url(#nut-clip2)"/>
 
     <!-- Aro cromo alrededor del agujero (collar interior) -->
-    <circle cx="180" cy="84" r="21" fill="url(#g-rim)"/>
+    <circle cx="180" cy="84" r="22" fill="url(#g-rim)"/>
 
     <!-- Agujero negro profundo -->
-    <circle cx="180" cy="84" r="16" fill="url(#g-hole)"/>
+    <circle cx="180" cy="84" r="17" fill="url(#g-hole)"/>
 
     <!-- Micro-reflejo blanco en el agujero (esquina sup-izq) -->
     <ellipse cx="173" cy="77" rx="5.5" ry="4"
