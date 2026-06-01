@@ -1864,11 +1864,6 @@ function initStagger() {
 
     const catGrid = document.querySelector('.categories-grid');
     if (catGrid) {
-        // Ocultar inicialmente
-        document.querySelectorAll('.category-card').forEach(c => {
-            c.style.opacity = '0';
-            c.style.transform = 'translateY(30px) scale(0.92)';
-        });
         catObserver.observe(catGrid);
     }
 
@@ -1901,12 +1896,18 @@ function staggerProductCards() {
 // 6. CONTADORES ANIMADOS
 // ─────────────────────────────────────────────────────────────────
 function initStats() {
-    if (typeof anime === 'undefined') return;
-    const statsObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            document.querySelectorAll('.stat-num').forEach(el => {
-                const target = parseInt(el.dataset.target);
+    const statsBar = document.querySelector('.stats-bar');
+    if (!statsBar) return;
+
+    let fired = false;
+
+    function runCounters() {
+        if (fired) return;
+        fired = true;
+
+        document.querySelectorAll('.stat-num').forEach(el => {
+            const target = parseInt(el.dataset.target);
+            if (typeof anime !== 'undefined') {
                 anime({
                     targets: el,
                     innerHTML: [0, target],
@@ -1914,8 +1915,19 @@ function initStats() {
                     easing: 'easeOutExpo',
                     round: 1
                 });
-            });
-            // Animar también la entrada de cada stat-item
+            } else {
+                // Fallback sin anime.js
+                let current = 0;
+                const step = Math.ceil(target / 40);
+                const timer = setInterval(() => {
+                    current = Math.min(current + step, target);
+                    el.textContent = current;
+                    if (current >= target) clearInterval(timer);
+                }, 40);
+            }
+        });
+
+        if (typeof anime !== 'undefined') {
             anime({
                 targets: '.stat-item',
                 opacity: [0, 1],
@@ -1924,15 +1936,23 @@ function initStats() {
                 easing: 'easeOutExpo',
                 delay: anime.stagger(120)
             });
-            statsObserver.disconnect();
-        });
-    }, { threshold: 0.3 });
-
-    const statsBar = document.querySelector('.stats-bar');
-    if (statsBar) {
-        document.querySelectorAll('.stat-item').forEach(i => i.style.opacity = '0');
-        statsObserver.observe(statsBar);
+        }
     }
+
+    // Observer con threshold bajo para que dispare fácil
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                runCounters();
+                observer.disconnect();
+            }
+        });
+    }, { threshold: 0.05 });
+
+    observer.observe(statsBar);
+
+    // Fallback: si después de 3s no disparó el observer, mostrar igual
+    setTimeout(() => { if (!fired) runCounters(); }, 3000);
 }
 
 // ─────────────────────────────────────────────────────────────────
