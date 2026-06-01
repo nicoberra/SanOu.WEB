@@ -823,16 +823,24 @@ function carouselGo(idx) {
     el.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
 }
 
-function renderProducts(filter) {
+let _currentFilter = 'all';
+
+function renderProducts(filter, showAll = false) {
+    _currentFilter = filter;
     const list = filter === 'all' ? products : products.filter(p => p.category === filter || (p.extraCategories && p.extraCategories.includes(filter)));
     const grid = document.getElementById('productsGrid');
+    const verMasWrap = document.getElementById('verMasWrap');
 
     if (list.length === 0) {
         grid.innerHTML = '<p style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px 0">No hay productos en esta categoría aún.</p>';
+        if (verMasWrap) verMasWrap.style.display = 'none';
         return;
     }
 
-    grid.innerHTML = list.map(p => `
+    const limite = window.innerWidth <= 768 ? 4 : 8;
+    const mostrar = (showAll || list.length <= limite) ? list : list.slice(0, limite);
+
+    const cardHTML = p => `
         <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
             ${cardMedia(p)}
             <div class="product-info">
@@ -853,8 +861,19 @@ function renderProducts(filter) {
                     Ver más detalles <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+
+    grid.innerHTML = mostrar.map(cardHTML).join('');
+
+    // Mostrar u ocultar botón "Ver más"
+    if (verMasWrap) {
+        verMasWrap.style.display = (!showAll && list.length > limite) ? 'flex' : 'none';
+    }
+}
+
+function mostrarTodosProductos() {
+    renderProducts(_currentFilter, true);
+    document.getElementById('verMasWrap').style.display = 'none';
 }
 
 // ─── MODAL DE DETALLE ────────────────────────────────────────────

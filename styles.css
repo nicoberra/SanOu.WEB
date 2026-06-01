@@ -1187,6 +1187,39 @@ section { padding: 90px 0; }
     background: rgba(255,215,0,0.05);
 }
 
+/* ── VER MÁS PRODUCTOS ── */
+.ver-mas-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 36px;
+}
+.btn-ver-mas {
+    background: transparent;
+    border: 2px solid var(--yellow);
+    color: var(--yellow);
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 14px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-ver-mas:hover {
+    background: var(--yellow);
+    color: #000;
+}
+.btn-ver-mas i {
+    transition: transform 0.2s;
+}
+.btn-ver-mas:hover i {
+    transform: translateY(3px);
+}
+
 /* ── MODAL ── */
 .modal-overlay {
     position: fixed; inset: 0;
