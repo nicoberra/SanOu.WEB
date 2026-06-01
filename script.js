@@ -53,8 +53,8 @@ function actualizarSeccionRegistro() {
         inner.style.display      = 'none';
         registered.style.display = 'flex';
         if (msg) msg.textContent = klUserName
-            ? `¡Hola, ${klUserName}! Ya estás registrado. Te avisamos si dejás productos en tu carrito.`
-            : '¡Ya estás registrado! Te avisamos si dejás productos en tu carrito.';
+            ? `¡Hola, ${klUserName}! Ya estás suscripto. Por acá te vamos a avisar de ofertas y productos nuevos.`
+            : '¡Ya estás suscripto! Por acá te vamos a avisar de ofertas y productos nuevos.';
     } else {
         inner.style.display      = '';
         registered.style.display = 'none';
