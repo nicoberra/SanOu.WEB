@@ -721,7 +721,7 @@ section { padding: 90px 0; }
 /* ── CATEGORIES ── */
 .categories {
     background: var(--black-2);
-    background-image: url('productos/mordazas/categorias .jpeg');
+    background-image: url('fondo categorias.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -732,7 +732,7 @@ section { padding: 90px 0; }
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.65);
+    background: rgba(0,0,0,0.6);
     z-index: 0;
 }
 .categories .container {
@@ -808,14 +808,14 @@ section { padding: 90px 0; }
 [data-cat="pinzas"]      { background-image: url('productos/Pinzas/HHY-70A/1.jpeg'); }
 [data-cat="dobladoras"]  { background-image: url('productos/Dobladoras/HHW-2J/1.webp'); }
 [data-cat="cortahierro"] { background-image: url('productos/cortahierro/Cortadora de Varilla 22mm/1.jpeg'); }
-[data-cat="mordazas"]    { background-image: url('productos/mordazas/80MM/1.webp'); }
+[data-cat="mordazas"]    { background-image: url('productos/mordazas/categorias .jpeg'); }
 [data-cat="bombas"]      { background-image: url('productos/bombas/HHB-700/1.jpeg'); }
 [data-cat="sacabocados"] { background-image: url('productos/sacabocados/HHK-8/1.jpeg'); }
 [data-cat="cilindros"]   { background-image: url('productos/cilindros/HHYG-10D/1.jpeg'); }
 [data-cat="cortadoras"]  { background-image: url('productos/cortadora para barras de cobrealuminio/120HS/1.webp'); }
 [data-cat="extractores"] { background-image: url('productos/Extractor hidraulico/HHL-5/1.webp'); }
 [data-cat="punzonadoras"]{ background-image: url('productos/Punzadoras/HHM-60/1.webp'); }
-[data-cat="motores"]     { background-image: url('productos/Herramientas para vehículos/Multiplicador De Fuerza Torque Camion Tractor 7500nm/1.webp'); }
+[data-cat="motores"]     { background-image: url('productos/Herramientas para vehículos/Multiplicador De Fuerza Torque Camion Tractor 7500nm/1.jpeg'); }
 
 /* ── PRODUCTS ── */
 .products { background: var(--black); }
