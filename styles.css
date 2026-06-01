@@ -723,6 +723,12 @@ section { padding: 90px 0; }
     background: var(--yellow);
     border-radius: 2px;
     box-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
+    animation: lineBreath 2.4s ease-in-out infinite;
+}
+@keyframes lineBreath {
+    0%   { width: 60px;  opacity: 1;    box-shadow: 0 0 10px rgba(255,215,0,0.6); }
+    50%  { width: 130px; opacity: 0.85; box-shadow: 0 0 22px rgba(255,215,0,0.9); }
+    100% { width: 60px;  opacity: 1;    box-shadow: 0 0 10px rgba(255,215,0,0.6); }
 }
 .text-center { text-align: center; }
 
