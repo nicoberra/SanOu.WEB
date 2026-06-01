@@ -1848,6 +1848,12 @@ function initStagger() {
     const catObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
+                catObserver.disconnect();
+                const cats = document.querySelectorAll('.category-card');
+                // Safety: asegurar visibilidad si la animación falla
+                const safety = setTimeout(() => {
+                    cats.forEach(c => { c.style.opacity = '1'; c.style.transform = 'none'; });
+                }, 2000);
                 anime({
                     targets: '.category-card',
                     opacity: [0, 1],
@@ -1855,12 +1861,12 @@ function initStagger() {
                     scale: [0.92, 1],
                     duration: 500,
                     easing: 'easeOutExpo',
-                    delay: anime.stagger(70)
+                    delay: anime.stagger(70),
+                    complete() { clearTimeout(safety); }
                 });
-                catObserver.disconnect();
             }
         });
-    }, { threshold: 0.15 });
+    }, { threshold: 0.1 });
 
     const catGrid = document.querySelector('.categories-grid');
     if (catGrid) {
@@ -1879,16 +1885,33 @@ function initStagger() {
 }
 
 function staggerProductCards() {
-    if (typeof anime === 'undefined') return;
     const cards = document.querySelectorAll('.product-card');
-    cards.forEach(c => { c.style.opacity = '0'; c.style.transform = 'translateY(24px)'; });
+    if (!cards.length) return;
+
+    // Garantizar visibilidad siempre, incluso si anime.js falla
+    cards.forEach(c => {
+        c.style.opacity = '1';
+        c.style.transform = 'none';
+    });
+
+    if (typeof anime === 'undefined') return;
+
+    // Pre-set solo translateY (no opacity) para que las cards no queden invisibles si la animación falla
+    cards.forEach(c => { c.style.transform = 'translateY(20px)'; });
+
+    // Safety fallback: si anime no completa en 1500ms, forzar estado final
+    const safety = setTimeout(() => {
+        cards.forEach(c => { c.style.opacity = '1'; c.style.transform = 'none'; });
+    }, 1500);
+
     anime({
         targets: '.product-card',
         opacity: [0, 1],
-        translateY: [24, 0],
-        duration: 420,
+        translateY: [20, 0],
+        duration: 400,
         easing: 'easeOutExpo',
-        delay: anime.stagger(55)
+        delay: anime.stagger(45),
+        complete() { clearTimeout(safety); }
     });
 }
 
@@ -1959,7 +1982,8 @@ function initStats() {
 // 8. WISHLIST / FAVORITOS
 // ─────────────────────────────────────────────────────────────────
 function getFavs() {
-    return JSON.parse(localStorage.getItem('sanou_favs') || '[]');
+    try { return JSON.parse(localStorage.getItem('sanou_favs') || '[]'); }
+    catch(e) { return []; }
 }
 function saveFavs(arr) {
     localStorage.setItem('sanou_favs', JSON.stringify(arr));
