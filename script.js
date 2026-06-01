@@ -987,8 +987,13 @@ function renderProducts(filter, showAll = false) {
     const limite = window.innerWidth <= 768 ? 4 : 8;
     const mostrar = (showAll || list.length <= limite) ? list : list.slice(0, limite);
 
-    const cardHTML = p => `
+    const cardHTML = p => {
+        const isFav = getFavs().includes(p.id);
+        return `
         <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
+            <button class="fav-icon-btn${isFav ? ' active' : ''}" data-id="${p.id}" onclick="event.stopPropagation(); toggleFav(${p.id})" title="Guardar en favoritos">
+                <i class="fas fa-heart"></i>
+            </button>
             ${cardMedia(p)}
             <div class="product-info">
                 <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
@@ -1009,6 +1014,7 @@ function renderProducts(filter, showAll = false) {
                 </button>
             </div>
         </div>`;
+    };
 
     grid.innerHTML = mostrar.map(cardHTML).join('');
 
@@ -1244,6 +1250,9 @@ function checkoutWhatsApp() {
     });
     msg += `💰 *Total estimado: ${fmt(total)}*\n\n`;
     msg += '¿Pueden confirmar disponibilidad, stock y formas de pago? ¡Muchas gracias!';
+
+    // Guardar en historial
+    saveOrder(cart, total);
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
@@ -1750,4 +1759,343 @@ window.addEventListener('load', () => {
             }
         }, 2500);
     }
+
+    // Iniciar módulos nuevos
+    initWishlist();
+    initStagger();
+    initStats();
+    injectStructuredData();
 });
+
+// ─────────────────────────────────────────────────────────────────
+// 4. SHARE BUTTON
+// ─────────────────────────────────────────────────────────────────
+function shareProduct(id) {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    const url = `${location.origin}${location.pathname}?p=${id}`;
+    if (navigator.share) {
+        navigator.share({ title: p.name, text: `Mirá este producto de San Ou: ${p.name}`, url });
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('🔗 Link copiado al portapapeles');
+        });
+    }
+}
+
+// Auto-abrir producto desde URL param ?p=ID
+(function checkUrlProduct() {
+    const params = new URLSearchParams(location.search);
+    const pid = parseInt(params.get('p'));
+    if (pid) {
+        // Esperar a que los productos carguen
+        const tryOpen = () => {
+            if (products.length) {
+                openModal(pid);
+                history.replaceState(null, '', location.pathname);
+            } else {
+                setTimeout(tryOpen, 100);
+            }
+        };
+        setTimeout(tryOpen, 300);
+    }
+})();
+
+function showToast(msg) {
+    let t = document.getElementById('sanouToast');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'sanouToast';
+        t.className = 'sanou-toast';
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Inyectar botón compartir en el modal (se llama desde openModal)
+const _origOpenModal = openModal;
+openModal = function(id) {
+    _origOpenModal(id);
+    // Agregar botón share + corazón al modal luego de renderizar
+    setTimeout(() => {
+        const details = document.querySelector('.modal-details');
+        if (!details || details.querySelector('.modal-share-row')) return;
+        const p = products.find(x => x.id === id);
+        const isFav = getFavs().includes(id);
+        const row = document.createElement('div');
+        row.className = 'modal-share-row';
+        row.innerHTML = `
+            <button class="btn-share-modal" onclick="shareProduct(${id})">
+                <i class="fas fa-share-alt"></i> Compartir
+            </button>
+            <button class="btn-fav-modal ${isFav ? 'active' : ''}" id="favModalBtn-${id}" onclick="toggleFav(${id})">
+                <i class="fas fa-heart"></i> ${isFav ? 'Guardado' : 'Guardar'}
+            </button>`;
+        const btns = details.querySelector('.modal-buttons');
+        if (btns) btns.after(row);
+    }, 50);
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 5. STAGGER ANIMACIONES (anime.js)
+// ─────────────────────────────────────────────────────────────────
+function initStagger() {
+    if (typeof anime === 'undefined') return;
+
+    // Stagger en category cards al entrar en viewport
+    const catObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                anime({
+                    targets: '.category-card',
+                    opacity: [0, 1],
+                    translateY: [30, 0],
+                    scale: [0.92, 1],
+                    duration: 500,
+                    easing: 'easeOutExpo',
+                    delay: anime.stagger(70)
+                });
+                catObserver.disconnect();
+            }
+        });
+    }, { threshold: 0.15 });
+
+    const catGrid = document.querySelector('.categories-grid');
+    if (catGrid) {
+        // Ocultar inicialmente
+        document.querySelectorAll('.category-card').forEach(c => {
+            c.style.opacity = '0';
+            c.style.transform = 'translateY(30px) scale(0.92)';
+        });
+        catObserver.observe(catGrid);
+    }
+
+    // Stagger en product cards al filtrar (hook en renderProducts)
+    const _origRender = window.renderProducts;
+    if (typeof renderProducts !== 'undefined') {
+        const origRenderProducts = renderProducts;
+        window.renderProducts = function(...args) {
+            origRenderProducts(...args);
+            setTimeout(() => staggerProductCards(), 30);
+        };
+    }
+}
+
+function staggerProductCards() {
+    if (typeof anime === 'undefined') return;
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach(c => { c.style.opacity = '0'; c.style.transform = 'translateY(24px)'; });
+    anime({
+        targets: '.product-card',
+        opacity: [0, 1],
+        translateY: [24, 0],
+        duration: 420,
+        easing: 'easeOutExpo',
+        delay: anime.stagger(55)
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 6. CONTADORES ANIMADOS
+// ─────────────────────────────────────────────────────────────────
+function initStats() {
+    if (typeof anime === 'undefined') return;
+    const statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            document.querySelectorAll('.stat-num').forEach(el => {
+                const target = parseInt(el.dataset.target);
+                anime({
+                    targets: el,
+                    innerHTML: [0, target],
+                    duration: 1800,
+                    easing: 'easeOutExpo',
+                    round: 1
+                });
+            });
+            // Animar también la entrada de cada stat-item
+            anime({
+                targets: '.stat-item',
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 600,
+                easing: 'easeOutExpo',
+                delay: anime.stagger(120)
+            });
+            statsObserver.disconnect();
+        });
+    }, { threshold: 0.3 });
+
+    const statsBar = document.querySelector('.stats-bar');
+    if (statsBar) {
+        document.querySelectorAll('.stat-item').forEach(i => i.style.opacity = '0');
+        statsObserver.observe(statsBar);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 8. WISHLIST / FAVORITOS
+// ─────────────────────────────────────────────────────────────────
+function getFavs() {
+    return JSON.parse(localStorage.getItem('sanou_favs') || '[]');
+}
+function saveFavs(arr) {
+    localStorage.setItem('sanou_favs', JSON.stringify(arr));
+    updateFavCount();
+}
+function updateFavCount() {
+    const n = getFavs().length;
+    const el = document.getElementById('favCount');
+    if (!el) return;
+    el.textContent = n;
+    el.style.display = n > 0 ? 'flex' : 'none';
+}
+function toggleFav(id) {
+    let favs = getFavs();
+    const idx = favs.indexOf(id);
+    if (idx === -1) {
+        favs.push(id);
+        showToast('❤️ Guardado en favoritos');
+    } else {
+        favs.splice(idx, 1);
+        showToast('🤍 Eliminado de favoritos');
+    }
+    saveFavs(favs);
+    // Actualizar botones de fav en cards
+    document.querySelectorAll(`.fav-icon-btn[data-id="${id}"]`).forEach(btn => {
+        btn.classList.toggle('active', favs.includes(id));
+    });
+    // Actualizar botón en modal si está abierto
+    const favModalBtn = document.getElementById(`favModalBtn-${id}`);
+    if (favModalBtn) {
+        favModalBtn.classList.toggle('active', favs.includes(id));
+        favModalBtn.innerHTML = `<i class="fas fa-heart"></i> ${favs.includes(id) ? 'Guardado' : 'Guardar'}`;
+    }
+}
+
+function initWishlist() {
+    updateFavCount();
+    // Inyectar ícono fav en cards (se hace al renderizar)
+    const origCardHTML = window._origCardHTML; // no existe aún, ver hook abajo
+}
+
+function openFavs() {
+    const favs = getFavs();
+    const panel = document.getElementById('favPanel');
+    const body  = document.getElementById('favBody');
+    const favProds = products.filter(p => favs.includes(p.id));
+    if (favProds.length === 0) {
+        body.innerHTML = '<div class="panel-empty"><i class="fas fa-heart-broken"></i><p>Todavía no guardaste favoritos.</p></div>';
+    } else {
+        body.innerHTML = favProds.map(p => {
+            const imgs = getImgs(p);
+            const imgSrc = imgs[0] || '';
+            return `<div class="panel-product-row" onclick="openModal(${p.id}); closeFavs()">
+                ${imgSrc ? `<img src="${imgSrc}" alt="${p.name}" class="panel-prod-img">` : `<div class="panel-prod-icon"><i class="fas ${p.icon}"></i></div>`}
+                <div class="panel-prod-info">
+                    <strong>${p.name}</strong>
+                    <span>${p.price > 0 ? fmt(p.price) : 'Consultar precio'}</span>
+                </div>
+                <button class="panel-remove-btn" onclick="event.stopPropagation(); toggleFav(${p.id}); openFavs()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>`;
+        }).join('');
+    }
+    document.getElementById('favOverlay').classList.add('active');
+    panel.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeFavs() {
+    document.getElementById('favPanel').classList.remove('active');
+    document.getElementById('favOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 10. HISTORIAL DE PEDIDOS
+// ─────────────────────────────────────────────────────────────────
+function saveOrder(cartItems, total) {
+    const orders = JSON.parse(localStorage.getItem('sanou_orders') || '[]');
+    orders.unshift({
+        id: Date.now(),
+        date: new Date().toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+        items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
+        total
+    });
+    // Guardar máximo 20 pedidos
+    localStorage.setItem('sanou_orders', JSON.stringify(orders.slice(0, 20)));
+}
+
+function openOrders() {
+    const orders = JSON.parse(localStorage.getItem('sanou_orders') || '[]');
+    const body = document.getElementById('ordersBody');
+    if (orders.length === 0) {
+        body.innerHTML = '<div class="panel-empty"><i class="fas fa-inbox"></i><p>Todavía no enviaste pedidos.</p></div>';
+    } else {
+        body.innerHTML = orders.map(o => `
+            <div class="order-card">
+                <div class="order-card-header">
+                    <span class="order-date"><i class="fas fa-clock"></i> ${o.date}</span>
+                    <span class="order-total">${fmt(o.total)}</span>
+                </div>
+                <ul class="order-items">
+                    ${o.items.map(i => `<li><span>${i.name}</span><span>x${i.qty} · ${fmt(i.price * i.qty)}</span></li>`).join('')}
+                </ul>
+            </div>`).join('');
+    }
+    document.getElementById('ordersOverlay').classList.add('active');
+    document.getElementById('ordersPanel').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeOrders() {
+    document.getElementById('ordersPanel').classList.remove('active');
+    document.getElementById('ordersOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 11. STRUCTURED DATA (JSON-LD)
+// ─────────────────────────────────────────────────────────────────
+function injectStructuredData() {
+    // Schema para la organización
+    const orgSchema = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "San Ou",
+        "url": "https://sanou.com.ar",
+        "logo": "https://sanou.com.ar/Logo 2.png",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+54-9-11-3175-1517",
+            "contactType": "customer service",
+            "availableLanguage": "Spanish"
+        }
+    };
+
+    // Schema para cada producto
+    const productSchemas = products.map(p => ({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": p.name,
+        "description": p.desc || '',
+        "brand": { "@type": "Brand", "name": "San Ou" },
+        "offers": {
+            "@type": "Offer",
+            "priceCurrency": "ARS",
+            "price": p.price > 0 ? p.price : undefined,
+            "availability": p.inStock === false
+                ? "https://schema.org/OutOfStock"
+                : "https://schema.org/InStock",
+            "url": `https://sanou.com.ar?p=${p.id}`,
+            "seller": { "@type": "Organization", "name": "San Ou" }
+        }
+    }));
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify([orgSchema, ...productSchemas]);
+    document.head.appendChild(script);
+}
