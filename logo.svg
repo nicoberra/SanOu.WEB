@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 148" role="img" aria-label="San Ou">
+  <defs>
+
+    <!-- ── GRADIENTE CROMO LETRAS (vertical) ── -->
+    <linearGradient id="g-chrome" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#484848"/>
+      <stop offset="10%"  stop-color="#b4b4b4"/>
+      <stop offset="28%"  stop-color="#ffffff"/>
+      <stop offset="44%"  stop-color="#d6d6d6"/>
+      <stop offset="58%"  stop-color="#f0f0f0"/>
+      <stop offset="76%"  stop-color="#bbbbbb"/>
+      <stop offset="90%"  stop-color="#888888"/>
+      <stop offset="100%" stop-color="#4a4a4a"/>
+    </linearGradient>
+
+    <!-- ── CARAS TUERCA ── -->
+    <!-- Cara superior-izq (iluminada) -->
+    <linearGradient id="g-n1" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0%"   stop-color="#c0c0c0"/>
+      <stop offset="100%" stop-color="#eeeeee"/>
+    </linearGradient>
+    <!-- Cara superior-der (muy iluminada) -->
+    <linearGradient id="g-n2" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#cccccc"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <!-- Cara derecha -->
+    <linearGradient id="g-n3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#c8c8c8"/>
+      <stop offset="100%" stop-color="#999999"/>
+    </linearGradient>
+    <!-- Cara inferior-der (sombra) -->
+    <linearGradient id="g-n4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#909090"/>
+      <stop offset="100%" stop-color="#666666"/>
+    </linearGradient>
+    <!-- Cara inferior (oscura) -->
+    <linearGradient id="g-n5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#7a7a7a"/>
+      <stop offset="100%" stop-color="#505050"/>
+    </linearGradient>
+    <!-- Cara inferior-izq -->
+    <linearGradient id="g-n6" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#888888"/>
+      <stop offset="100%" stop-color="#5a5a5a"/>
+    </linearGradient>
+    <!-- Cara izquierda -->
+    <linearGradient id="g-n7" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%"   stop-color="#b0b0b0"/>
+      <stop offset="100%" stop-color="#7a7a7a"/>
+    </linearGradient>
+    <!-- Cara superior (reflejo) -->
+    <linearGradient id="g-n8" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%"   stop-color="#c8c8c8"/>
+      <stop offset="100%" stop-color="#f5f5f5"/>
+    </linearGradient>
+
+    <!-- Agujero (gradiente radial oscuro) -->
+    <radialGradient id="g-hole" cx="38%" cy="32%" r="65%">
+      <stop offset="0%"   stop-color="#282828"/>
+      <stop offset="60%"  stop-color="#111111"/>
+      <stop offset="100%" stop-color="#030303"/>
+    </radialGradient>
+
+    <!-- Borde interior agujero (cromo) -->
+    <linearGradient id="g-rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#aaaaaa"/>
+      <stop offset="50%"  stop-color="#666666"/>
+      <stop offset="100%" stop-color="#999999"/>
+    </linearGradient>
+
+    <!-- ── SOMBRA GLOBAL ── -->
+    <filter id="f-shadow" x="-8%" y="-8%" width="120%" height="130%">
+      <feDropShadow dx="2" dy="5" stdDeviation="5"
+                    flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+
+    <!-- ── HIGHLIGHT SUPERIOR LETRAS ── -->
+    <filter id="f-glow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+      <feOffset dy="-1" result="up"/>
+      <feFlood flood-color="#ffffff" flood-opacity="0.4" result="white"/>
+      <feComposite in="white" in2="up" operator="in" result="hl"/>
+      <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="hl"/></feMerge>
+    </filter>
+
+    <!-- Clip path para agujero de tuerca -->
+    <clipPath id="nut-clip">
+      <!-- Octágono exterior -->
+      <polygon points="307,14 353,14 381,42 381,106 353,134 307,134 279,106 279,42"/>
+    </clipPath>
+
+  </defs>
+
+  <!-- ════════════════════════════════════
+       GRUPO PRINCIPAL (sombra global)
+       ════════════════════════════════════ -->
+  <g filter="url(#f-shadow)">
+
+    <!-- ── LETRAS "SAN" ── -->
+    <text
+      x="4" y="128"
+      font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+      font-size="124"
+      font-weight="400"
+      letter-spacing="2"
+      fill="url(#g-chrome)">SAN</text>
+
+    <!-- ── TUERCA OCTAGONAL ──
+         Octágono: 8 vértices
+         Centro: (330, 74)  radio ext: 60
+         Ángulos: 0°,45°,90°,135°,180°,225°,270°,315°
+         Vértices:
+           0°  → (390, 74)
+           45° → (330+42.4, 74+42.4) = (372.4, 116.4)
+           90° → (330, 134)
+           135°→ (287.6, 116.4)
+           180°→ (270, 74)
+           225°→ (287.6, 31.6)
+           270°→ (330, 14)
+           315°→ (372.4, 31.6)
+    -->
+
+    <!-- 8 caras triangulares desde el centro hacia cada arista -->
+    <!-- Cara 1: top → top-right  (cara superior-der, muy iluminada) -->
+    <polygon points="330,74  372.4,31.6  390,74"    fill="url(#g-n2)"  clip-path="url(#nut-clip)"/>
+    <!-- Cara 2: top-right → right  (cara der, media) -->
+    <polygon points="330,74  390,74      372.4,116.4" fill="url(#g-n3)" clip-path="url(#nut-clip)"/>
+    <!-- Cara 3: right → bottom-right  (cara inf-der, sombra) -->
+    <polygon points="330,74  372.4,116.4 330,134"    fill="url(#g-n4)"  clip-path="url(#nut-clip)"/>
+    <!-- Cara 4: bottom-right → bottom (cara inferior, oscura) -->
+    <polygon points="330,74  330,134     287.6,116.4" fill="url(#g-n5)" clip-path="url(#nut-clip)"/>
+    <!-- Cara 5: bottom → bottom-left (cara inf-izq) -->
+    <polygon points="330,74  287.6,116.4 270,74"     fill="url(#g-n6)"  clip-path="url(#nut-clip)"/>
+    <!-- Cara 6: bottom-left → left  (cara izq, media) -->
+    <polygon points="330,74  270,74      287.6,31.6"  fill="url(#g-n7)" clip-path="url(#nut-clip)"/>
+    <!-- Cara 7: left → top-left  (cara sup-izq, iluminada) -->
+    <polygon points="330,74  287.6,31.6  330,14"      fill="url(#g-n1)" clip-path="url(#nut-clip)"/>
+    <!-- Cara 8: top-left → top  (cara superior) -->
+    <polygon points="330,74  330,14      372.4,31.6"  fill="url(#g-n8)" clip-path="url(#nut-clip)"/>
+
+    <!-- Borde exterior del octágono (línea cromo fina) -->
+    <polygon
+      points="390,74 372.4,116.4 330,134 287.6,116.4 270,74 287.6,31.6 330,14 372.4,31.6"
+      fill="none"
+      stroke="url(#g-rim)"
+      stroke-width="2.5"/>
+
+    <!-- Líneas divisorias entre caras (efecto facetado) -->
+    <line x1="330" y1="74" x2="390"     y2="74"     stroke="#aaa" stroke-width="0.8" opacity="0.6"/>
+    <line x1="330" y1="74" x2="372.4"   y2="116.4"  stroke="#666" stroke-width="0.8" opacity="0.5"/>
+    <line x1="330" y1="74" x2="330"     y2="134"    stroke="#555" stroke-width="0.8" opacity="0.5"/>
+    <line x1="330" y1="74" x2="287.6"   y2="116.4"  stroke="#555" stroke-width="0.8" opacity="0.5"/>
+    <line x1="330" y1="74" x2="270"     y2="74"     stroke="#888" stroke-width="0.8" opacity="0.5"/>
+    <line x1="330" y1="74" x2="287.6"   y2="31.6"   stroke="#aaa" stroke-width="0.8" opacity="0.5"/>
+    <line x1="330" y1="74" x2="330"     y2="14"     stroke="#ccc" stroke-width="0.8" opacity="0.6"/>
+    <line x1="330" y1="74" x2="372.4"   y2="31.6"   stroke="#ddd" stroke-width="0.8" opacity="0.6"/>
+
+    <!-- Borde del agujero (aro cromo) -->
+    <circle cx="330" cy="74" r="27" fill="url(#g-rim)" />
+
+    <!-- Agujero negro -->
+    <circle cx="330" cy="74" r="23" fill="url(#g-hole)" />
+
+    <!-- Reflejo blanco en agujero (esquina superior izq) -->
+    <ellipse cx="321" cy="65" rx="7" ry="5"
+             fill="white" opacity="0.18" transform="rotate(-30,321,65)"/>
+
+    <!-- ── LETRA "U" ── -->
+    <text
+      x="388" y="128"
+      font-family="'Bebas Neue', Impact, 'Arial Black', sans-serif"
+      font-size="124"
+      font-weight="400"
+      fill="url(#g-chrome)">U</text>
+
+  </g>
+
+  <!-- Highlight lineal sutil en la parte superior de todo (brillo cromo) -->
+  <rect x="0" y="0" width="520" height="30" rx="4"
+        fill="url(#g-chrome)" opacity="0.04" pointer-events="none"/>
+
+</svg>
