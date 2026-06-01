@@ -17,6 +17,12 @@
         gtag('config', 'G-VLTJZZW8JF');
     </script>
     <!-- End Google Analytics -->
+    <!-- Klaviyo -->
+    <script async type='text/javascript' src='https://static.klaviyo.com/onsite/js/UVQQT2/klaviyo.js?company_id=UVQQT2'></script>
+    <script type="text/javascript">
+    !function(){if(!window.klaviyo){window._klOnsite=window._klOnsite||[];try{window.klaviyo=new Proxy({},{get:function(n,i){return"push"===i?function(){var n;(n=window._klOnsite).push.apply(n,arguments)}:function(){for(var n=arguments.length,o=new Array(n),w=0;w<n;w++)o[w]=arguments[w];var t="function"==typeof o[o.length-1]?o.pop():void 0,e=new Promise((function(n){window._klOnsite.push([i].concat(o,[function(i){t&&t(i),n(i)}]))}));return e}}})}catch(n){window.klaviyo=window.klaviyo||[],window.klaviyo.push=function(){var n;(n=window._klOnsite).push.apply(n,arguments)}}}}();
+    </script>
+    <!-- End Klaviyo -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SanOu - Equípate con herramientas de verdad</title>
@@ -435,6 +441,17 @@
                     <a href="#productos" onclick="filterProducts('motores')">Herramientas para vehículos</a>
                 </div>
             </div>
+            <!-- Suscripción newsletter -->
+            <div class="footer-newsletter">
+                <div class="fn-text">
+                    <h4><i class="fas fa-envelope"></i> Recibí ofertas y novedades</h4>
+                    <p>Dejá tu mail y te avisamos cuando haya descuentos o productos nuevos.</p>
+                </div>
+                <form class="fn-form" onsubmit="suscribirNewsletter(event)">
+                    <input type="email" id="fnEmail" placeholder="Tu email" class="fn-input" required>
+                    <button type="submit" class="fn-btn">Suscribirme</button>
+                </form>
+            </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 SanOu. Todos los derechos reservados.</p>
             </div>
@@ -475,6 +492,39 @@
         <button class="wa-widget-btn" id="waWidgetBtn" onclick="toggleWaWidget()">
             <i class="fab fa-whatsapp"></i>
         </button>
+    </div>
+
+    <!-- Notificación iOS estilo iPhone -->
+    <div class="ios-notif" id="iosNotif" onclick="abrirKlModalDesdeNotif()">
+        <div class="ios-notif-left">
+            <div class="ios-notif-icon">
+                <img src="Logo 2.png" alt="SanOu">
+            </div>
+            <div class="ios-notif-content">
+                <div class="ios-notif-header">
+                    <span class="ios-notif-app">SAN OU</span>
+                    <span class="ios-notif-time">ahora</span>
+                </div>
+                <div class="ios-notif-title">¡Bienvenido a San Ou! 👋</div>
+                <div class="ios-notif-msg">Dejá tu mail y recibí ofertas exclusivas</div>
+            </div>
+        </div>
+        <button class="ios-notif-close" onclick="event.stopPropagation(); cerrarIosNotif()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- Modal captura email Klaviyo -->
+    <div class="kl-overlay" id="klOverlay" onclick="cerrarKlModal()"></div>
+    <div class="kl-modal" id="klModal">
+        <button class="kl-close" onclick="cerrarKlModal()"><i class="fas fa-times"></i></button>
+        <div class="kl-icon"><i class="fas fa-shopping-cart"></i></div>
+        <h3 class="kl-title">¡Tu carrito te espera!</h3>
+        <p class="kl-sub">Dejá tu email y si no terminás la compra hoy, te lo guardamos y te avisamos.</p>
+        <form class="kl-form" onsubmit="guardarEmailKlaviyo(event)">
+            <input type="text" id="klNombre" placeholder="Tu nombre" class="kl-input" autocomplete="given-name">
+            <input type="email" id="klEmail" placeholder="Tu email *" class="kl-input" required autocomplete="email">
+            <button type="submit" class="kl-btn">Guardar mi carrito <i class="fas fa-arrow-right"></i></button>
+        </form>
+        <button class="kl-skip" onclick="cerrarKlModal()">Continuar sin guardar</button>
     </div>
 
     <script src="script.js"></script>

@@ -1,3 +1,110 @@
+// ─── KLAVIYO ─────────────────────────────────────────────────────
+const KL_KEY = 'UVQQT2';
+let klUserEmail = localStorage.getItem('kl_email') || null;
+let klUserName  = localStorage.getItem('kl_name')  || null;
+let klModalMostrado = false;
+
+function abrirKlModal() {
+    if (klUserEmail || klModalMostrado) return;
+    klModalMostrado = true;
+    cerrarIosNotif();
+    document.getElementById('klOverlay').classList.add('active');
+    setTimeout(() => document.getElementById('klModal').classList.add('active'), 10);
+}
+
+function cerrarKlModal() {
+    document.getElementById('klModal').classList.remove('active');
+    document.getElementById('klOverlay').classList.remove('active');
+}
+
+function abrirKlModalDesdeNotif() {
+    cerrarIosNotif();
+    klModalMostrado = false;
+    abrirKlModal();
+}
+
+function cerrarIosNotif() {
+    const n = document.getElementById('iosNotif');
+    if (!n) return;
+    n.classList.remove('show');
+    n.classList.add('hide');
+}
+
+// Mostrar notificación iOS al entrar (solo si no dejó email antes)
+window.addEventListener('load', () => {
+    if (klUserEmail) return;
+    setTimeout(() => {
+        const n = document.getElementById('iosNotif');
+        if (n) n.classList.add('show');
+        // Auto-cerrar a los 6 segundos
+        setTimeout(() => cerrarIosNotif(), 6000);
+    }, 3500);
+});
+
+function klPush(args) {
+    if (window.klaviyo) window.klaviyo.push(args);
+    else { window._klOnsite = window._klOnsite || []; window._klOnsite.push(args); }
+}
+
+function guardarEmailKlaviyo(e) {
+    e.preventDefault();
+    const email = document.getElementById('klEmail').value.trim();
+    const nombre = document.getElementById('klNombre').value.trim();
+    if (!email) return;
+
+    klUserEmail = email;
+    klUserName  = nombre;
+    localStorage.setItem('kl_email', email);
+    if (nombre) localStorage.setItem('kl_name', nombre);
+
+    // Identificar en Klaviyo
+    klPush(['identify', { '$email': email, '$first_name': nombre || '' }]);
+
+    cerrarKlModal();
+    klTrackCart();
+
+    // Si había una compra rápida pendiente, ejecutarla ahora
+    const modal = document.getElementById('klModal');
+    const pendingId = modal?.dataset.pendingQuickBuy;
+    if (pendingId) {
+        delete modal.dataset.pendingQuickBuy;
+        setTimeout(() => _doQuickBuy(parseInt(pendingId)), 300);
+    }
+}
+
+function klTrackCart() {
+    if (!klUserEmail || cart.length === 0) return;
+    const items = cart.map(p => ({
+        ProductID: String(p.id),
+        ProductName: p.name,
+        ProductCategories: [p.category],
+        ItemPrice: p.price || 0,
+        Quantity: p.qty,
+        RowTotal: (p.price || 0) * p.qty,
+    }));
+    const total = cart.reduce((s, p) => s + (p.price || 0) * p.qty, 0);
+    klPush(['track', 'Added to Cart', {
+        '$value': total,
+        'AddedItemProductName': items[items.length - 1]?.ProductName || '',
+        'CheckoutURL': window.location.href,
+        'Items': items,
+    }]);
+}
+
+function suscribirNewsletter(e) {
+    e.preventDefault();
+    const email = document.getElementById('fnEmail').value.trim();
+    if (!email) return;
+    klUserEmail = email;
+    localStorage.setItem('kl_email', email);
+    klPush(['identify', { '$email': email }]);
+    klPush(['track', 'Newsletter Signup', { '$email': email }]);
+    const btn = e.target.querySelector('.fn-btn');
+    btn.textContent = '¡Listo!';
+    btn.style.background = '#25D366';
+    setTimeout(() => { btn.textContent = 'Suscribirme'; btn.style.background = ''; }, 3000);
+}
+
 // ─── CONFIGURACIÓN ──────────────────────────────────────────────
 // Reemplazá este número con tu WhatsApp (código de país + número, sin + ni espacios)
 const WHATSAPP_NUMBER = '5491131751517';
@@ -982,6 +1089,11 @@ function addToCart(id) {
         });
     }
     const existing = cart.find(i => i.id === id);
+    // Klaviyo — mostrar modal si no tenemos email aún
+    setTimeout(() => {
+        if (!klUserEmail) abrirKlModal();
+        else klTrackCart();
+    }, 600);
 
     if (existing) {
         existing.qty++;
@@ -1068,6 +1180,8 @@ function openCart() {
     document.getElementById('cartSidebar').classList.add('active');
     document.getElementById('cartOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
+    // Klaviyo — pedir email al abrir carrito si hay productos
+    if (cart.length > 0) setTimeout(() => { if (!klUserEmail) abrirKlModal(); }, 800);
 }
 
 function closeCart() {
@@ -1096,6 +1210,19 @@ function checkoutWhatsApp() {
 
 // ─── WHATSAPP: COMPRA RÁPIDA ─────────────────────────────────────
 function quickBuy(id) {
+    const p = products.find(x => x.id === id);
+    // Klaviyo — pedir email antes de ir a WhatsApp
+    if (!klUserEmail) {
+        klModalMostrado = false; // forzar que aparezca
+        abrirKlModal();
+        // guardar el producto pendiente y continuar después
+        document.getElementById('klModal').dataset.pendingQuickBuy = id;
+        return;
+    }
+    _doQuickBuy(id);
+}
+
+function _doQuickBuy(id) {
     const p = products.find(x => x.id === id);
     // GA4 — compra rápida
     if (typeof gtag !== 'undefined') {
