@@ -879,6 +879,12 @@ function mostrarTodosProductos() {
 // ─── MODAL DE DETALLE ────────────────────────────────────────────
 function openModal(id) {
     const p = products.find(x => x.id === id);
+    // GA4 — vista de producto
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'view_item', {
+            items: [{ item_id: String(p.id), item_name: p.name, item_category: p.category, price: p.price || 0 }]
+        });
+    }
     document.getElementById('modalBody').innerHTML = `
         <div class="modal-product">
             ${modalMedia(p)}
@@ -967,6 +973,14 @@ function searchProducts(query) {
 // ─── CARRITO ─────────────────────────────────────────────────────
 function addToCart(id) {
     const product = products.find(p => p.id === id);
+    // GA4 — agregar al carrito
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'add_to_cart', {
+            currency: 'ARS',
+            value: product.price || 0,
+            items: [{ item_id: String(product.id), item_name: product.name, item_category: product.category, price: product.price || 0, quantity: 1 }]
+        });
+    }
     const existing = cart.find(i => i.id === id);
 
     if (existing) {
@@ -1083,6 +1097,14 @@ function checkoutWhatsApp() {
 // ─── WHATSAPP: COMPRA RÁPIDA ─────────────────────────────────────
 function quickBuy(id) {
     const p = products.find(x => x.id === id);
+    // GA4 — compra rápida
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'compra_rapida', {
+            currency: 'ARS',
+            value: p.price || 0,
+            items: [{ item_id: String(p.id), item_name: p.name, item_category: p.category, price: p.price || 0 }]
+        });
+    }
     let msg = `🛠 *Hola SanOu! Me interesa este producto:*\n\n`;
     msg += `▪ *${p.name}*\n`;
     msg += `  Categoría: ${CAT_NAMES[p.category]}\n`;
@@ -1511,6 +1533,10 @@ function toggleWaWidget() {
 function sendWaMessage() {
     const input = document.getElementById('waWidgetInput');
     const msg = input.value.trim();
+    // GA4 — mensaje por widget WhatsApp
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'whatsapp_widget', { event_category: 'contacto', event_label: msg || '(sin mensaje)' });
+    }
     const prefix = 'Hola San Ou!! quisiera hacer una consulta.\n\n';
     const text = encodeURIComponent(msg ? prefix + msg : prefix);
     window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + text, '_blank');
