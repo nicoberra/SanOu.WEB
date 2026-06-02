@@ -2143,3 +2143,100 @@ function injectStructuredData() {
     script.textContent = JSON.stringify([orgSchema, ...productSchemas]);
     document.head.appendChild(script);
 }
+
+// ─── RESEÑAS DE USUARIOS ─────────────────────────────────────────
+const REVIEWS_KEY = 'sanou_reviews';
+
+function getReviews() {
+    try { return JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]'); }
+    catch(e) { return []; }
+}
+
+function saveReview(review) {
+    const reviews = getReviews();
+    reviews.unshift(review); // más nuevo primero
+    localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+}
+
+function renderUserReviews() {
+    const container = document.getElementById('userReviewsList');
+    if (!container) return;
+    const reviews = getReviews();
+    if (!reviews.length) {
+        container.innerHTML = '<p class="no-reviews-msg">Sé el primero en dejar tu reseña.</p>';
+        return;
+    }
+    container.innerHTML = reviews.map(r => `
+        <div class="testimonial-card user-review-card">
+            <div class="testi-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+            <p class="testi-text">"${r.text}"</p>
+            <div class="testi-author">
+                <div class="testi-avatar">${r.name.charAt(0).toUpperCase()}</div>
+                <div>
+                    <strong>${r.name}</strong>
+                    <span>${r.role ? r.role + ' — ' : ''}${r.city || ''}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function submitReview(e) {
+    e.preventDefault();
+    const name = document.getElementById('reviewName').value.trim();
+    const role = document.getElementById('reviewRole').value.trim();
+    const city = document.getElementById('reviewCity').value.trim();
+    const text = document.getElementById('reviewText').value.trim();
+    const stars = parseInt(document.querySelector('.star-btn.selected')?.dataset.val || '0');
+
+    const errEl = document.getElementById('reviewError');
+    if (!name || !text || !stars) {
+        errEl.style.display = 'block';
+        errEl.textContent = !stars ? 'Seleccioná una puntuación.' : 'Nombre y reseña son obligatorios.';
+        return;
+    }
+    errEl.style.display = 'none';
+
+    saveReview({ name, role, city, text, stars, date: new Date().toLocaleDateString('es-AR') });
+    renderUserReviews();
+
+    // Reset form
+    document.getElementById('reviewForm').reset();
+    document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('selected', 'hovered'));
+
+    // Mostrar éxito
+    document.getElementById('reviewFormWrap').style.display = 'none';
+    document.getElementById('reviewSuccess').style.display = 'block';
+    setTimeout(() => {
+        document.getElementById('reviewSuccess').style.display = 'none';
+        document.getElementById('reviewFormWrap').style.display = 'block';
+    }, 3500);
+}
+
+function initStarRating() {
+    const stars = document.querySelectorAll('.star-btn');
+    stars.forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            const val = parseInt(btn.dataset.val);
+            stars.forEach(b => {
+                b.classList.toggle('hovered', parseInt(b.dataset.val) <= val);
+            });
+        });
+        btn.addEventListener('mouseleave', () => {
+            stars.forEach(b => b.classList.remove('hovered'));
+        });
+        btn.addEventListener('click', () => {
+            stars.forEach(b => b.classList.remove('selected'));
+            stars.forEach(b => {
+                if (parseInt(b.dataset.val) <= parseInt(btn.dataset.val)) b.classList.add('selected');
+            });
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    renderUserReviews();
+    initStarRating();
+    const form = document.getElementById('reviewForm');
+    if (form) form.addEventListener('submit', submitReview);
+});

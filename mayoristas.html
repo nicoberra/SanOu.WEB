@@ -146,6 +146,9 @@
         }
         .mayorista-input:focus { border-color: rgba(255,215,0,0.5); }
         .mayorista-input::placeholder { color: var(--gray); }
+        select.mayorista-input { appearance: none; cursor: pointer; color: var(--gray); }
+        select.mayorista-input option { background: #1a1a1a; color: var(--white); }
+        select.mayorista-input:valid { color: var(--white); }
         .mayorista-textarea { resize: none; }
         .btn-mayorista-wa {
             background: #25D366;
@@ -286,17 +289,47 @@
                         <div class="mayoristas-form-card">
                             <h3>Quiero ser revendedor</h3>
                             <p>Completá tus datos y te contactamos con toda la información.</p>
-                            <div class="mayoristas-form">
-                                <input type="text" id="mayoristaNombre" placeholder="Tu nombre completo" class="mayorista-input">
-                                <input type="text" id="mayoristaLocalidad" placeholder="Ciudad / Localidad" class="mayorista-input">
-                                <input type="text" id="mayoristaRubro" placeholder="Tu rubro o negocio" class="mayorista-input">
-                                <textarea id="mayoristaMsg" placeholder="¿Qué productos te interesan?" class="mayorista-input mayorista-textarea" rows="3"></textarea>
+                            <div id="formMayorista" class="mayoristas-form">
+                                <input type="text" id="mayoristaNombre" placeholder="Nombre completo *" class="mayorista-input" required>
+                                <input type="text" id="mayoristaEmpresa" placeholder="Empresa o negocio *" class="mayorista-input" required>
+                                <input type="tel" id="mayoristaTelefono" placeholder="Teléfono / WhatsApp *" class="mayorista-input" required>
+                                <select id="mayoristaProvincia" class="mayorista-input">
+                                    <option value="" disabled selected>Provincia *</option>
+                                    <option>Buenos Aires</option>
+                                    <option>CABA</option>
+                                    <option>Córdoba</option>
+                                    <option>Santa Fe</option>
+                                    <option>Mendoza</option>
+                                    <option>Tucumán</option>
+                                    <option>Entre Ríos</option>
+                                    <option>Salta</option>
+                                    <option>Misiones</option>
+                                    <option>Chaco</option>
+                                    <option>Corrientes</option>
+                                    <option>Santiago del Estero</option>
+                                    <option>San Juan</option>
+                                    <option>Jujuy</option>
+                                    <option>Río Negro</option>
+                                    <option>Neuquén</option>
+                                    <option>Formosa</option>
+                                    <option>Chubut</option>
+                                    <option>San Luis</option>
+                                    <option>Catamarca</option>
+                                    <option>La Rioja</option>
+                                    <option>La Pampa</option>
+                                    <option>Santa Cruz</option>
+                                    <option>Tierra del Fuego</option>
+                                </select>
+                                <textarea id="mayoristaMsg" placeholder="¿Qué productos te interesan? (opcional)" class="mayorista-input mayorista-textarea" rows="3"></textarea>
+                                <p id="formError" style="color:#ff4d4d;font-size:0.82rem;display:none;margin:0;">Completá los campos obligatorios (*)</p>
                                 <button class="btn-mayorista-wa" onclick="enviarMayorista()">
                                     <i class="fab fa-whatsapp"></i> Enviar consulta por WhatsApp
                                 </button>
-                                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sanou.argentina%40gmail.com&su=Consulta%20mayorista%20%2F%20Revendedor" target="_blank" class="btn-mayorista-mail">
-                                    <i class="fas fa-envelope"></i> Enviar por Email
-                                </a>
+                            </div>
+                            <div id="formSuccess" style="display:none; text-align:center; padding:30px 0;">
+                                <div style="font-size:2.5rem; margin-bottom:12px;">✅</div>
+                                <p style="color:#fff; font-weight:700; font-size:1.1rem;">¡Consulta enviada!</p>
+                                <p style="color:var(--gray); font-size:0.9rem;">Te vamos a responder a la brevedad por WhatsApp.</p>
                             </div>
                         </div>
                     </div>
@@ -314,15 +347,29 @@
         const WHATSAPP_NUMBER = '5491131751517';
         function enviarMayorista() {
             const nombre    = document.getElementById('mayoristaNombre').value.trim();
-            const localidad = document.getElementById('mayoristaLocalidad').value.trim();
-            const rubro     = document.getElementById('mayoristaRubro').value.trim();
+            const empresa   = document.getElementById('mayoristaEmpresa').value.trim();
+            const telefono  = document.getElementById('mayoristaTelefono').value.trim();
+            const provincia = document.getElementById('mayoristaProvincia').value.trim();
             const msg       = document.getElementById('mayoristaMsg').value.trim();
-            let texto = '🏪 *Consulta de Revendedor / Mayorista*\n\n';
-            if (nombre)    texto += `👤 *Nombre:* ${nombre}\n`;
-            if (localidad) texto += `📍 *Localidad:* ${localidad}\n`;
-            if (rubro)     texto += `🔧 *Rubro:* ${rubro}\n`;
-            if (msg)       texto += `\n💬 *Mensaje:*\n${msg}\n`;
-            texto += '\n¡Quiero más información sobre precios mayoristas y cómo ser revendedor de San Ou!';
+            const errEl     = document.getElementById('formError');
+
+            if (!nombre || !empresa || !telefono || !provincia) {
+                errEl.style.display = 'block';
+                return;
+            }
+            errEl.style.display = 'none';
+
+            let texto = '🏪 *Consulta de Revendedor / Mayorista — San Ou*\n\n';
+            texto += `👤 *Nombre:* ${nombre}\n`;
+            texto += `🏢 *Empresa:* ${empresa}\n`;
+            texto += `📞 *Teléfono:* ${telefono}\n`;
+            texto += `📍 *Provincia:* ${provincia}\n`;
+            if (msg) texto += `\n💬 *Mensaje:*\n${msg}\n`;
+            texto += '\n¡Quiero información sobre precios mayoristas y ser revendedor de San Ou!';
+
+            document.getElementById('formMayorista').style.display = 'none';
+            document.getElementById('formSuccess').style.display = 'block';
+
             window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(texto), '_blank');
         }
     </script>
