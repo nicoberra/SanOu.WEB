@@ -897,7 +897,7 @@ function getImgs(p) {
 function cardMedia(p) {
     const imgs = getImgs(p);
     if (imgs.length > 0) {
-        return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'"></div>`;
+        return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="autoFitImg(this)" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'"></div>`;
     }
     return `<div class="product-media product-media-icon"><i class="fas ${p.icon}"></i></div>`;
 }
@@ -2142,6 +2142,29 @@ function injectStructuredData() {
     script.type = 'application/ld+json';
     script.textContent = JSON.stringify([orgSchema, ...productSchemas]);
     document.head.appendChild(script);
+}
+
+// ─── AUTO FIT IMÁGENES DE PRODUCTO ───────────────────────────────
+// Muestrea las 4 esquinas de la imagen. Si son blancas/claras → contain.
+// Si son oscuras o de color → cover (foto real).
+function autoFitImg(img) {
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 20; canvas.height = 20;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 20, 20);
+        const corners = [
+            ctx.getImageData(0,  0,  1, 1).data,
+            ctx.getImageData(19, 0,  1, 1).data,
+            ctx.getImageData(0,  19, 1, 1).data,
+            ctx.getImageData(19, 19, 1, 1).data,
+        ];
+        const isLight = corners.every(c => c[0] > 200 && c[1] > 200 && c[2] > 200);
+        img.style.objectFit = isLight ? 'contain' : 'cover';
+        img.style.padding   = isLight ? '10px'    : '0';
+    } catch(e) {
+        // fallback silencioso si hay error de CORS u otro
+    }
 }
 
 // ─── RESEÑAS DE USUARIOS ─────────────────────────────────────────
