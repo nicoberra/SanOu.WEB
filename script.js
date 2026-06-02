@@ -270,7 +270,7 @@ const products = [
         { l: 'Medidas de empaque', v: '400 × 130 × 50 mm' }
       ]
     },
-    { id: 27, name: 'Pinza Hidráulica HHY-400B con Zafe', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: ['1.png','2.webp','3.webp'], folder: 'HHY-400B con zafe', catFolder: 'Pinzas',
+    { id: 27, name: 'Pinza Hidráulica HHY-400B con Zafe', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: ['1.png','2.webp','3.webp','4.jpeg'], folder: 'HHY-400B con zafe', catFolder: 'Pinzas',
       desc: 'Pinza hidráulica para indentar terminales con zafe y sistema de seguridad CCD/CCG.',
       specs: [
         { l: 'Rango de crimpado', v: '16–400 mm²' },
