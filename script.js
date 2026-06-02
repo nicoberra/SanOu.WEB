@@ -2144,6 +2144,13 @@ function injectStructuredData() {
     document.head.appendChild(script);
 }
 
+// ─── VER MÁS TESTIMONIOS ─────────────────────────────────────────
+function verMasTestimonios() {
+    document.querySelectorAll('.testi-extra').forEach(el => el.classList.add('visible'));
+    const btn = document.getElementById('btnVerMasTestis');
+    if (btn) btn.style.display = 'none';
+}
+
 // ─── AUTO FIT IMÁGENES DE PRODUCTO ───────────────────────────────
 // Muestrea las 4 esquinas de la imagen. Si son blancas/claras → contain.
 // Si son oscuras o de color → cover (foto real).

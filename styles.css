@@ -2475,6 +2475,13 @@ section { padding: 90px 0; }
     background: rgba(255,215,0,0.08);
     border-color: var(--yellow);
 }
+.testi-extra { display: none; }
+.testi-extra.visible { display: flex; }
+.testi-ver-mas-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+}
 .no-reviews-msg {
     color: var(--gray);
     font-size: 0.88rem;
