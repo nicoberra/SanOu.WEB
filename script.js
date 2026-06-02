@@ -519,7 +519,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual, manija y bulones' }
       ]
     },
-    { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: ['1.webp','2.jpeg'], folder: '200MM',
+    { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: ['1.jpeg','2.webp'], folder: '200MM',
       desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Alta precisión para tornos grandes.',
       specs: [
         { l: 'Diámetro', v: 'Ø 200 mm' },
@@ -897,7 +897,7 @@ function getImgs(p) {
 function cardMedia(p) {
     const imgs = getImgs(p);
     if (imgs.length > 0) {
-        return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="autoFitImg(this)" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'"></div>`;
+        return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'"></div>`;
     }
     return `<div class="product-media product-media-icon"><i class="fas ${p.icon}"></i></div>`;
 }

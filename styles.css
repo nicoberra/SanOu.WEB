@@ -933,20 +933,15 @@ section { padding: 90px 0; }
     height: 220px;
     overflow: hidden;
     border-radius: 16px 16px 0 0;
-    background: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #f0f0f0;
 }
 .product-media img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center;
     display: block;
     transition: transform 0.4s;
-    padding: 10px;
-    box-sizing: border-box;
 }
 .product-card:hover .product-media img { transform: scale(1.06); }
 .product-media-icon {
