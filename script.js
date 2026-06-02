@@ -2145,48 +2145,100 @@ function injectStructuredData() {
 }
 
 // ─── RESEÑAS DE USUARIOS ─────────────────────────────────────────
-const REVIEWS_KEY = 'sanou_reviews';
+// Pegá acá la URL de tu Google Apps Script después de desplegarlo
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxH3Mb50iIDoL_njaEDUODDmD0K2HJ1UNp4GIHe_veSrkVYfgG03TCWp4NlWuQyK_7h/exec';
 
-function getReviews() {
-    try { return JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]'); }
-    catch(e) { return []; }
+const REVIEWS_KEY = 'sanou_reviews';
+let allUserReviews = [];
+let reviewsShown = 4;
+
+// Guardar en localStorage como backup
+function saveReviewLocal(review) {
+    try {
+        const reviews = JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]');
+        reviews.unshift(review);
+        localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+    } catch(e) {}
 }
 
-function saveReview(review) {
-    const reviews = getReviews();
-    reviews.unshift(review); // más nuevo primero
-    localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+// Mezclar array aleatoriamente (distinto orden en cada visita)
+function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
 }
 
 function renderUserReviews() {
     const container = document.getElementById('userReviewsList');
+    const btnVerMas = document.getElementById('btnVerMasReviews');
     if (!container) return;
-    const reviews = getReviews();
-    if (!reviews.length) {
+
+    const visible = allUserReviews.slice(0, reviewsShown);
+
+    if (!visible.length) {
         container.innerHTML = '<p class="no-reviews-msg">Sé el primero en dejar tu reseña.</p>';
+        if (btnVerMas) btnVerMas.style.display = 'none';
         return;
     }
-    container.innerHTML = reviews.map(r => `
+
+    container.innerHTML = visible.map(r => `
         <div class="testimonial-card user-review-card">
-            <div class="testi-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+            <div class="testi-stars">${'★'.repeat(Number(r.stars))}${'☆'.repeat(5 - Number(r.stars))}</div>
             <p class="testi-text">"${r.text}"</p>
             <div class="testi-author">
-                <div class="testi-avatar">${r.name.charAt(0).toUpperCase()}</div>
+                <div class="testi-avatar">${String(r.name).charAt(0).toUpperCase()}</div>
                 <div>
                     <strong>${r.name}</strong>
-                    <span>${r.role ? r.role + ' — ' : ''}${r.city || ''}</span>
+                    <span>${r.role ? r.role + (r.city ? ' — ' + r.city : '') : (r.city || '')}</span>
                 </div>
             </div>
         </div>
     `).join('');
+
+    if (btnVerMas) {
+        btnVerMas.style.display = allUserReviews.length > reviewsShown ? 'flex' : 'none';
+    }
 }
 
-function submitReview(e) {
+function verMasReviews() {
+    reviewsShown += 4;
+    renderUserReviews();
+}
+
+async function loadUserReviews() {
+    // Si no tiene URL configurada, usa localStorage
+    if (!SHEETS_URL || SHEETS_URL === 'TU_URL_AQUI') {
+        try {
+            const local = JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]');
+            allUserReviews = shuffleArray(local);
+        } catch(e) { allUserReviews = []; }
+        renderUserReviews();
+        return;
+    }
+
+    try {
+        const res = await fetch(SHEETS_URL);
+        const data = await res.json();
+        allUserReviews = shuffleArray(data);
+    } catch(e) {
+        // Fallback a localStorage si falla la conexión
+        try {
+            const local = JSON.parse(localStorage.getItem(REVIEWS_KEY) || '[]');
+            allUserReviews = shuffleArray(local);
+        } catch(e2) { allUserReviews = []; }
+    }
+    renderUserReviews();
+}
+
+async function submitReview(e) {
     e.preventDefault();
-    const name = document.getElementById('reviewName').value.trim();
-    const role = document.getElementById('reviewRole').value.trim();
-    const city = document.getElementById('reviewCity').value.trim();
-    const text = document.getElementById('reviewText').value.trim();
+    const name  = document.getElementById('reviewName').value.trim();
+    const role  = document.getElementById('reviewRole').value.trim();
+    const city  = document.getElementById('reviewCity').value.trim();
+    const text  = document.getElementById('reviewText').value.trim();
     const stars = parseInt(document.querySelector('.star-btn.selected')?.dataset.val || '0');
 
     const errEl = document.getElementById('reviewError');
@@ -2197,14 +2249,28 @@ function submitReview(e) {
     }
     errEl.style.display = 'none';
 
-    saveReview({ name, role, city, text, stars, date: new Date().toLocaleDateString('es-AR') });
+    const review = { name, role, city, text, stars, date: new Date().toLocaleDateString('es-AR') };
+
+    // Enviar a Google Sheets
+    if (SHEETS_URL && SHEETS_URL !== 'TU_URL_AQUI') {
+        try {
+            const params = new URLSearchParams({ action: 'submit', ...review });
+            await fetch(SHEETS_URL + '?' + params.toString(), { mode: 'no-cors' });
+        } catch(err) {}
+    }
+
+    // Guardar localmente como backup
+    saveReviewLocal(review);
+
+    // Agregar a la lista visible sin recargar
+    allUserReviews.unshift(review);
+    reviewsShown = Math.max(reviewsShown, 1);
     renderUserReviews();
 
     // Reset form
     document.getElementById('reviewForm').reset();
     document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('selected', 'hovered'));
 
-    // Mostrar éxito
     document.getElementById('reviewFormWrap').style.display = 'none';
     document.getElementById('reviewSuccess').style.display = 'block';
     setTimeout(() => {
@@ -2218,9 +2284,7 @@ function initStarRating() {
     stars.forEach(btn => {
         btn.addEventListener('mouseenter', () => {
             const val = parseInt(btn.dataset.val);
-            stars.forEach(b => {
-                b.classList.toggle('hovered', parseInt(b.dataset.val) <= val);
-            });
+            stars.forEach(b => b.classList.toggle('hovered', parseInt(b.dataset.val) <= val));
         });
         btn.addEventListener('mouseleave', () => {
             stars.forEach(b => b.classList.remove('hovered'));
@@ -2235,8 +2299,26 @@ function initStarRating() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    renderUserReviews();
+    loadUserReviews();
     initStarRating();
     const form = document.getElementById('reviewForm');
     if (form) form.addEventListener('submit', submitReview);
+    initHeroVideo();
 });
+
+// ─── VIDEO HERO ALEATORIO ─────────────────────────────────────────
+function initHeroVideo() {
+    const videos = [
+        'video1 70mm.mp4',
+        'video2.mp4',
+        'video3.mp4',
+        'video4.mp4'
+    ];
+    const video = document.getElementById('heroVideo');
+    const src   = document.getElementById('heroVideoSrc');
+    if (!video || !src) return;
+    const chosen = videos[Math.floor(Math.random() * videos.length)];
+    src.src = chosen;
+    video.load();
+    video.play().catch(() => {});
+}

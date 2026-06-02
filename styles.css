@@ -2461,6 +2461,25 @@ section { padding: 90px 0; }
     from { opacity: 0; transform: translateY(-10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+.btn-ver-mas-reviews {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    background: none;
+    border: 1px solid rgba(255,215,0,0.3);
+    color: var(--yellow);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+.btn-ver-mas-reviews:hover {
+    background: rgba(255,215,0,0.08);
+    border-color: var(--yellow);
+}
 .no-reviews-msg {
     color: var(--gray);
     font-size: 0.88rem;

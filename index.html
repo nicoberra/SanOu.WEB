@@ -151,8 +151,8 @@
                         <div class="iphone-btn iphone-btn-vol1"></div>
                         <div class="iphone-btn iphone-btn-vol2"></div>
                         <div class="iphone-screen">
-                            <video autoplay muted loop playsinline>
-                                <source src="video1 70mm.mp4" type="video/mp4">
+                            <video id="heroVideo" autoplay muted loop playsinline>
+                                <source id="heroVideoSrc" src="" type="video/mp4">
                             </video>
                         </div>
                         <div class="iphone-indicator"></div>
@@ -184,10 +184,10 @@
         <div class="container">
             <div class="ecb-inner" id="ecbInner">
                 <div class="ecb-text">
-                    <span class="ecb-icon"><i class="fas fa-bell"></i></span>
+                    <span class="ecb-icon"><i class="fas fa-tag"></i></span>
                     <div>
-                        <strong>¡Guardá tu carrito y recibí ofertas!</strong>
-                        <span>Dejá tu mail y te avisamos si dejás productos sin comprar.</span>
+                        <strong>¡Ofertas, descuentos y productos nuevos directo a tu mail!</strong>
+                        <span>Suscribite gratis y sé el primero en enterarte de promociones, lanzamientos y precios especiales.</span>
                     </div>
                 </div>
                 <form class="ecb-form" onsubmit="registrarseDesdeSeccion(event)">
@@ -625,6 +625,9 @@
                 <div class="user-reviews-col">
                     <h3 class="user-reviews-title">Reseñas de clientes</h3>
                     <div id="userReviewsList" class="user-reviews-list"></div>
+                    <button id="btnVerMasReviews" class="btn-ver-mas-reviews" onclick="verMasReviews()" style="display:none;">
+                        Ver más reseñas <i class="fas fa-chevron-down"></i>
+                    </button>
                 </div>
             </div>
         </div>
