@@ -3035,6 +3035,14 @@ section { padding: 90px 0; }
     .ubicacion-grid { grid-template-columns: 1fr; }
     .cta-pedido-inner { flex-direction: column; align-items: flex-start; gap: 20px; }
     .btn-cta-pedido { width: 100%; text-align: center; }
+
+    /* Imágenes de producto: siempre completas en mobile/tablet */
+    .product-media img {
+        object-fit: contain;
+        object-position: center;
+        padding: 10px;
+        box-sizing: border-box;
+    }
 }
 
 @media (max-width: 768px) {
@@ -3112,6 +3120,13 @@ section { padding: 90px 0; }
 
     /* Products */
     .products-grid { grid-template-columns: 1fr; }
+    .product-media { height: 240px; }
+    .product-media img {
+        object-fit: contain;
+        object-position: center;
+        padding: 12px;
+        box-sizing: border-box;
+    }
 
     /* Features & steps */
     .features-grid { grid-template-columns: 1fr; }
