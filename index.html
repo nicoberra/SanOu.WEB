@@ -25,7 +25,23 @@
     <!-- End Klaviyo -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SanOu - Equípate con herramientas de verdad</title>
+    <title>SanOu - Herramientas Hidráulicas | Importador directo Argentina</title>
+    <meta name="description" content="Importadores directos de herramientas hidráulicas hace más de 12 años. Pinzas, cilindros, bombas, extractores y más. Stock disponible. Envíos a todo el país.">
+    <meta name="keywords" content="herramientas hidráulicas, pinza hidráulica, cilindro hidráulico, bomba hidráulica, extractor hidráulico, sacabocados, Argentina">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sanou.com.ar/">
+    <!-- Open Graph -->
+    <meta property="og:title" content="SanOu - Herramientas Hidráulicas Argentina">
+    <meta property="og:description" content="Importadores directos con más de 12 años. Pinzas, cilindros, bombas hidráulicas y más. Stock disponible, envíos a todo el país.">
+    <meta property="og:image" content="https://sanou.com.ar/sticker.png">
+    <meta property="og:url" content="https://sanou.com.ar/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_AR">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SanOu - Herramientas Hidráulicas Argentina">
+    <meta name="twitter:description" content="Importadores directos. Pinzas, cilindros, bombas hidráulicas. Stock siempre disponible.">
+    <meta name="twitter:image" content="https://sanou.com.ar/sticker.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -151,9 +167,7 @@
                         <div class="iphone-btn iphone-btn-vol1"></div>
                         <div class="iphone-btn iphone-btn-vol2"></div>
                         <div class="iphone-screen">
-                            <video id="heroVideo" autoplay muted loop playsinline>
-                                <source id="heroVideoSrc" src="" type="video/mp4">
-                            </video>
+                            <video id="heroVideo" autoplay muted loop playsinline></video>
                         </div>
                         <div class="iphone-indicator"></div>
                     </div>
@@ -282,7 +296,7 @@
     <section class="products" id="productos">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Nuestros Productos</h2>
+                <h2 class="section-title">Nuestros Productos <span id="productCount" class="product-count-badge" style="display:none"></span></h2>
                 <div class="filter-dropdown-wrap" id="filterBar">
                     <button class="filter-dropdown-btn" onclick="toggleFilterDropdown()" id="filterDropdownBtn">
                         <span id="filterDropdownLabel">Todas las categorías</span>
@@ -699,6 +713,11 @@
             </div>
         </div>
     </footer>
+
+    <!-- Botón volver arriba -->
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Volver arriba">
+        <i class="fas fa-chevron-up"></i>
+    </button>
 
     <!-- WhatsApp flotante (solo mobile) -->
     <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Me%20gustaría%20hacer%20una%20consulta." target="_blank" class="wa-float" title="Escribinos por WhatsApp" onclick="gtag('event','click_whatsapp',{event_category:'contacto',event_label:'flotante'})">

@@ -847,7 +847,16 @@ const CAT_NAMES = {
 };
 
 // ─── ESTADO ─────────────────────────────────────────────────────
-let cart = [];
+const CART_KEY = 'sanou_cart';
+let cart = (() => {
+    try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); }
+    catch(e) { return []; }
+})();
+
+function saveCart() {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
+    catch(e) {}
+}
 
 // ─── FORMATO ────────────────────────────────────────────────────
 function fmt(n) {
@@ -1018,6 +1027,15 @@ function renderProducts(filter, showAll = false) {
 
     grid.innerHTML = mostrar.map(cardHTML).join('');
 
+    // Contador de productos
+    const countEl = document.getElementById('productCount');
+    if (countEl) {
+        countEl.textContent = list.length === products.length
+            ? `${list.length} productos`
+            : `${list.length} producto${list.length !== 1 ? 's' : ''}`;
+        countEl.style.display = 'inline';
+    }
+
     // Mostrar u ocultar botón "Ver más"
     if (verMasWrap) {
         verMasWrap.style.display = (!showAll && list.length > limite) ? 'flex' : 'none';
@@ -1147,6 +1165,7 @@ function addToCart(id) {
         cart.push({ ...product, qty: 1 });
     }
 
+    saveCart();
     updateCartUI();
     openCart();
 
@@ -1167,16 +1186,19 @@ function changeQty(id, delta) {
     if (!item) return;
     item.qty += delta;
     if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+    saveCart();
     updateCartUI();
 }
 
 function removeFromCart(id) {
     cart = cart.filter(i => i.id !== id);
+    saveCart();
     updateCartUI();
 }
 
 function clearCart() {
     cart = [];
+    saveCart();
     updateCartUI();
 }
 
@@ -1310,6 +1332,12 @@ document.querySelectorAll('.nav-link').forEach(link => {
 });
 
 // ─── HEADER SCROLL ──────────────────────────────────────────────
+// Botón volver arriba
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('backToTop');
+    if (btn) btn.classList.toggle('visible', window.scrollY > 400);
+});
+
 window.addEventListener('scroll', () => {
     document.getElementById('header').style.padding = '0';
 });
@@ -2151,28 +2179,6 @@ function verMasTestimonios() {
     if (btn) btn.style.display = 'none';
 }
 
-// ─── AUTO FIT IMÁGENES DE PRODUCTO ───────────────────────────────
-// Muestrea las 4 esquinas de la imagen. Si son blancas/claras → contain.
-// Si son oscuras o de color → cover (foto real).
-function autoFitImg(img) {
-    try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 20; canvas.height = 20;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, 20, 20);
-        const corners = [
-            ctx.getImageData(0,  0,  1, 1).data,
-            ctx.getImageData(19, 0,  1, 1).data,
-            ctx.getImageData(0,  19, 1, 1).data,
-            ctx.getImageData(19, 19, 1, 1).data,
-        ];
-        const isLight = corners.every(c => c[0] > 200 && c[1] > 200 && c[2] > 200);
-        img.style.objectFit = isLight ? 'contain' : 'cover';
-        img.style.padding   = isLight ? '10px'    : '0';
-    } catch(e) {
-        // fallback silencioso si hay error de CORS u otro
-    }
-}
 
 // ─── RESEÑAS DE USUARIOS ─────────────────────────────────────────
 // Pegá acá la URL de tu Google Apps Script después de desplegarlo
@@ -2263,6 +2269,13 @@ async function loadUserReviews() {
     renderUserReviews();
 }
 
+const BAD_WORDS = ['puta','mierda','boludo','pelotudo','forro','concha','pija','culo','cagon','hdp','hijo de puta'];
+
+function containsBadWords(text) {
+    const lower = text.toLowerCase();
+    return BAD_WORDS.some(w => lower.includes(w));
+}
+
 async function submitReview(e) {
     e.preventDefault();
     const name  = document.getElementById('reviewName').value.trim();
@@ -2275,6 +2288,16 @@ async function submitReview(e) {
     if (!name || !text || !stars) {
         errEl.style.display = 'block';
         errEl.textContent = !stars ? 'Seleccioná una puntuación.' : 'Nombre y reseña son obligatorios.';
+        return;
+    }
+    if (text.length < 20) {
+        errEl.style.display = 'block';
+        errEl.textContent = 'La reseña debe tener al menos 20 caracteres.';
+        return;
+    }
+    if (containsBadWords(name) || containsBadWords(text)) {
+        errEl.style.display = 'block';
+        errEl.textContent = 'El contenido no cumple nuestras políticas. Por favor revisalo.';
         return;
     }
     errEl.style.display = 'none';
@@ -2345,10 +2368,9 @@ function initHeroVideo() {
         'video4.mp4'
     ];
     const video = document.getElementById('heroVideo');
-    const src   = document.getElementById('heroVideoSrc');
-    if (!video || !src) return;
+    if (!video) return;
     const chosen = videos[Math.floor(Math.random() * videos.length)];
-    src.src = chosen;
+    video.src = chosen;
     video.load();
     video.play().catch(() => {});
 }

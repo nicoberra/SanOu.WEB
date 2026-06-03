@@ -338,12 +338,21 @@
         </div>
     </div>
 
+    <!-- Botón volver arriba -->
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Volver arriba">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
     <!-- WhatsApp flotante -->
     <a href="https://wa.me/5491131751517?text=Hola%20SanOu!%20Quiero%20información%20sobre%20precios%20mayoristas." target="_blank" class="wa-float">
         <i class="fab fa-whatsapp"></i>
     </a>
 
     <script>
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('backToTop');
+            if (btn) btn.classList.toggle('visible', window.scrollY > 300);
+        });
         const WHATSAPP_NUMBER = '5491131751517';
         function enviarMayorista() {
             const nombre    = document.getElementById('mayoristaNombre').value.trim();
