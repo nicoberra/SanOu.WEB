@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Productos — San Ou</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #fff;
+    color: #111;
+  }
+
+  /* ── PORTADA ── */
+  .cover {
+    background: #0d0d0d;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+  }
+  .cover img { height: 120px; margin-bottom: 40px; }
+  .cover h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    letter-spacing: 4px;
+    color: #FFD700;
+    margin-bottom: 16px;
+  }
+  .cover p { color: #aaa; font-size: 1.1rem; line-height: 1.7; max-width: 500px; }
+  .cover .cover-meta { margin-top: 60px; color: #555; font-size: 0.85rem; }
+
+  /* ── ÍNDICE ── */
+  .toc {
+    padding: 60px 60px;
+    page-break-after: always;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .toc h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 3px;
+    border-bottom: 3px solid #FFD700;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+  }
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed #ddd;
+    font-size: 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+  }
+  .toc-item:hover { color: #b8860b; }
+  .toc-item:hover .cat-name { text-decoration: underline; }
+  .toc-item .cat-name { font-weight: 700; }
+  .toc-item .cat-count { color: #888; font-size: 0.85rem; }
+
+  /* ── CATEGORÍA ── */
+  .cat-section { padding: 40px 40px 20px; }
+  .cat-header {
+    background: #0d0d0d;
+    color: #FFD700;
+    padding: 18px 30px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cat-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 3px;
+  }
+  .cat-header .cat-qty {
+    background: rgba(255,215,0,0.15);
+    border: 1px solid rgba(255,215,0,0.4);
+    color: #FFD700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  /* ── GRID DE PRODUCTOS ── */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+    margin-bottom: 40px;
+  }
+
+  /* ── CARD DE PRODUCTO ── */
+  .product-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 14px;
+    overflow: hidden;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .product-img {
+    width: 100%;
+    height: 220px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 16px;
+  }
+  .product-body { padding: 20px; }
+  .product-badge {
+    display: inline-block;
+    background: #0d0d0d;
+    color: #FFD700;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .product-name {
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    color: #111;
+  }
+  .product-desc {
+    font-size: 0.8rem;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .specs-table { width: 100%; border-collapse: collapse; }
+  .specs-table tr:nth-child(even) td { background: #f9f9f9; }
+  .specs-table td {
+    padding: 5px 8px;
+    font-size: 0.78rem;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+  .specs-table td:first-child {
+    font-weight: 700;
+    color: #333;
+    width: 48%;
+  }
+  .specs-table td:last-child { color: #555; }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: #fff; }
+    .cover { min-height: 100vh; }
+    .cat-section { page-break-before: always; }
+    .product-card { break-inside: avoid; }
+    .products-grid { grid-template-columns: repeat(2, 1fr); }
+    a { text-decoration: none; color: inherit; }
+  }
+
+  @media (max-width: 700px) {
+    .products-grid { grid-template-columns: 1fr; }
+    .cat-section { padding: 20px 16px; }
+    .toc { padding: 40px 20px; }
+  }
+
+  /* ── PRINT BUTTON ── */
+  .print-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #0d0d0d;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 24px;
+    z-index: 1000;
+    gap: 16px;
+  }
+  .print-bar span { font-size: 0.88rem; color: #aaa; }
+  .btn-print {
+    background: #FFD700;
+    color: #000;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+  .btn-print:hover { opacity: 0.85; }
+  body { padding-top: 48px; }
+  @media print { .print-bar { display: none; } body { padding-top: 0; } }
+</style>
+</head>
+<body>
+
+<div class="print-bar">
+  <span>Catálogo San Ou — Herramientas Hidráulicas</span>
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+</div>
+
+<!-- PORTADA -->
+<div class="cover">
+  <img src="sticker.png" alt="San Ou">
+  <h1>Catálogo de Productos</h1>
+  <p>Importadores directos de herramientas hidráulicas e industriales. Más de 12 años en el mercado, stock disponible y envíos a todo el país.</p>
+  <div class="cover-meta">
+    <p>sanou.com.ar &nbsp;|&nbsp; WhatsApp: 11 3175-1517 &nbsp;|&nbsp; sanou.argentina@gmail.com</p>
+    <p style="margin-top:8px">Buenos Aires, Argentina — 2026</p>
+  </div>
+</div>
+
+<!-- ÍNDICE -->
+<div class="toc">
+  <h2>Índice de categorías</h2>
+  <a href="#pinzas" class="toc-item"><span class="cat-name">Pinzas Hidráulicas</span><span class="cat-count">9 productos</span></a>
+  <a href="#dobladoras" class="toc-item"><span class="cat-name">Dobladoras de Caño</span><span class="cat-count">4 productos</span></a>
+  <a href="#cortahierro" class="toc-item"><span class="cat-name">Cortadoras de Varilla (Corta Hierro)</span><span class="cat-count">2 productos</span></a>
+  <a href="#mordazas" class="toc-item"><span class="cat-name">Mordazas de Torno</span><span class="cat-count">7 productos</span></a>
+  <a href="#bombas" class="toc-item"><span class="cat-name">Bomba Hidráulica</span><span class="cat-count">1 producto</span></a>
+  <a href="#sacabocados" class="toc-item"><span class="cat-name">Sacabocados Hidráulicos</span><span class="cat-count">3 productos</span></a>
+  <a href="#cilindros" class="toc-item"><span class="cat-name">Cilindros Hidráulicos</span><span class="cat-count">5 productos</span></a>
+  <a href="#cortadoras" class="toc-item"><span class="cat-name">Cortadoras para Barras Cu/Al</span><span class="cat-count">3 productos</span></a>
+  <a href="#punzonadoras" class="toc-item"><span class="cat-name">Punzonadoras</span><span class="cat-count">1 producto</span></a>
+  <a href="#extractores" class="toc-item"><span class="cat-name">Extractor Hidráulico</span><span class="cat-count">1 producto</span></a>
+  <a href="#vehiculos" class="toc-item"><span class="cat-name">Herramientas para Vehículos</span><span class="cat-count">5 productos</span></a>
+</div>
+
+<!-- ═══════════════ PINZAS ═══════════════ -->
+<div class="cat-section" id="pinzas">
+  <div class="cat-header">
+    <h2>Pinzas Hidráulicas</h2>
+    <span class="cat-qty">9 productos</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHY-70A/1.jpeg" alt="HHY-70A"></div>
+      <div class="product-body">
+        <span class="product-badge">6–70 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHY-70A</h3>
+        <p class="product-desc">Pinza hidráulica para indentar/engastar terminales. Incluye 7 matrices y maletín plástico de transporte.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHY-70A</td></tr>
+          <tr><td>Rango de crimpado</td><td>6–70 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>5 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>10 mm</td></tr>
+          <tr><td>Matrices incluidas</td><td>6 / 10 / 16 / 25 / 35 / 50 / 70 mm²</td></tr>
+          <tr><td>Incluye</td><td>Maletín plástico de transporte</td></tr>
+          <tr><td>Peso bruto</td><td>2.8 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>355 × 173 × 83 mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHY-120A/1.jpeg" alt="HHY-120A"></div>
+      <div class="product-body">
+        <span class="product-badge">10–120 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHY-120A</h3>
+        <p class="product-desc">Pinza hidráulica para indentar/engastar terminales y conectores. Incluye 8 matrices y maletín plástico.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHY-120A</td></tr>
+          <tr><td>Rango de crimpado</td><td>10–120 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>7 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>15.5 mm</td></tr>
+          <tr><td>Matrices incluidas</td><td>10 / 16 / 25 / 35 / 50 / 70 / 95 / 120 mm²</td></tr>
+          <tr><td>Incluye</td><td>Maletín plástico de transporte</td></tr>
+          <tr><td>Peso bruto</td><td>4.5 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>430 × 190 × 90 mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHY-300A/1.jpeg" alt="HHY-300A"></div>
+      <div class="product-body">
+        <span class="product-badge">16–300 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHY-300A</h3>
+        <p class="product-desc">Pinza hidráulica para indentar/engastar terminales y conectores. Incluye 11 matrices y maletín plástico moldeado.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHY-300A</td></tr>
+          <tr><td>Rango de crimpado</td><td>16–300 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>9 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>16 mm</td></tr>
+          <tr><td>Matrices incluidas</td><td>16 / 25 / 35 / 50 / 70 / 95 / 120 / 150 / 185 / 240 / 300 mm²</td></tr>
+          <tr><td>Incluye</td><td>Maletín plástico moldeado</td></tr>
+          <tr><td>Peso bruto</td><td>6.4 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>533 × 206 × 102 mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHY-300 (con zafe)/1.jpeg" alt="HHY-300 con zafe"></div>
+      <div class="product-body">
+        <span class="product-badge">16–300 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHY-300 (con zafe)</h3>
+        <p class="product-desc">Pinza hidráulica para terminales con válvula de seguridad (zafe). Mayor fuerza y seguridad en el crimpado.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHY-300</td></tr>
+          <tr><td>Rango de crimpado</td><td>16–300 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>11 Ton</td></tr>
+          <tr><td>Válvula de seguridad</td><td>Sí</td></tr>
+          <tr><td>Carrera del pistón</td><td>17 mm</td></tr>
+          <tr><td>Matrices incluidas</td><td>16 / 25 / 35 / 50 / 70 / 95 / 120 / 150 / 185 / 240 / 300 mm²</td></tr>
+          <tr><td>Peso bruto</td><td>9.5 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>540 × 120 × 240 mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHY-300CF + Bomba/1.webp" alt="HHY-300CF + Bomba"></div>
+      <div class="product-body">
+        <span class="product-badge">16–300 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHY-300CF + Bomba</h3>
+        <p class="product-desc">Pinza hidráulica con bomba manual incluida HHB-600A. Manguera 1.2 m y caja metálica de transporte.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHY-300CF</td></tr>
+          <tr><td>Rango de crimpado</td><td>16–300 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>11 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>28.5 mm</td></tr>
+          <tr><td>Matrices incluidas</td><td>16 / 25 / 35 / 50 / 70 / 95 / 120 / 150 / 185 / 240 / 300 mm²</td></tr>
+          <tr><td>Bomba incluida</td><td>HHB-600A</td></tr>
+          <tr><td>Manguera</td><td>1.2 m alta presión</td></tr>
+          <tr><td>Incluye</td><td>Caja metálica de transporte</td></tr>
+          <tr><td>Peso bruto</td><td>11.8 kg</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHYJ-50/1.png" alt="HHYJ-50"></div>
+      <div class="product-body">
+        <span class="product-badge">6–50 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHYJ-50</h3>
+        <p class="product-desc">Pinza para indentar terminales de cobre con crimpado hexagonal. Diseño compacto y liviano.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHYJ-50</td></tr>
+          <tr><td>Aplicación</td><td>Terminales de cobre</td></tr>
+          <tr><td>Rango de crimpado</td><td>6–50 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Matrices incluidas</td><td>6 / 10 / 16 / 25 / 35 / 50 mm²</td></tr>
+          <tr><td>Peso bruto</td><td>1.4 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>400 × 130 × 50 mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHY-400B con zafe/1.png" alt="HHY-400B con Zafe"></div>
+      <div class="product-body">
+        <span class="product-badge">16–400 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHY-400B con Zafe</h3>
+        <p class="product-desc">Pinza hidráulica para indentar terminales con zafe y sistema de seguridad CCD/CCG.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHY-400B</td></tr>
+          <tr><td>Rango de crimpado</td><td>16–400 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>11 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>32 mm</td></tr>
+          <tr><td>Matrices incluidas</td><td>50 / 70 / 95 / 120 / 150 / 185 / 240 / 300 / 400 mm²</td></tr>
+          <tr><td>Peso bruto</td><td>11.5 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>770 × 135 × 240 mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHY-400A/1.jpeg" alt="HHY-400A"></div>
+      <div class="product-body">
+        <span class="product-badge">16–400 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHY-400A</h3>
+        <p class="product-desc">Pinza hidráulica de alta fuerza para indentar terminales. Incluye 12 matrices y maletín de transporte.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHY-400A</td></tr>
+          <tr><td>Rango de crimpado</td><td>16–400 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>14 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>16.5 mm</td></tr>
+          <tr><td>Matrices incluidas</td><td>16 / 25 / 35 / 50 / 70 / 95 / 120 / 150 / 185 / 240 / 300 / 400 mm²</td></tr>
+          <tr><td>Peso bruto</td><td>15 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>625 × 110 × 240 mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Pinzas/HHY-500 + Bomba/1.jpeg" alt="HHY-500 + Bomba"></div>
+      <div class="product-body">
+        <span class="product-badge">16–500 mm²</span>
+        <h3 class="product-name">Pinza Hidráulica HHY-500 + Bomba</h3>
+        <p class="product-desc">Pinza hidráulica de máxima capacidad con bomba manual HHB-600A. Cabeza tipo yugo, caja metálica incluida.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHY-500</td></tr>
+          <tr><td>Tipo de cabeza</td><td>Yugo (sólida y durable)</td></tr>
+          <tr><td>Rango de crimpado</td><td>16–500 mm²</td></tr>
+          <tr><td>Tipo de crimpado</td><td>Hexagonal</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>20 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>22 mm</td></tr>
+          <tr><td>Matrices incluidas</td><td>70 / 95 / 120 / 150 / 185 / 240 / 300 / 400 / 500 mm²</td></tr>
+          <tr><td>Bomba incluida</td><td>HHB-600A</td></tr>
+          <tr><td>Manguera</td><td>1.2 m alta presión</td></tr>
+          <tr><td>Peso bruto kit</td><td>17.2 kg</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ DOBLADORAS ═══════════════ -->
+<div class="cat-section" id="dobladoras">
+  <div class="cat-header">
+    <h2>Dobladoras de Caño</h2>
+    <span class="cat-qty">4 productos</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Dobladoras/HHW-2J/1.webp" alt="HHW-2J"></div>
+      <div class="product-body">
+        <span class="product-badge">1/2"–2"</span>
+        <h3 class="product-name">Dobladora de Caños HHW-2J</h3>
+        <p class="product-desc">Dobladora hidráulica de caños con trípode. Doblado en frío. Incluye 6 zapatas.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHW-2J</td></tr>
+          <tr><td>Ángulo de doblado</td><td>0° a 90°</td></tr>
+          <tr><td>Método</td><td>Doblado en frío</td></tr>
+          <tr><td>Rango (Diám. exterior)</td><td>Ø21,3 a Ø60 mm</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>13 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>250 mm</td></tr>
+          <tr><td>Zapatas incluidas</td><td>1/2" / 3/4" / 1" / 1 1/4" / 1 1/2" / 2"</td></tr>
+          <tr><td>Peso bruto</td><td>48,2 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>73 × 32 × 20 cm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Dobladoras/HHW-3J/1.webp" alt="HHW-3J"></div>
+      <div class="product-body">
+        <span class="product-badge">1/2"–3"</span>
+        <h3 class="product-name">Dobladora de Caños HHW-3J</h3>
+        <p class="product-desc">Dobladora hidráulica de caños para paredes gruesas con trípode. Doblado en frío hasta 3". Incluye 8 zapatas.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHW-3J</td></tr>
+          <tr><td>Ángulo de doblado</td><td>0° a 90°</td></tr>
+          <tr><td>Tipo</td><td>Paredes gruesas, con trípode</td></tr>
+          <tr><td>Rango (Diám. exterior)</td><td>Ø21,3 a Ø88,5 mm</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>20 Ton</td></tr>
+          <tr><td>Carrera del pistón</td><td>290 mm</td></tr>
+          <tr><td>Zapatas incluidas</td><td>1/2" / 3/4" / 1" / 1 1/4" / 1 1/2" / 2" / 2 1/2" / 3"</td></tr>
+          <tr><td>Peso bruto</td><td>100,5 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>94 × 40 × 21 cm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Dobladoras/HHW25S/1.webp" alt="HHW-25S"></div>
+      <div class="product-body">
+        <span class="product-badge">10–25 mm</span>
+        <h3 class="product-name">Dobladora de Caños Manual HHW-25S</h3>
+        <p class="product-desc">Dobladora manual con 7 conformadores (10 a 25 mm). Flexión hasta 180°. Matrices de acero casi irrompibles. Maletín plástico moldeado.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHW-25S</td></tr>
+          <tr><td>Tipo</td><td>Manual</td></tr>
+          <tr><td>Rango de doblado</td><td>10 mm – 25 mm</td></tr>
+          <tr><td>Ángulo máximo</td><td>180°</td></tr>
+          <tr><td>Espesor de pared</td><td>0,8 mm – 2 mm</td></tr>
+          <tr><td>Conformadores</td><td>3/8" / 1/2" / 9/16" / 5/8" / 3/4" / 7/8" / 1"</td></tr>
+          <tr><td>Peso</td><td>25 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>660 × 460 × 180 mm</td></tr>
+          <tr><td>Incluye</td><td>Maletín de plástico moldeado resistente</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Dobladoras/HHM-150W/1.webp" alt="HHM-150W"></div>
+      <div class="product-body">
+        <span class="product-badge">Barras Cu/Al</span>
+        <h3 class="product-name">Dobladora de Barras HHM-150W</h3>
+        <p class="product-desc">Dobladora hidráulica para barras planas de cobre/aluminio. Ideal para tableros eléctricos, celdas y puesta a tierra.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHM-150W</td></tr>
+          <tr><td>Tipo</td><td>Barras planas (cobre / aluminio)</td></tr>
+          <tr><td>Ancho máx. de barra</td><td>150 mm</td></tr>
+          <tr><td>Espesor máx.</td><td>10 mm</td></tr>
+          <tr><td>Fuerza de salida</td><td>16 Ton</td></tr>
+          <tr><td>Sistema</td><td>Simple efecto, retorno por resorte</td></tr>
+          <tr><td>Presión de trabajo</td><td>700 bar</td></tr>
+          <tr><td>Peso</td><td>34,8 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>34 × 23 × 46 cm</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ CORTA HIERRO ═══════════════ -->
+<div class="cat-section" id="cortahierro">
+  <div class="cat-header">
+    <h2>Corta Hierro</h2>
+    <span class="cat-qty">2 productos</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cortahierro/Cortadora de Varilla 16mm/1.png" alt="HHG-16"></div>
+      <div class="product-body">
+        <span class="product-badge">hasta Ø16 mm</span>
+        <h3 class="product-name">Cortadora Hidráulica HHG-16</h3>
+        <p class="product-desc">Cortadora hidráulica de varillas de acero. Corte limpio sin deformación. Compacta y liviana.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHG-16</td></tr>
+          <tr><td>Diámetro máx.</td><td>Ø 16 mm</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>7 Ton</td></tr>
+          <tr><td>Peso</td><td>3,6 kg</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cortahierro/Cortadora de Varilla 22mm/1.jpeg" alt="HHG-22"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø4–22 mm</span>
+        <h3 class="product-name">Cortadora Hidráulica HHG-22</h3>
+        <p class="product-desc">Cortadora hidráulica de mayor capacidad. Corta varillas de acero hasta Ø22mm sin esfuerzo.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHG-22</td></tr>
+          <tr><td>Rango de corte</td><td>Ø 4–22 mm</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>16 Ton</td></tr>
+          <tr><td>Peso</td><td>6,2 kg</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ MORDAZAS ═══════════════ -->
+<div class="cat-section" id="mordazas">
+  <div class="cat-header">
+    <h2>Mordazas de Torno</h2>
+    <span class="cat-qty">7 productos</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/mordazas/80MM/1.jpeg" alt="80mm"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø 80 mm</span>
+        <h3 class="product-name">Mordaza de Torno 80mm</h3>
+        <p class="product-desc">Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>K11-80</td></tr>
+          <tr><td>Diámetro exterior</td><td>Ø 80 mm</td></tr>
+          <tr><td>Mordazas</td><td>3 autocentrantes</td></tr>
+          <tr><td>Pasaje de barra</td><td>Ø 16 mm</td></tr>
+          <tr><td>Toma mínima ext.</td><td>Ø 2 mm</td></tr>
+          <tr><td>Fijación</td><td>3 bulones M6 sobre Ø 66 mm</td></tr>
+          <tr><td>Incluye</td><td>2 juegos de mordazas, manija y bulones</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/mordazas/100MM/1.jpeg" alt="100mm"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø 100 mm</span>
+        <h3 class="product-name">Mordaza de Torno 100mm</h3>
+        <p class="product-desc">Plato de 3 mordazas autocentrantes. Alta precisión, velocidad máxima 3.500 rpm.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>K11-100</td></tr>
+          <tr><td>Diámetro exterior</td><td>Ø 100 mm</td></tr>
+          <tr><td>Mordazas</td><td>3 autocentrantes</td></tr>
+          <tr><td>Vel. máxima</td><td>3.500 rpm</td></tr>
+          <tr><td>Pasaje de barra</td><td>Ø 20 mm</td></tr>
+          <tr><td>Toma máx. ext.</td><td>Ø 90 mm</td></tr>
+          <tr><td>Toma máx. int.</td><td>Ø 80 mm</td></tr>
+          <tr><td>Peso</td><td>4 kg</td></tr>
+          <tr><td>Incluye</td><td>2 juegos de mordazas, manija y bulones</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/mordazas/125MM/1.jpeg" alt="125mm"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø 125 mm</span>
+        <h3 class="product-name">Mordaza de Torno 125mm</h3>
+        <p class="product-desc">Plato de 3 mordazas autocentrantes con doble juego de mordazas.</p>
+        <table class="specs-table">
+          <tr><td>Diámetro exterior</td><td>Ø 125 mm</td></tr>
+          <tr><td>Mordazas</td><td>3 autocentrantes</td></tr>
+          <tr><td>Pasaje de barra</td><td>Ø 30 mm</td></tr>
+          <tr><td>Toma máx. ext.</td><td>Ø 125 mm</td></tr>
+          <tr><td>Toma máx. int.</td><td>Ø 110 mm</td></tr>
+          <tr><td>Altura sin mordazas</td><td>58 mm</td></tr>
+          <tr><td>Fijación</td><td>3 bulones M8 sobre Ø 108 mm</td></tr>
+          <tr><td>Incluye</td><td>2 juegos de mordazas</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/mordazas/160MM/1.jpeg" alt="160mm"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø 160 mm</span>
+        <h3 class="product-name">Mordaza de Torno 160mm</h3>
+        <p class="product-desc">Plato de 3 mordazas autocentrantes con doble juego de mordazas. Montaje directo.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>K11-160</td></tr>
+          <tr><td>Diámetro exterior</td><td>Ø 160 mm</td></tr>
+          <tr><td>Mordazas</td><td>3 autocentrantes</td></tr>
+          <tr><td>Pasaje de barra</td><td>Ø 45 mm</td></tr>
+          <tr><td>Toma máx. ext.</td><td>Ø 160 mm</td></tr>
+          <tr><td>Toma máx. int.</td><td>Ø 145 mm</td></tr>
+          <tr><td>Altura sin mordazas</td><td>70 mm</td></tr>
+          <tr><td>Fijación</td><td>3 bulones M8 sobre Ø 142 mm</td></tr>
+          <tr><td>Incluye</td><td>2 juegos de mordazas, manual, manija y bulones</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/mordazas/200MM/1.jpeg" alt="200mm"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø 200 mm</span>
+        <h3 class="product-name">Mordaza de Torno 200mm</h3>
+        <p class="product-desc">Plato de 3 mordazas autocentrantes. Alta precisión para tornos grandes.</p>
+        <table class="specs-table">
+          <tr><td>Diámetro exterior</td><td>Ø 200 mm</td></tr>
+          <tr><td>Mordazas</td><td>3 autocentrantes</td></tr>
+          <tr><td>Pasaje de barra</td><td>Ø 65 mm</td></tr>
+          <tr><td>Toma máx. ext.</td><td>Ø 200 mm</td></tr>
+          <tr><td>Toma máx. int.</td><td>Ø 200 mm</td></tr>
+          <tr><td>Altura sin mordazas</td><td>75 mm</td></tr>
+          <tr><td>Fijación</td><td>3 bulones M10 sobre Ø 180 mm</td></tr>
+          <tr><td>Incluye</td><td>2 juegos de mordazas, manual, manija y bulones</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/mordazas/250MM/1.jpeg" alt="250mm"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø 250 mm</span>
+        <h3 class="product-name">Mordaza de Torno 250mm</h3>
+        <p class="product-desc">Plato de 3 mordazas autocentrantes de gran capacidad para tornos industriales.</p>
+        <table class="specs-table">
+          <tr><td>Diámetro exterior</td><td>Ø 250 mm</td></tr>
+          <tr><td>Mordazas</td><td>3 autocentrantes</td></tr>
+          <tr><td>Montaje</td><td>Directo</td></tr>
+          <tr><td>Incluye</td><td>2 juegos de mordazas</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/mordazas/315MM/1.jpeg" alt="315mm"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø 315 mm</span>
+        <h3 class="product-name">Mordaza de Torno 315mm</h3>
+        <p class="product-desc">Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.</p>
+        <table class="specs-table">
+          <tr><td>Diámetro exterior</td><td>Ø 315 mm</td></tr>
+          <tr><td>Pasaje de barra</td><td>Ø 100 mm</td></tr>
+          <tr><td>Mordazas</td><td>3 autocentrantes</td></tr>
+          <tr><td>Fijación</td><td>3 bulones M16 sobre Ø 285 mm</td></tr>
+          <tr><td>Toma mínima (ext.)</td><td>Ø 10 mm</td></tr>
+          <tr><td>Toma máxima (ext.)</td><td>Ø 140 mm / Ø 315 mm (2° escalón)</td></tr>
+          <tr><td>Incluye</td><td>2 juegos de mordazas, manija y manual</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ BOMBA ═══════════════ -->
+<div class="cat-section" id="bombas">
+  <div class="cat-header">
+    <h2>Bomba Hidráulica</h2>
+    <span class="cat-qty">1 producto</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/bombas/HHB-700/1.jpeg" alt="HHB-700"></div>
+      <div class="product-body">
+        <span class="product-badge">Manual 700 bar</span>
+        <h3 class="product-name">Bomba Hidráulica Manual HHB-700</h3>
+        <p class="product-desc">Bomba hidráulica manual de alta presión. Manguera de 1.8m incluida con acople rápido R2 3/8". Ideal para cilindros y herramientas hidráulicas San Ou.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHB-700</td></tr>
+          <tr><td>Tipo</td><td>Manual</td></tr>
+          <tr><td>Presión máx.</td><td>700 bar</td></tr>
+          <tr><td>Manguera</td><td>1,8 m alta presión</td></tr>
+          <tr><td>Acople</td><td>Rápido R2 3/8"</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ SACABOCADOS ═══════════════ -->
+<div class="cat-section" id="sacabocados">
+  <div class="cat-header">
+    <h2>Sacabocados Hidráulicos</h2>
+    <span class="cat-qty">3 productos</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/sacabocados/HHK-8/1.jpeg" alt="HHK-8"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø22–60 mm</span>
+        <h3 class="product-name">Sacabocados Hidráulico HHK-8</h3>
+        <p class="product-desc">Sacabocados hidráulico para chapas y tableros eléctricos. Incluye 6 matrices y llave.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHK-8</td></tr>
+          <tr><td>Rango de corte</td><td>Ø 22–60 mm</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>9 Ton</td></tr>
+          <tr><td>Incluye</td><td>6 matrices + llave</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/sacabocados/HHK-15/1.webp" alt="HHK-15"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø63–114 mm</span>
+        <h3 class="product-name">Sacabocados Hidráulico HHK-15</h3>
+        <p class="product-desc">Sacabocados hidráulico de mayor capacidad para chapas y tableros eléctricos. Incluye 6 matrices y llave.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHK-15</td></tr>
+          <tr><td>Rango de corte</td><td>Ø 63–114 mm</td></tr>
+          <tr><td>Fuerza hidráulica</td><td>13 Ton</td></tr>
+          <tr><td>Incluye</td><td>6 matrices + llave</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/sacabocados/Hhk-8c/1.webp" alt="HHK-8C"></div>
+      <div class="product-body">
+        <span class="product-badge">Ø22–60 mm</span>
+        <h3 class="product-name">Sacabocados Hidráulico HHK-8C</h3>
+        <p class="product-desc">Sacabocados hidráulico monoblock. Diseño compacto y robusto para tableros eléctricos.</p>
+        <table class="specs-table">
+          <tr><td>Tipo</td><td>Monoblock</td></tr>
+          <tr><td>Rango de corte</td><td>Ø 22–60 mm</td></tr>
+          <tr><td>Aplicación</td><td>Tableros eléctricos / chapas</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ CILINDROS ═══════════════ -->
+<div class="cat-section" id="cilindros">
+  <div class="cat-header">
+    <h2>Cilindros Hidráulicos</h2>
+    <span class="cat-qty">5 productos</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cilindros/HHYG-10D/1.jpeg" alt="HHYG-10D"></div>
+      <div class="product-body">
+        <span class="product-badge">10 Toneladas</span>
+        <h3 class="product-name">Cilindro Hidráulico HHYG-10D</h3>
+        <p class="product-desc">Cilindro hidráulico telescópico tipo pastilla. Compacto y liviano, ideal para espacios reducidos.</p>
+        <table class="specs-table">
+          <tr><td>Capacidad</td><td>10 Ton</td></tr>
+          <tr><td>Carrera</td><td>25 mm</td></tr>
+          <tr><td>Altura cerrada</td><td>45 mm</td></tr>
+          <tr><td>Cap. de aceite</td><td>22 cc</td></tr>
+          <tr><td>Peso</td><td>1,4 kg</td></tr>
+          <tr><td>Bomba recomendada</td><td>HHB-700C</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cilindros/HHYG-20D/1.jpg" alt="HHYG-20D"></div>
+      <div class="product-body">
+        <span class="product-badge">20 Toneladas</span>
+        <h3 class="product-name">Cilindro Hidráulico HHYG-20D</h3>
+        <p class="product-desc">Cilindro hidráulico telescópico tipo pastilla. Mayor capacidad de carga con diseño compacto.</p>
+        <table class="specs-table">
+          <tr><td>Capacidad</td><td>20 Ton</td></tr>
+          <tr><td>Carrera</td><td>26 mm</td></tr>
+          <tr><td>Altura cerrada</td><td>52 mm</td></tr>
+          <tr><td>Cap. de aceite</td><td>41 cc</td></tr>
+          <tr><td>Peso</td><td>2,5 kg</td></tr>
+          <tr><td>Bomba recomendada</td><td>HHB-700C</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cilindros/HHYG-30D/1.jpeg" alt="HHYG-30D"></div>
+      <div class="product-body">
+        <span class="product-badge">30 Toneladas</span>
+        <h3 class="product-name">Cilindro Hidráulico HHYG-30D</h3>
+        <p class="product-desc">Cilindro hidráulico telescópico tipo pastilla. Alta fuerza con estructura robusta de acero.</p>
+        <table class="specs-table">
+          <tr><td>Capacidad</td><td>30 Ton</td></tr>
+          <tr><td>Carrera</td><td>53 mm</td></tr>
+          <tr><td>Altura cerrada</td><td>58 mm</td></tr>
+          <tr><td>Cap. de aceite</td><td>67 cc</td></tr>
+          <tr><td>Peso</td><td>4,1 kg</td></tr>
+          <tr><td>Bomba recomendada</td><td>HHB-700C</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cilindros/HHYG-50D/1.jpg" alt="HHYG-50D"></div>
+      <div class="product-body">
+        <span class="product-badge">50 Toneladas</span>
+        <h3 class="product-name">Cilindro Hidráulico HHYG-50D</h3>
+        <p class="product-desc">Cilindro hidráulico telescópico tipo pastilla. Para trabajos industriales de alta exigencia.</p>
+        <table class="specs-table">
+          <tr><td>Capacidad</td><td>50 Ton</td></tr>
+          <tr><td>Carrera</td><td>64 mm</td></tr>
+          <tr><td>Altura cerrada</td><td>68 mm</td></tr>
+          <tr><td>Cap. de aceite</td><td>113 cc</td></tr>
+          <tr><td>Peso</td><td>6,4 kg</td></tr>
+          <tr><td>Bomba recomendada</td><td>HHB-700C</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cilindros/HHYG-100D/1.jpg" alt="HHYG-100D"></div>
+      <div class="product-body">
+        <span class="product-badge">100 Toneladas</span>
+        <h3 class="product-name">Cilindro Hidráulico HHYG-100D</h3>
+        <p class="product-desc">Cilindro hidráulico telescópico tipo pastilla. Máxima capacidad para aplicaciones industriales pesadas.</p>
+        <table class="specs-table">
+          <tr><td>Capacidad</td><td>100 Ton</td></tr>
+          <tr><td>Carrera</td><td>68 mm</td></tr>
+          <tr><td>Altura cerrada</td><td>88 mm</td></tr>
+          <tr><td>Cap. de aceite</td><td>225 cc</td></tr>
+          <tr><td>Peso</td><td>14,5 kg</td></tr>
+          <tr><td>Bomba recomendada</td><td>HHB-700C</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ CORTADORAS Cu/Al ═══════════════ -->
+<div class="cat-section" id="cortadoras">
+  <div class="cat-header">
+    <h2>Cortadoras para Barras de Cobre/Aluminio</h2>
+    <span class="cat-qty">3 productos</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cortadora para barras de cobrealuminio/120HS/1.webp" alt="HHM-120HS"></div>
+      <div class="product-body">
+        <span class="product-badge">3 en 1</span>
+        <h3 class="product-name">Procesadora de Barras HHM-120HS</h3>
+        <p class="product-desc">Procesadora hidráulica 3 en 1: corta, dobla y punzona. Incluye 4 punzones.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHM-120HS</td></tr>
+          <tr><td>Funciones</td><td>Corte + Doblado + Punzonado</td></tr>
+          <tr><td>Fuerza de salida</td><td>23 Ton</td></tr>
+          <tr><td>Capacidad de barra</td><td>120 × 10 mm</td></tr>
+          <tr><td>Punzones incluidos</td><td>3/8" / 1/2" / 5/8" / 3/4"</td></tr>
+          <tr><td>Peso bruto</td><td>62,9 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>63 × 27 × 29 cm</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cortadora para barras de cobrealuminio/HHM-150VQ/1.webp" alt="HHM-150VQ"></div>
+      <div class="product-body">
+        <span class="product-badge">150×10 mm</span>
+        <h3 class="product-name">Cortadora Hidráulica HHM-150VQ</h3>
+        <p class="product-desc">Cortadora hidráulica para barras planas de cobre/aluminio. Ideal para tableros eléctricos y puesta a tierra.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHM-150VQ</td></tr>
+          <tr><td>Aplicación</td><td>Barras Cu/Al (tableros, puesta a tierra)</td></tr>
+          <tr><td>Ancho máx. de barra</td><td>150 mm</td></tr>
+          <tr><td>Espesor máx.</td><td>10 mm</td></tr>
+          <tr><td>Fuerza de corte</td><td>20 Ton</td></tr>
+          <tr><td>Sistema</td><td>Simple efecto, retorno por resorte</td></tr>
+          <tr><td>Presión de trabajo</td><td>700 bar</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/cortadora para barras de cobrealuminio/HHM-150Q/1.webp" alt="HHM-150Q"></div>
+      <div class="product-body">
+        <span class="product-badge">150×10 mm</span>
+        <h3 class="product-name">Cortadora Hidráulica HHM-150Q</h3>
+        <p class="product-desc">Cortadora hidráulica compacta para barras planas de cobre/aluminio. Simple efecto con retorno por resorte.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHM-150Q</td></tr>
+          <tr><td>Aplicación</td><td>Barras planas de cobre / aluminio</td></tr>
+          <tr><td>Ancho máx. de barra</td><td>150 mm</td></tr>
+          <tr><td>Espesor máx.</td><td>10 mm</td></tr>
+          <tr><td>Fuerza de salida</td><td>20 Ton</td></tr>
+          <tr><td>Sistema</td><td>Simple efecto, retorno por resorte</td></tr>
+          <tr><td>Presión de trabajo</td><td>700 bar</td></tr>
+          <tr><td>Peso</td><td>33,6 kg</td></tr>
+          <tr><td>Medidas de empaque</td><td>32 × 23 × 44 cm</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ PUNZONADORAS ═══════════════ -->
+<div class="cat-section" id="punzonadoras">
+  <div class="cat-header">
+    <h2>Punzonadoras</h2>
+    <span class="cat-qty">1 producto</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Punzadoras/HHM-60/1.webp" alt="HHM-60"></div>
+      <div class="product-body">
+        <span class="product-badge">3/8"–3/4"</span>
+        <h3 class="product-name">Punzonadora Hidráulica HHM-60</h3>
+        <p class="product-desc">Punzonadora hidráulica para chapas de cobre y hierro. Punzona orificios de 3/8" a 3/4" sin necesidad de taladro.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHM-60</td></tr>
+          <tr><td>Rango de punzonado</td><td>3/8" – 3/4"</td></tr>
+          <tr><td>Espesor máx. cobre</td><td>10 mm</td></tr>
+          <tr><td>Espesor máx. hierro</td><td>6 mm</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ EXTRACTOR ═══════════════ -->
+<div class="cat-section" id="extractores">
+  <div class="cat-header">
+    <h2>Extractor Hidráulico</h2>
+    <span class="cat-qty">1 producto</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Extractor hidraulico/HHL-5/1.webp" alt="HHL-5"></div>
+      <div class="product-body">
+        <span class="product-badge">5 Toneladas</span>
+        <h3 class="product-name">Extractor Hidráulico HHL-5</h3>
+        <p class="product-desc">Extractor hidráulico de rodamientos con bomba integrada. Funciona con 2 o 3 patas. Apertura regulable.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>HHL-5</td></tr>
+          <tr><td>Capacidad</td><td>5 Ton</td></tr>
+          <tr><td>Apertura</td><td>50–200 mm</td></tr>
+          <tr><td>Patas</td><td>2 o 3 patas intercambiables</td></tr>
+          <tr><td>Bomba</td><td>Integrada</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ HERRAMIENTAS VEHÍCULOS ═══════════════ -->
+<div class="cat-section" id="vehiculos">
+  <div class="cat-header">
+    <h2>Herramientas para Vehículos</h2>
+    <span class="cat-qty">5 productos</span>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Herramientas para vehículos/Multiplicador De Fuerza Torque Camion Tractor 7500nm/1.jpeg" alt="Multiplicador de Torque"></div>
+      <div class="product-body">
+        <span class="product-badge">7500 Nm</span>
+        <h3 class="product-name">Multiplicador de Fuerza Torque 7500 Nm</h3>
+        <p class="product-desc">Multiplicador de torque manual para tuercas de alta exigencia en camiones, tractores, colectivos y maquinaria pesada.</p>
+        <table class="specs-table">
+          <tr><td>Torque máximo</td><td>7500 Nm</td></tr>
+          <tr><td>Accionamiento</td><td>Manual por palanca</td></tr>
+          <tr><td>Encastre</td><td>1 pulgada</td></tr>
+          <tr><td>Relación de fuerza</td><td>1:78</td></tr>
+          <tr><td>Largo aproximado</td><td>330 mm</td></tr>
+          <tr><td>Peso aproximado</td><td>9 a 10 kg</td></tr>
+          <tr><td>Material</td><td>Acero reforzado</td></tr>
+          <tr><td>Tubos incluidos</td><td>32 mm y 33 mm</td></tr>
+          <tr><td>Presentación</td><td>Kit en maletín plástico</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Herramientas para vehículos/Kit Extractor De Rulemanes Cepo Grande 75 Mm A 105 Mm 9 Pzs/1.jpeg" alt="Kit Extractor Cepo"></div>
+      <div class="product-body">
+        <span class="product-badge">75–105 mm</span>
+        <h3 class="product-name">Kit Extractor de Rulemanes Cepo Grande 9 Pzas</h3>
+        <p class="product-desc">Extractor de rulemanes tipo cepo. Extrae rulemanes, poleas, engranajes y piezas ajustadas a presión.</p>
+        <table class="specs-table">
+          <tr><td>Tipo de extractor</td><td>Cepo / separador de rulemanes</td></tr>
+          <tr><td>Rango de apertura</td><td>75 mm a 105 mm</td></tr>
+          <tr><td>Cantidad de piezas</td><td>9 piezas</td></tr>
+          <tr><td>Función reversible</td><td>Sí</td></tr>
+          <tr><td>Largo tornillo principal</td><td>Aprox. 300 mm</td></tr>
+          <tr><td>Peso aproximado</td><td>5 a 6,5 kg</td></tr>
+          <tr><td>Material</td><td>Acero reforzado</td></tr>
+          <tr><td>Presentación</td><td>Kit en maletín plástico</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Herramientas para vehículos/Extractor Rulemanes 3 Garras Interior exterior/1.jpeg" alt="Extractor 3 Garras"></div>
+      <div class="product-body">
+        <span class="product-badge">3 garras</span>
+        <h3 class="product-name">Extractor Rulemanes 3 Garras Interior/Exterior</h3>
+        <p class="product-desc">Kit extractor de rulemanes de 3 garras interior y exterior. Extrae rodamientos, bujes, poleas y piezas ajustadas a presión.</p>
+        <table class="specs-table">
+          <tr><td>Tipo de extractor</td><td>3 garras interior y exterior</td></tr>
+          <tr><td>Reversible</td><td>Sí</td></tr>
+          <tr><td>Material</td><td>Acero reforzado</td></tr>
+          <tr><td>Accesorios incluidos</td><td>Extractores de garras, barra/percutor deslizante, adaptadores</td></tr>
+          <tr><td>Aplicación</td><td>Mecánica automotor, talleres, maquinaria e industria</td></tr>
+          <tr><td>Presentación</td><td>Maletín plástico rojo</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Herramientas para vehículos/Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz/1.jpeg" alt="Extractor Rótulas"></div>
+      <div class="product-body">
+        <span class="product-badge">5 piezas</span>
+        <h3 class="product-name">Juego Extractores de Rótulas Extremos Pitman Universal</h3>
+        <p class="product-desc">Juego extractor de rótulas, extremos y pitman universal. 5 piezas de metal para autos y camionetas.</p>
+        <table class="specs-table">
+          <tr><td>Modelo</td><td>MK14050</td></tr>
+          <tr><td>Cantidad de piezas</td><td>5 piezas</td></tr>
+          <tr><td>Material</td><td>Metal</td></tr>
+          <tr><td>Usos recomendados</td><td>Autos y camionetas</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="productos/Herramientas para vehículos/Extractor De Inyectores Diesel/1.jpeg" alt="Extractor Inyectores"></div>
+      <div class="product-body">
+        <span class="product-badge">21 piezas</span>
+        <h3 class="product-name">Extractor de Inyectores Diesel</h3>
+        <p class="product-desc">Extractor neumático de inyectores diésel. Retira inyectores trabados en motores common rail sin martillo manual.</p>
+        <table class="specs-table">
+          <tr><td>Sistema de trabajo</td><td>Neumático / vibración</td></tr>
+          <tr><td>Presión de trabajo</td><td>72 a 116 PSI / 5 a 8 bar</td></tr>
+          <tr><td>Cantidad de piezas</td><td>21 piezas</td></tr>
+          <tr><td>Compatibilidad</td><td>Bosch, Delphi, Denso, Siemens</td></tr>
+          <tr><td>Adaptadores incluidos</td><td>M8, M12, M16, M17, M18, M20, M22, M25, M26, M27, M29, M31</td></tr>
+          <tr><td>Material</td><td>Acero</td></tr>
+          <tr><td>Presentación</td><td>Kit completo en maletín</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PIE -->
+<div style="background:#0d0d0d; color:#aaa; text-align:center; padding:40px 20px; margin-top:40px; font-size:0.82rem; line-height:2;">
+  <strong style="color:#FFD700; font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; display:block; margin-bottom:8px;">SAN OU</strong>
+  Importadores directos de herramientas hidráulicas e industriales<br>
+  WhatsApp: 11 3175-1517 &nbsp;|&nbsp; sanou.argentina@gmail.com &nbsp;|&nbsp; sanou.com.ar<br>
+  Buenos Aires, Argentina
+</div>
+
+</body>
+</html>
