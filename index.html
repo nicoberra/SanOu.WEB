@@ -25,6 +25,9 @@
     <!-- End Klaviyo -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="sticker.png">
+    <link rel="apple-touch-icon" href="sticker.png">
     <title>SanOu - Herramientas Hidráulicas | Importador directo Argentina</title>
     <meta name="description" content="Importadores directos de herramientas hidráulicas hace más de 12 años. Pinzas, cilindros, bombas, extractores y más. Stock disponible. Envíos a todo el país.">
     <meta name="keywords" content="herramientas hidráulicas, pinza hidráulica, cilindro hidráulico, bomba hidráulica, extractor hidráulico, sacabocados, Argentina">
@@ -46,6 +49,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <!-- Datos estructurados (Google) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "San Ou",
+      "description": "Importadores directos de herramientas hidráulicas e industriales hace más de 12 años. Pinzas, cilindros, bombas, extractores, sacabocados y más. Stock disponible. Envíos a todo el país.",
+      "image": "https://sanou.com.ar/sticker.png",
+      "logo": "https://sanou.com.ar/sticker.png",
+      "url": "https://sanou.com.ar/",
+      "telephone": "+5491131751517",
+      "email": "sanou.argentina@gmail.com",
+      "priceRange": "$$",
+      "currenciesAccepted": "ARS",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Marcelo Camboa 6306",
+        "addressLocality": "Buenos Aires",
+        "addressCountry": "AR"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "17:00"
+      },
+      "sameAs": [
+        "https://www.instagram.com/sanou.arg",
+        "https://www.facebook.com/profile.php?id=61578990548942",
+        "https://www.tiktok.com/@san.ou"
+      ]
+    }
+    </script>
 </head>
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -118,6 +154,9 @@
                     </a>
                     <a href="https://www.facebook.com/profile.php?id=61578990548942" target="_blank" class="social-icon si-fb" title="Facebook" onclick="gtag('event','click_facebook',{event_category:'redes_sociales',event_label:'header'})">
                         <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.tiktok.com/@san.ou" target="_blank" class="social-icon si-tk" title="TikTok" onclick="gtag('event','click_tiktok',{event_category:'redes_sociales',event_label:'header'})">
+                        <i class="fab fa-tiktok"></i>
                     </a>
                 </div>
                 <button class="fav-btn header-icon-btn" onclick="openFavs()" title="Mis favoritos">
@@ -676,6 +715,7 @@
                         <li><a href="https://mail.google.com/mail/?view=cm&fs=1&to=sanou.argentina%40gmail.com" target="_blank">Mail: sanou.argentina@gmail.com</a></li>
                         <li>Buenos Aires, Argentina</li>
                         <li><a href="https://www.google.com/maps/search/?api=1&query=Marcelo+Camboa+6306,+Buenos+Aires,+Argentina" target="_blank">Dirección: Marcelo Camboa 6306</a></li>
+                        <li><i class="far fa-clock" style="color:var(--yellow);margin-right:6px;"></i>Lun a Vie de 9 a 17 hs</li>
                     </ul>
                 </div>
                 <div class="footer-nav">
@@ -710,6 +750,11 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 SanOu. Todos los derechos reservados.</p>
+                <div class="footer-legal-links">
+                    <a href="terminos.html">Términos y Condiciones</a>
+                    <a href="privacidad.html">Política de Privacidad</a>
+                    <a href="envios.html">Envíos y Garantía</a>
+                </div>
             </div>
         </div>
     </footer>
