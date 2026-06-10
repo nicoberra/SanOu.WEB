@@ -443,132 +443,157 @@ const products = [
     },
     // Mordazas de torno
     { id: 10, name: 'Mordaza de Torno 80mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 80 mm', imgs: ['1.jpeg','2.png','5.webp'], folder: '80MM',
-      desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.',
+      desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
-        { l: 'Diámetro', v: 'Ø 80 mm' },
+        { l: 'Diámetro exterior', v: 'Ø 80 mm' },
         { l: 'Mordazas', v: '3 autocentrantes' },
         { l: 'Pasaje de barra', v: 'Ø 16 mm' }
       ],
       allSpecs: [
-        { l: 'Modelo', v: 'K11-80' },
-        { l: 'Diámetro exterior', v: 'Ø 80 mm' },
-        { l: 'Mordazas', v: '3 autocentrantes' },
+        { l: 'Diámetro exterior del plato', v: 'Ø 80 mm' },
+        { l: 'Fijación', v: '3 bulones M6 sobre entrecentro Ø 66 mm' },
         { l: 'Pasaje de barra', v: 'Ø 16 mm' },
-        { l: 'Toma mínima ext.', v: 'Ø 2 mm' },
-        { l: 'Fijación', v: '3 bulones M6 sobre Ø 66 mm' },
-        { l: 'Incluye', v: '2 juegos de mordazas, manija y bulones' }
+        { l: 'Toma mín. mordazas externas (A)', v: 'Ø 2 mm' },
+        { l: 'Toma mín. 2º escalón ext. (B)', v: 'Ø 25 mm' },
+        { l: 'Toma máx. mordazas externas (C)', v: 'Ø 22 mm' },
+        { l: 'Toma máx. 2º escalón ext. (D)', v: 'Ø 70 mm' },
+        { l: 'Toma mín. 2º escalón int. (E)', v: 'Ø 22 mm' },
+        { l: 'Toma máx. mordazas internas (G)', v: 'Ø 63 mm' },
+        { l: 'Altura del plato sin mordazas (H)', v: '50 mm' },
+        { l: 'Depresión localizadora manchón (F)', v: 'Ø 55 mm' },
+        { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
     { id: 11, name: 'Mordaza de Torno 100mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 100 mm', imgs: ['1.jpeg','2.webp'], folder: '100MM',
-      desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Alta precisión, velocidad máxima 3.500 rpm. Para torno paralelo mecánico.',
+      desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
-        { l: 'Diámetro', v: 'Ø 100 mm' },
-        { l: 'Mordazas', v: '3 autocentrantes' },
-        { l: 'Vel. máxima', v: '3.500 rpm' }
-      ],
-      allSpecs: [
-        { l: 'Modelo', v: 'K11-100' },
         { l: 'Diámetro exterior', v: 'Ø 100 mm' },
         { l: 'Mordazas', v: '3 autocentrantes' },
-        { l: 'Vel. máxima', v: '3.500 rpm' },
-        { l: 'Pasaje de barra', v: 'Ø 20 mm' },
-        { l: 'Toma máx. ext.', v: 'Ø 90 mm' },
-        { l: 'Toma máx. int.', v: 'Ø 80 mm' },
-        { l: 'Altura sin mordazas', v: '55 mm' },
-        { l: 'Peso', v: '4 kg' },
-        { l: 'Fijación', v: '3 bulones M8 sobre Ø 84 mm' },
-        { l: 'Incluye', v: '2 juegos de mordazas, manija y bulones' }
+        { l: 'Pasaje de barra', v: 'Ø 16 mm' }
+      ],
+      allSpecs: [
+        { l: 'Diámetro exterior del plato', v: 'Ø 100 mm' },
+        { l: 'Fijación', v: '3 bulones M8 sobre entrecentro Ø 84 mm' },
+        { l: 'Pasaje de barra', v: 'Ø 16 mm' },
+        { l: 'Toma mín. mordazas externas (A)', v: 'Ø 2 mm' },
+        { l: 'Toma mín. 2º escalón ext. (B)', v: 'Ø 30 mm' },
+        { l: 'Toma máx. mordazas externas (C)', v: 'Ø 30 mm' },
+        { l: 'Toma máx. 2º escalón ext. (D)', v: 'Ø 90 mm' },
+        { l: 'Toma mín. 2º escalón int. (E)', v: 'Ø 30 mm' },
+        { l: 'Toma máx. mordazas internas (G)', v: 'Ø 80 mm' },
+        { l: 'Altura del plato sin mordazas (H)', v: '55 mm' },
+        { l: 'Depresión localizadora manchón (F)', v: 'Ø 72 mm' },
+        { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
     { id: 12, name: 'Mordaza de Torno 125mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 125 mm', imgs: ['1.jpeg','2.webp'], folder: '125MM',
-      desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.',
+      desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
-        { l: 'Diámetro', v: 'Ø 125 mm' },
+        { l: 'Diámetro exterior', v: 'Ø 125 mm' },
         { l: 'Mordazas', v: '3 autocentrantes' },
         { l: 'Pasaje de barra', v: 'Ø 30 mm' }
       ],
       allSpecs: [
-        { l: 'Diámetro exterior', v: 'Ø 125 mm' },
-        { l: 'Mordazas', v: '3 autocentrantes' },
+        { l: 'Diámetro exterior del plato', v: 'Ø 125 mm' },
+        { l: 'Fijación', v: '3 bulones M8 sobre entrecentro Ø 108 mm' },
         { l: 'Pasaje de barra', v: 'Ø 30 mm' },
-        { l: 'Toma mínima ext.', v: 'Ø 2,5 mm' },
-        { l: 'Toma máx. ext.', v: 'Ø 125 mm' },
-        { l: 'Toma máx. int.', v: 'Ø 110 mm' },
-        { l: 'Altura sin mordazas', v: '58 mm' },
-        { l: 'Fijación', v: '3 bulones M8 sobre Ø 108 mm' },
-        { l: 'Incluye', v: '2 juegos de mordazas' }
+        { l: 'Toma mín. mordazas externas (A)', v: 'Ø 2,5 mm' },
+        { l: 'Toma mín. 2º escalón ext. (B)', v: 'Ø 38 mm' },
+        { l: 'Toma máx. mordazas externas (C)', v: 'Ø 40 mm' },
+        { l: 'Toma máx. 2º escalón ext. (D)', v: 'Ø 125 mm' },
+        { l: 'Toma mín. 2º escalón int. (E)', v: 'Ø 38 mm' },
+        { l: 'Toma máx. mordazas internas (G)', v: 'Ø 110 mm' },
+        { l: 'Altura del plato sin mordazas (H)', v: '58 mm' },
+        { l: 'Depresión localizadora manchón (F)', v: 'Ø 95 mm' },
+        { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
     { id: 35, name: 'Mordaza de Torno 160mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 160 mm', imgs: ['1.jpeg','2.jpg','3.jpg','4.webp'], folder: '160MM',
-      desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico, montaje directo.',
+      desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
-        { l: 'Diámetro', v: 'Ø 160 mm' },
+        { l: 'Diámetro exterior', v: 'Ø 160 mm' },
         { l: 'Mordazas', v: '3 autocentrantes' },
         { l: 'Pasaje de barra', v: 'Ø 45 mm' }
       ],
       allSpecs: [
-        { l: 'Modelo', v: 'K11-160' },
-        { l: 'Diámetro exterior', v: 'Ø 160 mm' },
-        { l: 'Mordazas', v: '3 autocentrantes' },
+        { l: 'Diámetro exterior del plato', v: 'Ø 160 mm' },
+        { l: 'Fijación', v: '3 bulones M8 sobre entrecentro Ø 142 mm' },
         { l: 'Pasaje de barra', v: 'Ø 45 mm' },
-        { l: 'Toma mínima ext.', v: 'Ø 3 mm' },
-        { l: 'Toma máx. ext.', v: 'Ø 160 mm' },
-        { l: 'Toma máx. int.', v: 'Ø 145 mm' },
-        { l: 'Altura sin mordazas', v: '70 mm' },
-        { l: 'Fijación', v: '3 bulones M8 sobre Ø 142 mm' },
-        { l: 'Incluye', v: '2 juegos de mordazas, manual, manija y bulones' }
+        { l: 'Toma mín. mordazas externas (A)', v: 'Ø 3 mm' },
+        { l: 'Toma mín. 2º escalón ext. (B)', v: 'Ø 50 mm' },
+        { l: 'Toma máx. mordazas externas (C)', v: 'Ø 55 mm' },
+        { l: 'Toma máx. 2º escalón ext. (D)', v: 'Ø 160 mm' },
+        { l: 'Toma mín. 2º escalón int. (E)', v: 'Ø 55 mm' },
+        { l: 'Toma máx. mordazas internas (G)', v: 'Ø 145 mm' },
+        { l: 'Altura del plato sin mordazas (H)', v: '70 mm' },
+        { l: 'Depresión localizadora manchón (F)', v: 'Ø 130 mm' },
+        { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
     { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: ['1.jpeg','2.webp'], folder: '200MM',
-      desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Alta precisión para tornos grandes.',
+      desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
-        { l: 'Diámetro', v: 'Ø 200 mm' },
+        { l: 'Diámetro exterior', v: 'Ø 200 mm' },
         { l: 'Mordazas', v: '3 autocentrantes' },
         { l: 'Pasaje de barra', v: 'Ø 65 mm' }
       ],
       allSpecs: [
-        { l: 'Modelo', v: '200' },
-        { l: 'Diámetro exterior', v: 'Ø 200 mm' },
-        { l: 'Mordazas', v: '3 autocentrantes' },
+        { l: 'Diámetro exterior del plato', v: 'Ø 200 mm' },
+        { l: 'Fijación', v: '3 bulones M10 sobre entrecentro Ø 180 mm' },
         { l: 'Pasaje de barra', v: 'Ø 65 mm' },
-        { l: 'Toma mínima ext.', v: 'Ø 4 mm' },
-        { l: 'Toma máx. ext.', v: 'Ø 200 mm' },
-        { l: 'Toma máx. int.', v: 'Ø 200 mm' },
-        { l: 'Altura sin mordazas', v: '75 mm' },
-        { l: 'Fijación', v: '3 bulones M10 sobre Ø 180 mm' },
-        { l: 'Incluye', v: '2 juegos de mordazas, manual, manija y bulones' }
+        { l: 'Toma mín. mordazas externas (A)', v: 'Ø 4 mm' },
+        { l: 'Toma mín. 2º escalón ext. (B)', v: 'Ø 65 mm' },
+        { l: 'Toma máx. mordazas externas (C)', v: 'Ø 85 mm' },
+        { l: 'Toma máx. 2º escalón ext. (D)', v: 'Ø 200 mm' },
+        { l: 'Toma mín. 2º escalón int. (E)', v: 'Ø 65 mm' },
+        { l: 'Toma máx. mordazas internas (G)', v: 'Ø 200 mm' },
+        { l: 'Altura del plato sin mordazas (H)', v: '75 mm' },
+        { l: 'Depresión localizadora manchón (F)', v: 'Ø 165 mm' },
+        { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
     { id: 37, name: 'Mordaza de Torno 250mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 250 mm', imgs: ['1.jpeg','2.webp'], folder: '250MM',
-      desc: 'Plato de 3 mordazas autocentrantes de gran capacidad para tornos industriales.',
+      desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
-        { l: 'Diámetro', v: 'Ø 250 mm' },
-        { l: 'Mordazas', v: '3 autocentrantes' },
-        { l: 'Montaje', v: 'Directo' }
-      ],
-      allSpecs: [
         { l: 'Diámetro exterior', v: 'Ø 250 mm' },
         { l: 'Mordazas', v: '3 autocentrantes' },
-        { l: 'Montaje', v: 'Directo' },
-        { l: 'Incluye', v: '2 juegos de mordazas' }
+        { l: 'Pasaje de barra', v: 'Ø 80 mm' }
+      ],
+      allSpecs: [
+        { l: 'Diámetro exterior del plato', v: 'Ø 250 mm' },
+        { l: 'Fijación', v: '3 bulones M12 sobre entrecentro Ø 226 mm' },
+        { l: 'Pasaje de barra', v: 'Ø 80 mm' },
+        { l: 'Toma mín. mordazas externas (A)', v: 'Ø 6 mm' },
+        { l: 'Toma mín. 2º escalón ext. (B)', v: 'Ø 80 mm' },
+        { l: 'Toma máx. mordazas externas (C)', v: 'Ø 110 mm' },
+        { l: 'Toma máx. 2º escalón ext. (D)', v: 'Ø 250 mm' },
+        { l: 'Toma mín. 2º escalón int. (E)', v: 'Ø 90 mm' },
+        { l: 'Toma máx. mordazas internas (G)', v: 'Ø 250 mm' },
+        { l: 'Altura del plato sin mordazas (H)', v: '80 mm' },
+        { l: 'Depresión localizadora manchón (F)', v: 'Ø 206 mm' },
+        { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
     { id: 38, name: 'Mordaza de Torno 315mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 315 mm', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: '315MM',
-      desc: 'Plato de 3 mordazas autocentrantes con doble juego de mordazas. Para torno paralelo mecánico o cualquier máquina que requiera toma de piezas cilíndricas.',
+      desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 315 mm' },
-        { l: 'Pasaje de barra', v: 'Ø 100 mm' },
-        { l: 'Mordazas', v: '3 autocentrantes' }
+        { l: 'Mordazas', v: '3 autocentrantes' },
+        { l: 'Pasaje de barra', v: 'Ø 100 mm' }
       ],
       allSpecs: [
-        { l: 'Diámetro exterior', v: 'Ø 315 mm' },
-        { l: 'Pasaje de barra', v: 'Ø 100 mm' },
-        { l: 'Mordazas', v: '3 autocentrantes' },
+        { l: 'Diámetro exterior del plato', v: 'Ø 315 mm' },
         { l: 'Fijación', v: '3 bulones M16 sobre entrecentro Ø 285 mm' },
-        { l: 'Toma mínima (ext.)', v: 'Ø 10 mm' },
-        { l: 'Toma máxima (ext.)', v: 'Ø 140 mm' },
-        { l: 'Toma máx. 2° escalón', v: 'Ø 315 mm' },
-        { l: 'Incluye', v: '2 juegos de mordazas, manija y manual' }
+        { l: 'Pasaje de barra', v: 'Ø 100 mm' },
+        { l: 'Toma mín. mordazas externas (A)', v: 'Ø 10 mm' },
+        { l: 'Toma mín. 2º escalón ext. (B)', v: 'Ø 95 mm' },
+        { l: 'Toma máx. mordazas externas (C)', v: 'Ø 140 mm' },
+        { l: 'Toma máx. 2º escalón ext. (D)', v: 'Ø 315 mm' },
+        { l: 'Toma mín. 2º escalón int. (E)', v: 'Ø 100 mm' },
+        { l: 'Toma máx. mordazas internas (G)', v: 'Ø 315 mm' },
+        { l: 'Altura del plato sin mordazas (H)', v: '90 mm' },
+        { l: 'Depresión localizadora manchón (F)', v: 'Ø 260 mm' },
+        { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
     // Bomba hidráulica
