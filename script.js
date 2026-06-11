@@ -1306,15 +1306,8 @@ function checkoutWhatsApp() {
 
 // ─── WHATSAPP: COMPRA RÁPIDA ─────────────────────────────────────
 function quickBuy(id) {
-    const p = products.find(x => x.id === id);
-    // Klaviyo — pedir email antes de ir a WhatsApp
-    if (!klUserEmail) {
-        klModalMostrado = false; // forzar que aparezca
-        abrirKlModal();
-        // guardar el producto pendiente y continuar después
-        document.getElementById('klModal').dataset.pendingQuickBuy = id;
-        return;
-    }
+    // Va directo a WhatsApp (sin frenar con captura de email),
+    // así el redirect funciona en el celular sin que lo bloquee el navegador.
     _doQuickBuy(id);
 }
 
