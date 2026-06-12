@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MZ68FHRZ');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VLTJZZW8JF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-VLTJZZW8JF');
+        gtag('event', 'pedido_enviado', { event_category: 'conversion', event_label: 'gracias' });
+    </script>
+    <!-- End Google Analytics -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="sticker.png">
+    <link rel="apple-touch-icon" href="sticker.png">
+    <title>¡Gracias por tu pedido! — San Ou</title>
+    <meta name="robots" content="noindex, follow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .gracias-page {
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            text-align: center;
+        }
+        .gracias-card {
+            max-width: 540px;
+            width: 100%;
+            background: var(--black-2);
+            border: 1px solid rgba(255,215,0,0.2);
+            border-radius: 24px;
+            padding: 56px 40px;
+        }
+        .gracias-logo { height: 70px; margin-bottom: 28px; }
+        .gracias-check {
+            width: 84px; height: 84px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            background: rgba(37,211,102,0.12);
+            border: 2px solid #25D366;
+            display: flex; align-items: center; justify-content: center;
+            color: #25D366;
+            font-size: 2.4rem;
+            animation: pop 0.4s ease;
+        }
+        @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .gracias-card h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.6rem;
+            letter-spacing: 2px;
+            color: var(--white);
+            line-height: 1.1;
+            margin-bottom: 14px;
+        }
+        .gracias-card p {
+            color: var(--gray-light);
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+        .gracias-card p strong { color: var(--yellow); }
+        .gracias-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .gracias-btn-wa {
+            background: #25D366;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 800;
+            text-decoration: none;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: opacity 0.2s;
+        }
+        .gracias-btn-wa:hover { opacity: 0.9; }
+        .gracias-btn-home {
+            background: var(--black-3);
+            color: var(--gray-light);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 13px;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .gracias-btn-home:hover { border-color: var(--yellow); color: var(--yellow); }
+        @media (max-width: 600px) {
+            .gracias-card { padding: 40px 24px; }
+            .gracias-card h1 { font-size: 2.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MZ68FHRZ"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <div class="gracias-page">
+        <div class="gracias-card">
+            <img src="sticker.png" alt="San Ou" class="gracias-logo">
+            <div class="gracias-check"><i class="fas fa-check"></i></div>
+            <h1>¡Gracias por tu pedido!</h1>
+            <p>Recibimos tu consulta. Te vamos a responder <strong>a la brevedad por WhatsApp</strong> con disponibilidad, precio y opciones de entrega.</p>
+            <div class="gracias-btns">
+                <a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Acabo%20de%20enviar%20un%20pedido%20desde%20la%20web." target="_blank" class="gracias-btn-wa">
+                    <i class="fab fa-whatsapp"></i> Abrir WhatsApp
+                </a>
+                <a href="index.html" class="gracias-btn-home">← Volver a la tienda</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

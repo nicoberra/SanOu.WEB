@@ -1302,6 +1302,9 @@ function checkoutWhatsApp() {
     saveOrder(cart, total);
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+
+    // Página de gracias (conversión Google Ads / Analytics)
+    setTimeout(() => { window.location.href = 'gracias.html'; }, 500);
 }
 
 // ─── WHATSAPP: COMPRA RÁPIDA ─────────────────────────────────────
@@ -1328,6 +1331,9 @@ function _doQuickBuy(id) {
     msg += '¿Pueden confirmar disponibilidad, stock y formas de pago? ¡Muchas gracias!';
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+
+    // Página de gracias (conversión Google Ads / Analytics)
+    setTimeout(() => { window.location.href = 'gracias.html'; }, 500);
 }
 
 // ─── MENÚ MOBILE ────────────────────────────────────────────────
@@ -1674,7 +1680,7 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
             </div>
             <div class="contact-item">
                 <span class="contact-icon"><i class="fas fa-envelope icon-mail"></i></span>
-                <div><div class="contact-label">Email</div><div class="contact-val">sanou.argentina@gmail.com</div></div>
+                <div><div class="contact-label">Email</div><div class="contact-val">ventas@sanou.com.ar</div></div>
             </div>
             <div class="contact-item">
                 <span class="contact-icon"><i class="fas fa-globe icon-web"></i></span>
