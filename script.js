@@ -1288,7 +1288,7 @@ function checkoutWhatsApp() {
     if (cart.length === 0) return;
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
-    let msg = '🛠 *Hola SanOu! Quiero cotizar los siguientes productos:*\n\n';
+    let msg = '🛠 *Hola San Ou! Quiero cotizar los siguientes productos:*\n\n';
     cart.forEach(item => {
         msg += `▪ *${item.name}*\n`;
         msg += `  Cantidad: ${item.qty}\n`;
@@ -1321,7 +1321,7 @@ function _doQuickBuy(id) {
             items: [{ item_id: String(p.id), item_name: p.name, item_category: p.category, price: p.price || 0 }]
         });
     }
-    let msg = `🛠 *Hola SanOu! Me interesa este producto:*\n\n`;
+    let msg = `🛠 *Hola San Ou! Me interesa este producto:*\n\n`;
     msg += `▪ *${p.name}*\n`;
     msg += `  Categoría: ${CAT_NAMES[p.category]}\n`;
     msg += `  Precio de referencia: ${fmt(p.price)}\n\n`;
@@ -1578,7 +1578,7 @@ function openCatalog() {
     const html = `<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Catálogo SanOu</title>
+<title>Catálogo San Ou</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -1660,8 +1660,8 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
 }
 </style></head><body>
 <div class="cover">
-    <img src="${logoUrl}" alt="SanOu" onerror="this.style.display='none'">
-    <p class="slogan"><span class="slogan-white">Equípate con</span><span class="slogan-yellow">herramientas de verdad</span></p>
+    <img src="${logoUrl}" alt="San Ou" onerror="this.style.display='none'">
+    <p class="slogan"><span class="slogan-white">Equipate con</span><span class="slogan-yellow">herramientas de verdad</span></p>
     <div class="line"></div>
     <h1>CATÁLOGO</h1>
     <p class="sub">Herramientas hidráulicas e industriales</p>
@@ -1696,7 +1696,7 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
     </div>
 </div>
 ${body}
-<div class="cat-footer"><b>SanOu</b> — Herramientas hidráulicas profesionales &nbsp;|&nbsp; sanou.com.ar &nbsp;|&nbsp; +54 9 11 3175-1517</div>
+<div class="cat-footer"><b>San Ou</b> — Herramientas hidráulicas profesionales &nbsp;|&nbsp; sanou.com.ar &nbsp;|&nbsp; +54 9 11 3175-1517</div>
 <script>
 function descargarPDF() {
     const btn = document.getElementById('dlBtn');
