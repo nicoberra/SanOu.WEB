@@ -466,6 +466,25 @@ body {
 }
 .cart-total-price { color: var(--yellow); font-size: 1.3rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
 
+.cart-reassurance {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 14px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--black-4);
+}
+.cart-reassurance span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--gray-light);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.cart-reassurance i { color: var(--yellow); font-size: 0.72rem; }
+
 .cart-footer-btns {
     display: grid;
     grid-template-columns: 1fr 1.6fr;
