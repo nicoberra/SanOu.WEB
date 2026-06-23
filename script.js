@@ -1120,7 +1120,7 @@ function filterProducts(filter) {
         btn.classList.toggle('active', btn.dataset.filter === filter);
     });
     document.getElementById('searchInput').value = '';
-    renderProducts(filter);
+    renderProducts(filter, true); // con filtro: mostrar TODOS, sin botón "Ver más"
     document.getElementById('productos').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1781,7 +1781,7 @@ loadPricesFromSheet().then(() => {
         const cat = catMatch[1];
         const label = CAT_NAMES[cat];
         if (label) {
-            renderProducts(cat);
+            renderProducts(cat, true); // categoría desde URL = filtro: todos, sin botón
             renderFeatured();
             document.getElementById('filterDropdownLabel').textContent = label;
             document.querySelectorAll('.filter-option').forEach(o => o.classList.toggle('active', o.dataset.filter === cat));
