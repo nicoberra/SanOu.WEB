@@ -1773,6 +1773,13 @@ function sendWaMessage() {
 
 // ─── INIT ────────────────────────────────────────────────────────
 loadPricesFromSheet().then(() => {
+    // Mezclar el orden de los productos para que no aparezcan agrupados por categoría
+    // (así no se ven todas las pinzas juntas, después las mordazas, etc.)
+    for (let i = products.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [products[i], products[j]] = [products[j], products[i]];
+    }
+
     const hash = window.location.hash;
 
     // Abrir categoría si viene en la URL (#categoria-XXX)
