@@ -1005,10 +1005,14 @@ function carouselGo(idx) {
 }
 
 let _currentFilter = 'all';
+let productsShuffled = []; // copia mezclada SOLO para la vista "Todas las categorías"
 
 function renderProducts(filter, showAll = false) {
     _currentFilter = filter;
-    const list = filter === 'all' ? products : products.filter(p => p.category === filter || (p.extraCategories && p.extraCategories.includes(filter)));
+    // "all" usa la copia mezclada; cada categoría mantiene su orden original
+    const list = filter === 'all'
+        ? (productsShuffled.length ? productsShuffled : products)
+        : products.filter(p => p.category === filter || (p.extraCategories && p.extraCategories.includes(filter)));
     const grid = document.getElementById('productsGrid');
     const verMasWrap = document.getElementById('verMasWrap');
 
@@ -1773,11 +1777,12 @@ function sendWaMessage() {
 
 // ─── INIT ────────────────────────────────────────────────────────
 loadPricesFromSheet().then(() => {
-    // Mezclar el orden de los productos para que no aparezcan agrupados por categoría
-    // (así no se ven todas las pinzas juntas, después las mordazas, etc.)
-    for (let i = products.length - 1; i > 0; i--) {
+    // Copia MEZCLADA solo para la vista "Todas las categorías".
+    // El array original 'products' queda intacto, así cada categoría conserva su orden.
+    productsShuffled = products.slice();
+    for (let i = productsShuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [products[i], products[j]] = [products[j], products[i]];
+        [productsShuffled[i], productsShuffled[j]] = [productsShuffled[j], productsShuffled[i]];
     }
 
     const hash = window.location.hash;
