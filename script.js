@@ -30,12 +30,24 @@ function cerrarIosNotif() {
     n.classList.add('hide');
 }
 
-// Mostrar notificación iOS al entrar (solo si no dejó email antes)
+// Mostrar notificación iOS al entrar
 window.addEventListener('load', () => {
     // Actualizar sección visible de registro
     actualizarSeccionRegistro();
 
-    if (klUserEmail) return;
+    const titleEl = document.getElementById('iosNotifTitle');
+    const msgEl   = document.getElementById('iosNotifMsg');
+
+    if (klUserEmail) {
+        // Usuario ya registrado: saludo personalizado por su nombre
+        if (titleEl) titleEl.textContent = klUserName ? `¡Hola, ${klUserName}. Bienvenido a San Ou! 👋` : '¡Bienvenido de nuevo a San Ou! 👋';
+        if (msgEl)   msgEl.textContent   = 'Mirá las ofertas y productos nuevos 🔧';
+    } else {
+        // Usuario nuevo: invitación a dejar el mail
+        if (titleEl) titleEl.textContent = '¡Bienvenido a San Ou! 👋';
+        if (msgEl)   msgEl.textContent   = 'Dejá tu mail y recibí ofertas exclusivas';
+    }
+
     setTimeout(() => {
         const n = document.getElementById('iosNotif');
         if (n) n.classList.add('show');
