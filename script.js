@@ -1204,9 +1204,14 @@ function closeModal() {
 
 // ─── FILTRAR ────────────────────────────────────────────────────
 function filterProducts(filter) {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === filter);
-    });
+    // Reflejar la categoría seleccionada en el dropdown de filtro
+    const opt = document.querySelector('.filter-option[data-filter="' + filter + '"]');
+    const labelEl = document.getElementById('filterDropdownLabel');
+    if (labelEl) labelEl.textContent = opt ? opt.textContent.trim()
+        : (filter === 'all' ? 'Todas las categorías' : (CAT_NAMES[filter] || filter));
+    document.querySelectorAll('.filter-option').forEach(o =>
+        o.classList.toggle('active', o.dataset.filter === filter));
+
     document.getElementById('searchInput').value = '';
     renderProducts(filter, true); // con filtro: mostrar TODOS, sin botón "Ver más"
     document.getElementById('productos').scrollIntoView({ behavior: 'smooth', block: 'start' });
