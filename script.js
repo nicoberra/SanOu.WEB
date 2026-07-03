@@ -871,7 +871,7 @@ const products = [
     },
 
     // ─── OTROS ───
-    { id: 45, name: 'Soporte para Amoladora – Herramienta de Banco', category: 'otros', price: 0, icon: 'fa-screwdriver-wrench', badge: 'Amoladora 125/150', imgs: ['1.webp','2.webp'], folder: 'Soporte Para Amoladora - Convertilo En Herramienta De Banco', catFolder: 'Otros',
+    { id: 45, name: 'Soporte para Amoladora – Herramienta de Banco', sheetName: 'Soporte Para Amoladora - Convertilo En Herramienta De Banco', category: 'otros', price: 0, icon: 'fa-screwdriver-wrench', badge: 'Amoladora 125/150', imgs: ['1.webp','2.webp'], folder: 'Soporte Para Amoladora - Convertilo En Herramienta De Banco', catFolder: 'Otros',
       desc: 'Convertí tu amoladora angular en una herramienta de banco para hacer cortes precisos. Soporte modelo XCORT XAG-6103, con ángulo de corte regulable de 0° a 45°. Apto para amoladoras de 125 y 150 mm.',
       specs: [
         { l: 'Modelo', v: 'XCORT XAG-6103' },
@@ -888,7 +888,7 @@ const products = [
         { l: 'Garantía', v: 'Sin garantía' }
       ]
     },
-    { id: 46, name: 'Mandril San Ou 16 mm con Llave + Cono Morse 4', category: 'otros', price: 0, icon: 'fa-gear', badge: 'Hasta 16 mm · CM4', imgs: ['1.webp','2.webp','3.webp'], folder: 'Mandril San Ou Hasta 16 Mm Con Llave + Espiga Cono Morse 4', catFolder: 'Otros',
+    { id: 46, name: 'Mandril San Ou 16 mm con Llave + Cono Morse 4', sheetName: 'Mandril San Ou Hasta 16 Mm Con Llave + Espiga Cono Morse 4', category: 'otros', price: 0, icon: 'fa-gear', badge: 'Hasta 16 mm · CM4', imgs: ['1.webp','2.webp','3.webp'], folder: 'Mandril San Ou Hasta 16 Mm Con Llave + Espiga Cono Morse 4', catFolder: 'Otros',
       desc: 'Mandril con llave para taladro, con capacidad de hasta 16 mm y espiga cono Morse 4 (CM4). Sujeta mechas y accesorios con firmeza para trabajos de precisión.',
       specs: [
         { l: 'Tipo', v: 'Mandril con llave' },
@@ -902,7 +902,7 @@ const products = [
         { l: 'Marca', v: 'San Ou' }
       ]
     },
-    { id: 47, name: 'Soporte para Taladro Universal – Banco', category: 'otros', price: 0, icon: 'fa-ruler-vertical', badge: 'Columna 400 mm', imgs: ['1.webp'], folder: 'Soporte Para Taladro Universal Apto Herramienta De Banco', catFolder: 'Otros',
+    { id: 47, name: 'Soporte para Taladro Universal – Banco', sheetName: 'Soporte Para Taladro Universal Apto Herramienta De Banco', category: 'otros', price: 0, icon: 'fa-ruler-vertical', badge: 'Columna 400 mm', imgs: ['1.webp'], folder: 'Soporte Para Taladro Universal Apto Herramienta De Banco', catFolder: 'Otros',
       desc: 'Soporte universal para convertir tu taladro en un taladro de banco. Columna de 400 mm, base de metal de 15 × 15 cm y regla graduada para perforaciones precisas y controladas. No incluye prensa ni mandril.',
       specs: [
         { l: 'Altura de columna', v: '400 mm' },
@@ -920,7 +920,7 @@ const products = [
         { l: 'Incluye', v: 'No incluye prensa ni mandril' }
       ]
     },
-    { id: 48, name: 'Caja de Herramientas Metálica 25" Negra', category: 'otros', price: 0, icon: 'fa-toolbox', badge: '25" · 635 mm', imgs: ['1.webp','2.webp','3.webp'], folder: 'Caja De Herramientas Metalica 25 Pulgadas 635x350x310mm Negro', catFolder: 'Otros',
+    { id: 48, name: 'Caja de Herramientas Metálica 25" Negra', sheetName: 'Caja De Herramientas Metalica 25 Pulgadas 635x350x310mm Negro', category: 'otros', price: 0, icon: 'fa-toolbox', badge: '25" · 635 mm', imgs: ['1.webp','2.webp','3.webp'], folder: 'Caja De Herramientas Metalica 25 Pulgadas 635x350x310mm Negro', catFolder: 'Otros',
       desc: 'Caja porta herramientas metálica de 25 pulgadas, robusta y con bandeja portátil para herramientas manuales y piezas pequeñas. Doble cierre metálico con revestimiento de níquel y manija suave recubierta para un transporte cómodo. Un compartimento amplio para herramientas de distintos tamaños.',
       specs: [
         { l: 'Tamaño', v: '25 pulgadas' },
@@ -1478,7 +1478,7 @@ async function loadPricesFromSheet() {
             const precio = parts[stockIdx - 1].trim();
             const nombre = parts.slice(0, stockIdx - 1).join(',').trim().replace(/^"|"$/g, '');
             const oldPriceRaw = parts.slice(stockIdx + 1).join(',').trim();
-            const product = products.find(p => p.name.toLowerCase() === nombre.toLowerCase());
+            const product = products.find(p => (p.sheetName || p.name).toLowerCase() === nombre.toLowerCase());
             if (product) {
                 const priceVal    = precio      ? parseInt(precio.replace(/[$\.,]/g, ''))      : 0;
                 const oldPriceVal = oldPriceRaw ? parseInt(oldPriceRaw.replace(/[$\.,]/g, '')) : 0;
