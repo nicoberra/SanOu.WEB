@@ -847,24 +847,95 @@ const products = [
         { l: 'Accesorios incluidos', v: '5 piezas' }
       ]
     },
-    { id: 42, name: 'Extractor de Inyectores Diesel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '21 piezas', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: 'Extractor De Inyectores Diesel', catFolder: 'Herramientas para vehículos',
-      desc: 'Extractor neumático de inyectores diésel. Retira inyectores trabados o atascados en motores common rail sin martillo de inercia manual.',
+    { id: 42, name: 'Extractor de Inyectores Diesel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '24 piezas', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: 'Extractor De Inyectores Diesel', catFolder: 'Herramientas para vehículos',
+      desc: 'Extractor neumático de inyectores diésel de 24 piezas, construido en metal para uso intensivo en taller. Retira inyectores trabados en motores common rail sin martillo de inercia manual, con amplia compatibilidad (Bosch, Delphi, Denso, Siemens). Incluye maletín de transporte para tener todas las piezas organizadas.',
       specs: [
+        { l: 'Cantidad de piezas', v: '24 piezas' },
         { l: 'Presión de trabajo', v: '5 a 8 bar / 72–116 PSI' },
-        { l: 'Cantidad de piezas', v: '21 piezas' },
-        { l: 'Compatibilidad', v: 'Bosch, Delphi, Denso, Siemens' }
+        { l: 'Material', v: 'Metal' }
       ],
       allSpecs: [
         { l: 'Sistema de trabajo', v: 'Neumático / a golpe por vibración' },
         { l: 'Accionamiento', v: 'Por aire comprimido' },
         { l: 'Presión de trabajo', v: '72 a 116 PSI / 5 a 8 bar' },
         { l: 'Torque de trabajo', v: 'Aprox. 20 a 30 Nm' },
-        { l: 'Cantidad de piezas', v: '21 piezas' },
+        { l: 'Cantidad de piezas', v: '24 piezas' },
         { l: 'Compatibilidad', v: 'Inyectores Bosch, Delphi, Denso y Siemens' },
         { l: 'Tipo de inyectores', v: 'Diésel / common rail' },
         { l: 'Adaptadores incluidos', v: 'M8, M12, M16, M17, M18, M20, M22, M25, M26, M27, M29 y M31' },
-        { l: 'Material', v: 'Acero' },
-        { l: 'Presentación', v: 'Kit completo en maletín' }
+        { l: 'Material', v: 'Metal / acero' },
+        { l: 'Peso', v: '6,65 kg (6650 g)' },
+        { l: 'Dimensiones', v: '45 × 35 × 10 cm (alto × ancho × largo)' },
+        { l: 'Presentación', v: 'Kit completo en maletín de transporte' }
+      ]
+    },
+
+    // ─── OTROS ───
+    { id: 45, name: 'Soporte para Amoladora – Herramienta de Banco', category: 'otros', price: 0, icon: 'fa-screwdriver-wrench', badge: 'Amoladora 125/150', imgs: ['1.webp','2.webp'], folder: 'Soporte Para Amoladora - Convertilo En Herramienta De Banco', catFolder: 'Otros',
+      desc: 'Convertí tu amoladora angular en una herramienta de banco para hacer cortes precisos. Soporte modelo XCORT XAG-6103, con ángulo de corte regulable de 0° a 45°. Apto para amoladoras de 125 y 150 mm.',
+      specs: [
+        { l: 'Modelo', v: 'XCORT XAG-6103' },
+        { l: 'Ángulo de corte', v: '0° a 45°' },
+        { l: 'Prof. máx. de corte', v: '30 mm' }
+      ],
+      allSpecs: [
+        { l: 'Modelo', v: 'XCORT XAG-6103' },
+        { l: 'Tipo', v: 'Soporte para amoladora angular' },
+        { l: 'Distancia máxima', v: '80 mm' },
+        { l: 'Profundidad máxima de corte', v: '30 mm' },
+        { l: 'Ángulo de corte', v: '0° a 45°' },
+        { l: 'Compatibilidad', v: 'Amoladoras de 125 y 150 mm' },
+        { l: 'Garantía', v: 'Sin garantía' }
+      ]
+    },
+    { id: 46, name: 'Mandril San Ou 16 mm con Llave + Cono Morse 4', category: 'otros', price: 0, icon: 'fa-gear', badge: 'Hasta 16 mm · CM4', imgs: ['1.webp','2.webp','3.webp'], folder: 'Mandril San Ou Hasta 16 Mm Con Llave + Espiga Cono Morse 4', catFolder: 'Otros',
+      desc: 'Mandril con llave para taladro, con capacidad de hasta 16 mm y espiga cono Morse 4 (CM4). Sujeta mechas y accesorios con firmeza para trabajos de precisión.',
+      specs: [
+        { l: 'Tipo', v: 'Mandril con llave' },
+        { l: 'Capacidad', v: 'Hasta 16 mm' },
+        { l: 'Espiga', v: 'Cono Morse 4 (CM4)' }
+      ],
+      allSpecs: [
+        { l: 'Tipo de mandril', v: 'Con llave' },
+        { l: 'Capacidad de sujeción', v: '1 a 16 mm' },
+        { l: 'Espiga', v: 'Cono Morse 4 (CM4)' },
+        { l: 'Marca', v: 'San Ou' }
+      ]
+    },
+    { id: 47, name: 'Soporte para Taladro Universal – Banco', category: 'otros', price: 0, icon: 'fa-ruler-vertical', badge: 'Columna 400 mm', imgs: ['1.webp'], folder: 'Soporte Para Taladro Universal Apto Herramienta De Banco', catFolder: 'Otros',
+      desc: 'Soporte universal para convertir tu taladro en un taladro de banco. Columna de 400 mm, base de metal de 15 × 15 cm y regla graduada para perforaciones precisas y controladas. No incluye prensa ni mandril.',
+      specs: [
+        { l: 'Altura de columna', v: '400 mm' },
+        { l: 'Carrera máxima', v: '60 mm' },
+        { l: 'Base', v: 'Metal 15 × 15 cm' }
+      ],
+      allSpecs: [
+        { l: 'Altura de columna', v: '400 mm' },
+        { l: 'Carrera máxima', v: '60 mm' },
+        { l: 'Base', v: 'Metal, 15 × 15 cm' },
+        { l: 'Compatibilidad de mandril', v: 'Ø 4 a 4,3 cm (collar)' },
+        { l: 'Regla graduada', v: 'Sí (ajuste de profundidad)' },
+        { l: 'Altura total', v: '44 cm' },
+        { l: 'Altura de trabajo', v: '40 cm' },
+        { l: 'Incluye', v: 'No incluye prensa ni mandril' }
+      ]
+    },
+    { id: 48, name: 'Caja de Herramientas Metálica 25" Negra', category: 'otros', price: 0, icon: 'fa-toolbox', badge: '25" · 635 mm', imgs: ['1.webp','2.webp','3.webp'], folder: 'Caja De Herramientas Metalica 25 Pulgadas 635x350x310mm Negro', catFolder: 'Otros',
+      desc: 'Caja porta herramientas metálica de 25 pulgadas, robusta y con bandeja portátil para herramientas manuales y piezas pequeñas. Doble cierre metálico con revestimiento de níquel y manija suave recubierta para un transporte cómodo. Un compartimento amplio para herramientas de distintos tamaños.',
+      specs: [
+        { l: 'Tamaño', v: '25 pulgadas' },
+        { l: 'Medidas', v: '635 × 350 × 310 mm' },
+        { l: 'Material', v: 'Metal resistente' }
+      ],
+      allSpecs: [
+        { l: 'Tamaño', v: '25 pulgadas' },
+        { l: 'Dimensiones', v: '635 × 350 × 310 mm' },
+        { l: 'Material', v: 'Metal resistente' },
+        { l: 'Color', v: 'Negro' },
+        { l: 'Cierres', v: 'Doble cierre metálico con revestimiento de níquel' },
+        { l: 'Manija', v: 'Suave y recubierta' },
+        { l: 'Bandeja', v: 'Portátil para herramientas manuales y piezas pequeñas' },
+        { l: 'Compartimentos', v: '1 compartimento amplio' }
       ]
     },
 ];
@@ -881,6 +952,7 @@ const CAT_NAMES = {
     extractores:  'Extractor hidráulico',
     punzonadoras: 'Punzonadoras',
     motores:      'Herramientas para vehículos',
+    otros:        'Otros',
 };
 
 // ─── ESTADO ─────────────────────────────────────────────────────

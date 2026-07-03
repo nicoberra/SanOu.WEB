@@ -868,6 +868,17 @@ section { padding: 90px 0; }
 [data-cat="extractores"] { background-image: url('productos/Extractor hidraulico/HHL-5/1.webp'); }
 [data-cat="punzonadoras"]{ background-image: url('productos/Punzadoras/HHM-60/1.webp'); }
 [data-cat="motores"]     { background-image: url('productos/Herramientas para vehículos/categoria.webp'); }
+[data-cat="otros"] {
+    background-image: none;
+    background: linear-gradient(135deg, var(--black-2), var(--black-4));
+    align-items: center; /* "OTROS" centrado en el medio */
+}
+[data-cat="otros"] h3 {
+    margin-bottom: 0;
+    font-size: 1.15rem;
+    letter-spacing: 2px;
+    color: var(--yellow);
+}
 
 /* ── PRODUCTS ── */
 .products { background: var(--black); }
