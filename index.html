@@ -266,15 +266,22 @@
         <div class="container">
             <h2 class="section-title text-center featured-title">¡Productos Destacados!</h2>
             <div class="featured-wrapper">
-                <button class="featured-arrow featured-arrow-left" onclick="featuredGo((featuredCurrent - 1 + FEATURED_IDS.length) % FEATURED_IDS.length)">
+                <button class="featured-arrow featured-arrow-left" onclick="featuredPrev()">
                     <i class="fas fa-chevron-left"></i>
                 </button>
                 <div class="featured-track" id="featuredTrack"></div>
-                <button class="featured-arrow featured-arrow-right" onclick="featuredGo((featuredCurrent + 1) % FEATURED_IDS.length)">
+                <button class="featured-arrow featured-arrow-right" onclick="featuredNext()">
                     <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
             <div class="featured-dots" id="featuredDots"></div>
+
+            <div class="products-grid destacados-grid" id="destacadosGrid" style="margin-top:40px;"></div>
+            <div class="ver-mas-wrap" id="verMasDestacadosWrap" style="display:none;">
+                <button class="btn-ver-mas" id="btnDestacados" onclick="toggleDestacados()">
+                    Ver todos los productos destacados <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
         </div>
     </section>
 

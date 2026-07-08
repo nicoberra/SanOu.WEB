@@ -1091,27 +1091,10 @@ function carouselGo(idx) {
 let _currentFilter = 'all';
 let productsShuffled = []; // copia mezclada SOLO para la vista "Todas las categorías"
 
-function renderProducts(filter, showAll = false) {
-    _currentFilter = filter;
-    // "all" usa la copia mezclada; cada categoría mantiene su orden original
-    const list = filter === 'all'
-        ? (productsShuffled.length ? productsShuffled : products)
-        : products.filter(p => p.category === filter || (p.extraCategories && p.extraCategories.includes(filter)));
-    const grid = document.getElementById('productsGrid');
-    const verMasWrap = document.getElementById('verMasWrap');
-
-    if (list.length === 0) {
-        grid.innerHTML = '<p style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px 0">No hay productos en esta categoría aún.</p>';
-        if (verMasWrap) verMasWrap.style.display = 'none';
-        return;
-    }
-
-    const limite = window.innerWidth <= 768 ? 4 : 8;
-    const mostrar = (showAll || list.length <= limite) ? list : list.slice(0, limite);
-
-    const cardHTML = p => {
-        const isFav = getFavs().includes(p.id);
-        return `
+// Tarjeta de producto (compartida entre la grilla de productos y la de destacados)
+function productCardHTML(p) {
+    const isFav = getFavs().includes(p.id);
+    return `
         <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
             <button class="fav-icon-btn${isFav ? ' active' : ''}" data-id="${p.id}" onclick="event.stopPropagation(); toggleFav(${p.id})" title="Guardar en favoritos">
                 <i class="fas fa-heart"></i>
@@ -1136,9 +1119,27 @@ function renderProducts(filter, showAll = false) {
                 </button>
             </div>
         </div>`;
-    };
+}
 
-    grid.innerHTML = mostrar.map(cardHTML).join('');
+function renderProducts(filter, showAll = false) {
+    _currentFilter = filter;
+    // "all" usa la copia mezclada; cada categoría mantiene su orden original
+    const list = filter === 'all'
+        ? (productsShuffled.length ? productsShuffled : products)
+        : products.filter(p => p.category === filter || (p.extraCategories && p.extraCategories.includes(filter)));
+    const grid = document.getElementById('productsGrid');
+    const verMasWrap = document.getElementById('verMasWrap');
+
+    if (list.length === 0) {
+        grid.innerHTML = '<p style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px 0">No hay productos en esta categoría aún.</p>';
+        if (verMasWrap) verMasWrap.style.display = 'none';
+        return;
+    }
+
+    const limite = window.innerWidth <= 768 ? 4 : 8;
+    const mostrar = (showAll || list.length <= limite) ? list : list.slice(0, limite);
+
+    grid.innerHTML = mostrar.map(productCardHTML).join('');
 
     // Contador de productos
     const countEl = document.getElementById('productCount');
@@ -1460,48 +1461,52 @@ window.addEventListener('scroll', () => {
 });
 
 // ─── PRECIOS DESDE GOOGLE SHEETS ─────────────────────────────────
+// Parser de una línea CSV (respeta campos entre comillas con comas adentro)
+function parseCsvLine(line) {
+    const out = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (inQ) {
+            if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else { inQ = false; } }
+            else cur += c;
+        } else {
+            if (c === '"') inQ = true;
+            else if (c === ',') { out.push(cur); cur = ''; }
+            else cur += c;
+        }
+    }
+    out.push(cur);
+    return out;
+}
+
 async function loadPricesFromSheet() {
     if (!PRICES_CSV_URL) return;
     try {
         const res = await fetch(PRICES_CSV_URL);
         const text = await res.text();
         const rows = text.trim().split('\n').slice(1); // saltar encabezado
+        // Columnas fijas: 0=Nombre, 1=Precios, 2=Stock, 3=Precio mercado libre, 4=DESTACADO
         rows.forEach(row => {
             if (!row.trim()) return;
-            const parts = row.split(',');
-            // Buscar columna de stock (TRUE/FALSE/si/no) de derecha a izquierda
-            let stockIdx = -1;
-            for (let i = parts.length - 1; i >= 0; i--) {
-                const val = parts[i].trim().toLowerCase();
-                if (val === 'true' || val === 'false' || val === 'si' || val === 'no') {
-                    stockIdx = i;
-                    break;
-                }
-            }
-            if (stockIdx < 1) return;
-            const inStock = ['true', 'si'].includes(parts[stockIdx].trim().toLowerCase());
-            const precio = parts[stockIdx - 1].trim();
-            const nombre = parts.slice(0, stockIdx - 1).join(',').trim().replace(/^"|"$/g, '');
-            const oldPriceRaw = parts.slice(stockIdx + 1).join(',').trim();
+            const f = parseCsvLine(row);
+            const nombre = (f[0] || '').trim().replace(/^"|"$/g, '');
+            if (!nombre) return;
             const product = products.find(p => (p.sheetName || p.name).toLowerCase() === nombre.toLowerCase());
-            if (product) {
-                const priceVal    = precio      ? parseInt(precio.replace(/[$\.,]/g, ''))      : 0;
-                const oldPriceVal = oldPriceRaw ? parseInt(oldPriceRaw.replace(/[$\.,]/g, '')) : 0;
-                if (priceVal > 0 && oldPriceVal > 0) {
-                    // Ambos precios: muestra el actual + tachado
-                    product.price    = priceVal;
-                    product.oldPrice = oldPriceVal;
-                } else if (priceVal > 0) {
-                    // Solo precio actual
-                    product.price    = priceVal;
-                    product.oldPrice = 0;
-                } else if (oldPriceVal > 0) {
-                    // Solo precio ML: usarlo como precio principal
-                    product.price    = oldPriceVal;
-                    product.oldPrice = 0;
-                }
-                product.inStock = inStock;
-            }
+            if (!product) return;
+
+            const precio      = (f[1] || '').trim();
+            const stockRaw    = (f[2] || '').trim().toLowerCase();
+            const oldPriceRaw = (f[3] || '').trim();
+            const destRaw     = (f[4] || '').trim().toLowerCase();
+
+            const priceVal    = precio      ? parseInt(precio.replace(/[$\.,]/g, ''))      : 0;
+            const oldPriceVal = oldPriceRaw ? parseInt(oldPriceRaw.replace(/[$\.,]/g, '')) : 0;
+            if (priceVal > 0 && oldPriceVal > 0)      { product.price = priceVal;    product.oldPrice = oldPriceVal; }
+            else if (priceVal > 0)                    { product.price = priceVal;    product.oldPrice = 0; }
+            else if (oldPriceVal > 0)                 { product.price = oldPriceVal; product.oldPrice = 0; }
+
+            if (stockRaw) product.inStock = (stockRaw === 'true' || stockRaw === 'si');
+            product.featured = (destRaw === 'true' || destRaw === 'si');
         });
     } catch (e) {
         console.warn('No se pudieron cargar precios desde Google Sheets:', e);
@@ -1512,13 +1517,27 @@ async function loadPricesFromSheet() {
 const FEATURED_IDS = [1, 3, 8];
 let featuredCurrent = 0;
 let featuredTimer = null;
+let featuredCount = 0;
+
+// Destacados = productos marcados en el Sheet (columna DESTACADO).
+// Si todavía no hay ninguno marcado, usa los fijos como respaldo.
+function getDestacados() {
+    const feat = products.filter(p => p.featured);
+    if (feat.length) return feat;
+    return FEATURED_IDS.map(id => products.find(p => p.id === id)).filter(Boolean);
+}
+
+function featuredPrev() { if (featuredCount > 0) featuredGo((featuredCurrent - 1 + featuredCount) % featuredCount); }
+function featuredNext() { if (featuredCount > 0) featuredGo((featuredCurrent + 1) % featuredCount); }
 
 function renderFeatured() {
     const track = document.getElementById('featuredTrack');
     const dotsEl = document.getElementById('featuredDots');
     if (!track || !dotsEl) return;
+    if (featuredTimer) clearInterval(featuredTimer);
 
-    const items = FEATURED_IDS.map(id => products.find(p => p.id === id)).filter(Boolean);
+    const items = getDestacados();
+    featuredCount = items.length;
 
     track.innerHTML = items.map((p, i) => {
         const imgs = getImgs(p);
@@ -1559,7 +1578,7 @@ function renderFeatured() {
         const diff = touchStartX - e.changedTouches[0].clientX;
         if (Math.abs(diff) < 40) return;
         featuredSwiped = true;
-        const total = FEATURED_IDS.length;
+        const total = featuredCount;
         if (diff > 0) featuredGo((featuredCurrent + 1) % total);
         else featuredGo((featuredCurrent - 1 + total) % total);
     }, { passive: true });
@@ -1580,6 +1599,36 @@ function featuredGo(idx) {
     track.querySelectorAll('.featured-slide').forEach((s, i) => s.classList.toggle('active', i === idx));
     dotsEl.querySelectorAll('.featured-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
     featuredCurrent = idx;
+}
+
+// Destacados: carrusel arriba + un botón que despliega/cierra la grilla completa.
+// Cerrado: solo el botón "Ver todos los productos destacados".
+// Abierto: se muestran todos + botón "Cerrar productos destacados" debajo.
+let destacadosOpen = false;
+function renderDestacadosGrid() {
+    const grid = document.getElementById('destacadosGrid');
+    const wrap = document.getElementById('verMasDestacadosWrap');
+    const btn  = document.getElementById('btnDestacados');
+    if (!grid || !wrap || !btn) return;
+    const list = getDestacados();
+    if (list.length === 0) { grid.innerHTML = ''; wrap.style.display = 'none'; return; }
+    wrap.style.display = 'flex';
+    if (destacadosOpen) {
+        grid.innerHTML = list.map(productCardHTML).join('');
+        btn.innerHTML = 'Cerrar productos destacados <i class="fas fa-chevron-up"></i>';
+    } else {
+        grid.innerHTML = '';
+        btn.innerHTML = 'Ver todos los productos destacados <i class="fas fa-chevron-down"></i>';
+    }
+}
+
+function toggleDestacados() {
+    destacadosOpen = !destacadosOpen;
+    renderDestacadosGrid();
+    // Al cerrar, volver al inicio de la sección destacados
+    if (!destacadosOpen) {
+        document.getElementById('destacados')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // ─── FILTER DROPDOWN ─────────────────────────────────────────────
@@ -1884,6 +1933,7 @@ loadPricesFromSheet().then(() => {
         if (label) {
             renderProducts(cat, true); // categoría desde URL = filtro: todos, sin botón
             renderFeatured();
+            renderDestacadosGrid();
             document.getElementById('filterDropdownLabel').textContent = label;
             document.querySelectorAll('.filter-option').forEach(o => o.classList.toggle('active', o.dataset.filter === cat));
             setTimeout(() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
@@ -1893,6 +1943,7 @@ loadPricesFromSheet().then(() => {
 
     renderProducts('all');
     renderFeatured();
+    renderDestacadosGrid();
 
     // Abrir producto si viene en la URL (#producto-ID)
     const match = hash.match(/^#producto-(\d+)$/);
