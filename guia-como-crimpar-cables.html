@@ -179,8 +179,8 @@
         .guia-article h3 { color: var(--white); font-size: 1.15rem; font-weight: 800; }
         .guia-article p { color: var(--gray-light); font-size: 0.98rem; line-height: 1.8; margin-bottom: 16px; }
         .guia-article strong { color: var(--white); }
-        .guia-article a { color: var(--yellow); text-decoration: none; }
-        .guia-article a:hover { text-decoration: underline; }
+        .guia-article a:not([class]) { color: var(--yellow); text-decoration: none; }
+        .guia-article a:not([class]):hover { text-decoration: underline; }
         .guia-lista { margin: 0 0 18px; padding-left: 4px; list-style: none; }
         .guia-lista li { color: var(--gray-light); font-size: 0.98rem; line-height: 1.7; margin-bottom: 12px; padding-left: 26px; position: relative; }
         .guia-lista li::before { content: '🔧'; position: absolute; left: 0; top: 0; font-size: 0.9rem; }
