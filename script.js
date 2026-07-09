@@ -2372,43 +2372,37 @@ function closeOrders() {
 // 11. STRUCTURED DATA (JSON-LD)
 // ─────────────────────────────────────────────────────────────────
 function injectStructuredData() {
-    // Schema para la organización
-    const orgSchema = {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "San Ou",
-        "url": "https://sanou.com.ar",
-        "logo": "https://sanou.com.ar/Logo 2.png",
-        "contactPoint": {
-            "@type": "ContactPoint",
-            "telephone": "+54-9-11-3175-1517",
-            "contactType": "customer service",
-            "availableLanguage": "Spanish"
-        }
-    };
-
-    // Schema para cada producto
-    const productSchemas = products.map(p => ({
-        "@context": "https://schema.org",
-        "@type": "Product",
-        "name": p.name,
-        "description": p.desc || '',
-        "brand": { "@type": "Brand", "name": "San Ou" },
-        "offers": {
+    // La Organización/Store (nombre, dirección, horarios, redes) ya está en el <head>.
+    // Acá inyectamos el schema de cada producto (con imágenes) para SEO / visibilidad en IA.
+    const productSchemas = products.map(p => {
+        const imgs = getImgs(p);
+        const offer = {
             "@type": "Offer",
             "priceCurrency": "ARS",
-            "price": p.price > 0 ? p.price : undefined,
             "availability": p.inStock === false
                 ? "https://schema.org/OutOfStock"
                 : "https://schema.org/InStock",
-            "url": `https://sanou.com.ar?p=${p.id}`,
+            "url": `https://sanou.com.ar/?p=${p.id}`,
             "seller": { "@type": "Organization", "name": "San Ou" }
-        }
-    }));
+        };
+        if (p.price > 0) offer.price = p.price;
+
+        const prod = {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": p.name,
+            "description": p.desc || '',
+            "category": CAT_NAMES[p.category] || '',
+            "brand": { "@type": "Brand", "name": "San Ou" },
+            "offers": offer
+        };
+        if (imgs.length) prod.image = imgs.map(src => 'https://sanou.com.ar/' + encodeURI(src));
+        return prod;
+    });
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.textContent = JSON.stringify([orgSchema, ...productSchemas]);
+    script.textContent = JSON.stringify(productSchemas);
     document.head.appendChild(script);
 }
 
