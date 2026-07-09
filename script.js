@@ -2009,12 +2009,13 @@ function initScrollReveal() {
         el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
     });
 
-    // Seguridad: si algo falla, a los 3s todo visible igual
-    const safety = setTimeout(() => {
-        els.forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; });
-    }, 3000);
-
     let revealed = 0;
+    // Seguridad: solo si el observer no reveló NADA en 3s (falló), mostrar todo
+    const safety = setTimeout(() => {
+        if (revealed === 0) {
+            els.forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; });
+        }
+    }, 3000);
     const obs = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (!entry.isIntersecting) return;

@@ -2875,7 +2875,7 @@ section { padding: 90px 0; }
 .wa-widget-btn:hover { transform: scale(1.1); }
 
 .wa-widget-popup {
-    width: 320px;
+    width: 280px;
     background: #fff;
     border-radius: 16px;
     overflow: hidden;
@@ -2894,13 +2894,13 @@ section { padding: 90px 0; }
 }
 .wa-widget-header {
     background: #075E54;
-    padding: 14px 16px;
+    padding: 11px 13px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 .wa-widget-avatar {
-    width: 42px; height: 42px;
+    width: 38px; height: 38px;
     border-radius: 50%;
     background: #25D366;
     color: #fff;
@@ -2947,8 +2947,8 @@ section { padding: 90px 0; }
 .wa-widget-body {
     background-color: #e5ddd5;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cg fill='%23c8bdb5' fill-opacity='0.35'%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3Ccircle cx='30' cy='10' r='2'/%3E%3Ccircle cx='50' cy='10' r='2'/%3E%3Ccircle cx='70' cy='10' r='2'/%3E%3Ccircle cx='20' cy='25' r='2'/%3E%3Ccircle cx='40' cy='25' r='2'/%3E%3Ccircle cx='60' cy='25' r='2'/%3E%3Ccircle cx='10' cy='40' r='2'/%3E%3Ccircle cx='30' cy='40' r='2'/%3E%3Ccircle cx='50' cy='40' r='2'/%3E%3Ccircle cx='70' cy='40' r='2'/%3E%3Ccircle cx='20' cy='55' r='2'/%3E%3Ccircle cx='40' cy='55' r='2'/%3E%3Ccircle cx='60' cy='55' r='2'/%3E%3Ccircle cx='10' cy='70' r='2'/%3E%3Ccircle cx='30' cy='70' r='2'/%3E%3Ccircle cx='50' cy='70' r='2'/%3E%3Ccircle cx='70' cy='70' r='2'/%3E%3C/g%3E%3C/svg%3E");
-    padding: 20px 16px;
-    min-height: 100px;
+    padding: 14px 13px;
+    min-height: 74px;
 }
 .wa-widget-bubble {
     background: #fff;
@@ -2988,7 +2988,7 @@ section { padding: 90px 0; }
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 12px;
+    padding: 8px 10px;
     background: #fff;
     border-top: 1px solid #eee;
 }
@@ -3668,18 +3668,21 @@ section { padding: 90px 0; }
     z-index: 1;
     pointer-events: none;
     filter: drop-shadow(0 10px 26px rgba(0,0,0,0.55));
-    /* Entra corriendo desde la izquierda y después queda flotando */
-    animation: mascotaEntra 1.6s ease-out both,
-               mascotaFloat 3.5s ease-in-out 1.6s infinite;
+    /* Entra corriendo desde la izquierda (zancadas + rebote) y después queda flotando */
+    animation: mascotaEntra 1.9s cubic-bezier(0.22,0.61,0.36,1) both,
+               mascotaFloat 3.5s ease-in-out 1.9s infinite;
 }
 @keyframes mascotaEntra {
-    0%   { transform: translateX(-60vw) translateY(0)     rotate(-8deg); }
-    18%  { transform: translateX(-47vw) translateY(-22px) rotate(-9deg); }
-    36%  { transform: translateX(-34vw) translateY(0)     rotate(-6deg); }
-    54%  { transform: translateX(-21vw) translateY(-22px) rotate(-9deg); }
-    72%  { transform: translateX(-9vw)  translateY(0)     rotate(-5deg); }
-    88%  { transform: translateX(1.5vw) translateY(-10px) rotate(3deg); }
-    100% { transform: translateX(0)     translateY(0)     rotate(0deg); }
+    0%   { transform: translateX(-72vw) translateY(0)     rotate(-6deg) scaleY(1); }
+    11%  { transform: translateX(-60vw) translateY(-28px) rotate(-9deg) scaleY(1.03); }
+    22%  { transform: translateX(-49vw) translateY(3px)   rotate(-4deg) scaleY(0.94); }
+    33%  { transform: translateX(-38vw) translateY(-28px) rotate(-9deg) scaleY(1.03); }
+    44%  { transform: translateX(-27vw) translateY(3px)   rotate(-4deg) scaleY(0.94); }
+    55%  { transform: translateX(-17vw) translateY(-25px) rotate(-8deg) scaleY(1.02); }
+    66%  { transform: translateX(-8vw)  translateY(3px)   rotate(-3deg) scaleY(0.94); }
+    77%  { transform: translateX(-1vw)  translateY(-16px) rotate(-5deg) scaleY(1.01); }
+    88%  { transform: translateX(1.5vw) translateY(4px)   rotate(4deg)  scaleY(0.96); }
+    100% { transform: translateX(0)     translateY(0)     rotate(0deg)  scaleY(1); }
 }
 @keyframes mascotaFloat {
     0%,100% { transform: translateY(0); }
