@@ -3586,3 +3586,122 @@ section { padding: 90px 0; }
     .legal-card { padding: 32px 24px; }
     .legal-title { font-size: 2.1rem; }
 }
+
+/* ── DESTACAR MÁS: descuentos, stock, franja de confianza ── */
+.discount-badge {
+    position: absolute;
+    top: 10px; left: 10px;
+    z-index: 11;
+    background: var(--yellow);
+    color: #111;
+    font-weight: 900;
+    font-size: 0.9rem;
+    padding: 5px 11px;
+    border-radius: 50px;
+    box-shadow: 0 3px 12px rgba(255,215,0,0.45);
+    letter-spacing: 0.5px;
+}
+.product-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.stock-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(37,211,102,0.12);
+    color: #25D366;
+    border: 1px solid rgba(37,211,102,0.35);
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.stock-chip i { font-size: 0.62rem; }
+.stock-chip--out {
+    background: rgba(255,255,255,0.06);
+    color: var(--gray);
+    border-color: rgba(255,255,255,0.12);
+}
+
+/* Hero: título con más impacto */
+.hero-slogan-white, .hero-slogan-yellow {
+    font-size: clamp(2.4rem, 6vw, 4.8rem);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 1.02;
+}
+
+/* Hero: franja de confianza */
+.hero-trust {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 22px;
+    margin-top: 24px;
+}
+.hero-trust span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--gray-light);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.hero-trust i { color: var(--yellow); }
+@media (max-width: 480px) {
+    .hero-trust { gap: 8px 14px; }
+    .hero-trust span { font-size: 0.74rem; }
+    .discount-badge { font-size: 0.8rem; padding: 4px 9px; }
+}
+
+/* ── MASCOTA EN EL HERO (solo desktop, detrás del contenido) ── */
+.hero-mascota {
+    position: absolute;
+    bottom: 30px;
+    left: 26%;
+    height: clamp(240px, 34vh, 340px);
+    width: auto;
+    z-index: 1;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 26px rgba(0,0,0,0.55));
+    /* Entra corriendo desde la izquierda y después queda flotando */
+    animation: mascotaEntra 1.6s ease-out both,
+               mascotaFloat 3.5s ease-in-out 1.6s infinite;
+}
+@keyframes mascotaEntra {
+    0%   { transform: translateX(-60vw) translateY(0)     rotate(-8deg); }
+    18%  { transform: translateX(-47vw) translateY(-22px) rotate(-9deg); }
+    36%  { transform: translateX(-34vw) translateY(0)     rotate(-6deg); }
+    54%  { transform: translateX(-21vw) translateY(-22px) rotate(-9deg); }
+    72%  { transform: translateX(-9vw)  translateY(0)     rotate(-5deg); }
+    88%  { transform: translateX(1.5vw) translateY(-10px) rotate(3deg); }
+    100% { transform: translateX(0)     translateY(0)     rotate(0deg); }
+}
+@keyframes mascotaFloat {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-10px); }
+}
+.hero .container { position: relative; z-index: 2; }
+@media (max-width: 1100px) {
+    .hero-mascota { display: none; }
+}
+
+/* Avatar del widget de WhatsApp con la mascota */
+.wa-widget-avatar--img {
+    overflow: hidden;
+    background: #0d0d0d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.wa-widget-avatar--img img {
+    width: 88%;
+    height: 88%;
+    object-fit: contain;
+    object-position: center top;
+    display: block;
+}

@@ -1091,17 +1091,33 @@ function carouselGo(idx) {
 let _currentFilter = 'all';
 let productsShuffled = []; // copia mezclada SOLO para la vista "Todas las categorías"
 
+// Badge de descuento (%) calculado con el precio propio vs. el de mercado libre
+function discountBadge(p) {
+    if (p.price > 0 && p.oldPrice > p.price) {
+        const off = Math.round((1 - p.price / p.oldPrice) * 100);
+        if (off >= 1) return `<span class="discount-badge">-${off}%</span>`;
+    }
+    return '';
+}
+
 // Tarjeta de producto (compartida entre la grilla de productos y la de destacados)
 function productCardHTML(p) {
     const isFav = getFavs().includes(p.id);
+    const stockChip = p.inStock !== false
+        ? '<span class="stock-chip"><i class="fas fa-check"></i> En stock</span>'
+        : '<span class="stock-chip stock-chip--out">Sin stock</span>';
     return `
         <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
+            ${discountBadge(p)}
             <button class="fav-icon-btn${isFav ? ' active' : ''}" data-id="${p.id}" onclick="event.stopPropagation(); toggleFav(${p.id})" title="Guardar en favoritos">
                 <i class="fas fa-heart"></i>
             </button>
             ${cardMedia(p)}
             <div class="product-info">
-                <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
+                <div class="product-chips">
+                    <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
+                    ${stockChip}
+                </div>
                 <h3 class="product-name">${p.name}</h3>
                 <p class="product-desc">${p.desc}</p>
                 <div class="specs-table">${specsRows(p.specs)}</div>
@@ -1968,8 +1984,55 @@ window.addEventListener('load', () => {
     initWishlist();
     initStagger();
     initStats();
+    initScrollReveal();
     injectStructuredData();
 });
+
+// ─────────────────────────────────────────────────────────────────
+// REVEAL SUAVE AL SCROLLEAR (secciones intermedias)
+// ─────────────────────────────────────────────────────────────────
+function initScrollReveal() {
+    if (!('IntersectionObserver' in window)) return; // sin soporte: todo visible, no tocar nada
+
+    const selectors = [
+        '.why-us-item', '.feature-card', '.testimonial-card:not(.testi-extra)',
+        '.about-split', '.cta-pedido-inner', '.ubicacion-card', '.mail-card',
+        '.leave-review-inner'
+    ];
+    const els = document.querySelectorAll(selectors.join(','));
+    if (!els.length) return;
+
+    // Estado inicial oculto (con transición CSS como mecanismo de animación)
+    els.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(24px)';
+        el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    });
+
+    // Seguridad: si algo falla, a los 3s todo visible igual
+    const safety = setTimeout(() => {
+        els.forEach(el => { el.style.opacity = '1'; el.style.transform = 'none'; });
+    }, 3000);
+
+    let revealed = 0;
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            // Pequeño escalonado entre elementos hermanos visibles a la vez
+            const delay = (Array.prototype.indexOf.call(el.parentElement.children, el) % 4) * 90;
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'none';
+            }, delay);
+            obs.unobserve(el);
+            revealed++;
+            if (revealed === els.length) clearTimeout(safety);
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    els.forEach(el => obs.observe(el));
+}
 
 // ─────────────────────────────────────────────────────────────────
 // 4. SHARE BUTTON
