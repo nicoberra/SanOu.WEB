@@ -13,7 +13,7 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: 90px; }
 img { max-width: 100%; height: auto; }
 button, a { -webkit-tap-highlight-color: transparent; }
 
@@ -688,6 +688,8 @@ body {
     text-transform: uppercase;
     letter-spacing: 1.5px;
     transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
+    position: relative;
+    overflow: hidden;
 }
 .btn-primary:hover {
     background: var(--yellow-dark);
@@ -1089,9 +1091,9 @@ section { padding: 90px 0; }
     transition: all 0.3s;
 }
 .product-card:hover {
-    border-color: rgba(255,215,0,0.3);
-    transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    border-color: rgba(255,215,0,0.5);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 46px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,215,0,0.15);
 }
 .product-card.out-of-stock {
     position: relative;
@@ -3759,4 +3761,83 @@ section { padding: 90px 0; }
 @media (max-width: 600px) {
     .faq-item summary { font-size: 0.9rem; padding: 15px 18px; }
     .faq-item p { padding: 0 18px 16px; font-size: 0.88rem; }
+}
+
+/* ── BANNER GUÍA (en la sección de productos) ── */
+.guia-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    background: linear-gradient(100deg, rgba(255,215,0,0.14), rgba(255,215,0,0.04));
+    border: 1px solid rgba(255,215,0,0.35);
+    border-radius: 16px;
+    padding: 18px 24px;
+    margin: 4px 0 26px;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+}
+.guia-banner:hover { border-color: var(--yellow); transform: translateY(-2px); }
+.guia-banner-text { display: flex; align-items: center; gap: 14px; }
+.guia-banner-icon { font-size: 1.8rem; flex-shrink: 0; }
+.guia-banner-text strong { display: block; color: var(--white); font-size: 1.02rem; font-weight: 800; margin-bottom: 2px; }
+.guia-banner-text span { color: var(--gray-light); font-size: 0.86rem; }
+.guia-banner-btn {
+    background: var(--yellow);
+    color: #111;
+    font-weight: 800;
+    font-size: 0.9rem;
+    padding: 11px 20px;
+    border-radius: 50px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+@media (max-width: 600px) {
+    .guia-banner { padding: 16px 18px; }
+    .guia-banner-btn { width: 100%; justify-content: center; }
+}
+
+/* ── PULIDO VISUAL (5 mejoras) ── */
+
+/* #4 Brillo que barre el botón principal al pasar el mouse */
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -120%;
+    width: 60%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+    pointer-events: none;
+}
+.btn-primary:hover::before { left: 130%; }
+
+/* #2 Línea de acento amarilla bajo los títulos de sección */
+.section-title::after {
+    content: '';
+    display: block;
+    width: 64px;
+    height: 4px;
+    background: var(--yellow);
+    border-radius: 2px;
+    margin: 16px 0 0;
+}
+.section-title.text-center::after { margin-left: auto; margin-right: auto; }
+
+/* #5 Separadores suaves entre secciones (hairline con degradé) */
+.categories, .why-us, .products, .about,
+.testimonials-section, .leave-review-section, .faq-section { position: relative; }
+.categories::before, .why-us::before, .products::before, .about::before,
+.testimonials-section::before, .leave-review-section::before, .faq-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: min(92%, 1120px);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.22), transparent);
 }
