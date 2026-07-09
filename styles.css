@@ -3841,3 +3841,6 @@ section { padding: 90px 0; }
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(255,215,0,0.22), transparent);
 }
+
+/* H1 del hero: mantener el diseño del eslogan (sin margen extra del h1) */
+h1.hero-slogan-block { margin-top: 0; }
