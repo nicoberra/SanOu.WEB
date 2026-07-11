@@ -168,6 +168,23 @@ const PRICES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdb
 // ─── PRODUCTOS ──────────────────────────────────────────────────
 const products = [
     // Pinzas
+    { id: 26, name: 'Pinza Hidráulica HHYJ-50', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–50 mm²', imgs: ['1.png', '2.webp'], folder: 'HHYJ-50', catFolder: 'Pinzas',
+      desc: 'Pinza para indentar terminales de cobre con crimpado hexagonal. Diseño compacto y liviano.',
+      specs: [
+        { l: 'Rango de crimpado', v: '6–50 mm²' },
+        { l: 'Tipo de crimpado', v: 'Hexagonal' },
+        { l: 'Matrices incluidas', v: '6 piezas' }
+      ],
+      allSpecs: [
+        { l: 'Modelo', v: 'HHYJ-50' },
+        { l: 'Aplicación', v: 'Terminales de cobre' },
+        { l: 'Rango de crimpado', v: '6–50 mm²' },
+        { l: 'Tipo de crimpado', v: 'Hexagonal' },
+        { l: 'Matrices incluidas', v: '6 / 10 / 16 / 25 / 35 / 50 mm²' },
+        { l: 'Peso bruto', v: '1.4 kg' },
+        { l: 'Medidas de empaque', v: '400 × 130 × 50 mm' }
+      ]
+    },
     { id: 1, name: 'Pinza Hidráulica HHY-70A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–70 mm²', imgs: 2, folder: 'HHY-70A', ext: 'jpeg', catFolder: 'Pinzas',
       desc: 'Pinza hidráulica para indentar/engastar terminales. Incluye 7 matrices y maletín plástico de transporte.',
       specs: [
@@ -263,23 +280,6 @@ const products = [
         { l: 'Incluye', v: 'Caja metálica de transporte' },
         { l: 'Peso bruto', v: '11.8 kg' },
         { l: 'Medidas de empaque', v: '490 × 260 × 130 mm' }
-      ]
-    },
-    { id: 26, name: 'Pinza Hidráulica HHYJ-50', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–50 mm²', imgs: ['1.png', '2.webp'], folder: 'HHYJ-50', catFolder: 'Pinzas',
-      desc: 'Pinza para indentar terminales de cobre con crimpado hexagonal. Diseño compacto y liviano.',
-      specs: [
-        { l: 'Rango de crimpado', v: '6–50 mm²' },
-        { l: 'Tipo de crimpado', v: 'Hexagonal' },
-        { l: 'Matrices incluidas', v: '6 piezas' }
-      ],
-      allSpecs: [
-        { l: 'Modelo', v: 'HHYJ-50' },
-        { l: 'Aplicación', v: 'Terminales de cobre' },
-        { l: 'Rango de crimpado', v: '6–50 mm²' },
-        { l: 'Tipo de crimpado', v: 'Hexagonal' },
-        { l: 'Matrices incluidas', v: '6 / 10 / 16 / 25 / 35 / 50 mm²' },
-        { l: 'Peso bruto', v: '1.4 kg' },
-        { l: 'Medidas de empaque', v: '400 × 130 × 50 mm' }
       ]
     },
     { id: 27, name: 'Pinza Hidráulica HHY-400B con Zafe', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: ['1.png','2.webp','3.webp','4.jpeg'], folder: 'HHY-400B con zafe', catFolder: 'Pinzas',
@@ -1188,6 +1188,7 @@ function openModal(id) {
     }
     document.getElementById('modalBody').innerHTML = `
         <div class="modal-product">
+            ${discountBadge(p)}
             ${modalMedia(p)}
             <div class="modal-details">
                 <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
