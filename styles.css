@@ -4189,6 +4189,71 @@ h1.hero-slogan-block { margin-top: 0; }
     .cmp-colbar .cmp-col-actions { gap: 10px; }
 }
 
+/* ══════════ CTA: DEJAR RESEÑA EN GOOGLE ══════════ */
+.leave-review-cta {
+    max-width: 620px;
+    margin: 0 auto;
+    text-align: center;
+    background: var(--black-3);
+    border: 1px solid rgba(255,215,0,0.18);
+    border-radius: 20px;
+    padding: 44px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+.leave-review-stars {
+    color: var(--yellow);
+    font-size: 1.5rem;
+    letter-spacing: 5px;
+}
+.leave-review-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--white);
+    letter-spacing: 1px;
+    line-height: 1.1;
+    margin: 0;
+}
+.leave-review-sub {
+    color: var(--gray-light);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 430px;
+}
+.leave-review-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    background: var(--yellow);
+    color: var(--black);
+    border-radius: 980px;
+    padding: 15px 34px;
+    font-weight: 800;
+    font-size: 1rem;
+    text-decoration: none;
+    margin-top: 6px;
+    transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.leave-review-btn i { font-size: 1.05rem; }
+.leave-review-btn:hover {
+    filter: brightness(1.07);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(255,215,0,0.22);
+}
+.leave-review-note {
+    color: var(--gray);
+    font-size: 0.8rem;
+}
+@media (max-width: 700px) {
+    .leave-review-cta { padding: 34px 20px; border-radius: 16px; }
+    .leave-review-title { font-size: 1.6rem; }
+    .leave-review-sub { font-size: 0.88rem; }
+    .leave-review-btn { padding: 14px 24px; font-size: 0.92rem; width: 100%; justify-content: center; }
+}
+
 /* ══════════ RESEÑAS DE GOOGLE ══════════ */
 .reviews-section {
     padding: 90px 0;

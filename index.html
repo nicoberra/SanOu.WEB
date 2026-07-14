@@ -546,56 +546,6 @@
     </section>
 
 
-    <!-- FORMULARIO DE RESEÑAS -->
-    <section class="leave-review-section">
-        <div class="container">
-            <div class="leave-review-inner">
-                <!-- Formulario -->
-                <div class="review-form-col">
-                    <h3 class="review-form-title">¿Ya usaste nuestros productos?<br><span>Dejá tu reseña</span></h3>
-                    <p class="review-form-sub">Tu opinión ayuda a otros profesionales a elegir la herramienta correcta.</p>
-                    <div id="reviewFormWrap">
-                        <form id="reviewForm" class="review-form" onsubmit="submitReview(event)">
-                            <div class="review-stars-row">
-                                <span class="review-stars-label">Puntuación:</span>
-                                <div class="star-rating">
-                                    <button type="button" class="star-btn" data-val="1">★</button>
-                                    <button type="button" class="star-btn" data-val="2">★</button>
-                                    <button type="button" class="star-btn" data-val="3">★</button>
-                                    <button type="button" class="star-btn" data-val="4">★</button>
-                                    <button type="button" class="star-btn" data-val="5">★</button>
-                                </div>
-                            </div>
-                            <input type="text" id="reviewName" placeholder="Tu nombre *" class="review-input" maxlength="60">
-                            <div class="review-row-2">
-                                <input type="text" id="reviewRole" placeholder="Profesión / Rubro" class="review-input" maxlength="60">
-                                <input type="text" id="reviewCity" placeholder="Ciudad" class="review-input" maxlength="50">
-                            </div>
-                            <textarea id="reviewText" placeholder="Contanos tu experiencia con el producto... *" class="review-input review-textarea" rows="4" maxlength="500"></textarea>
-                            <p id="reviewError" style="color:#ff4d4d;font-size:0.82rem;display:none;margin:0;"></p>
-                            <button type="submit" class="btn-submit-review">
-                                <i class="fas fa-paper-plane"></i> Publicar reseña
-                            </button>
-                        </form>
-                    </div>
-                    <div id="reviewSuccess" style="display:none; text-align:center; padding:24px 0;">
-                        <div style="font-size:2.2rem; margin-bottom:10px;">🎉</div>
-                        <p style="color:#fff; font-weight:700;">¡Gracias por tu reseña!</p>
-                        <p style="color:var(--gray); font-size:0.88rem;">Ya aparece en la página.</p>
-                    </div>
-                </div>
-                <!-- Reseñas de usuarios -->
-                <div class="user-reviews-col">
-                    <h3 class="user-reviews-title">Reseñas de clientes</h3>
-                    <div id="userReviewsList" class="user-reviews-list"></div>
-                    <button id="btnVerMasReviews" class="btn-ver-mas-reviews" onclick="verMasReviews()" style="display:none;">
-                        Ver más reseñas <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- RESEÑAS DE GOOGLE -->
     <section class="reviews-section" id="resenas">
         <div class="container">
@@ -697,6 +647,21 @@
                 <a class="reviews-cta" href="https://www.google.com/maps/search/?api=1&amp;query=San+Ou+Marcelo+Gamboa+6306+Ciudad+Autonoma+de+Buenos+Aires" target="_blank" rel="noopener">
                     Ver todas las reseñas en Google <i class="fas fa-arrow-right"></i>
                 </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- DEJAR RESEÑA EN GOOGLE -->
+    <section class="leave-review-section">
+        <div class="container">
+            <div class="leave-review-cta">
+                <span class="leave-review-stars">★★★★★</span>
+                <h3 class="leave-review-title">¿Ya usaste nuestras herramientas?</h3>
+                <p class="leave-review-sub">Contanos tu experiencia en Google. Tu opinión ayuda a otros profesionales a elegir la herramienta correcta.</p>
+                <a class="leave-review-btn" href="https://www.google.com/maps/search/?api=1&amp;query=San+Ou+Marcelo+Gamboa+6306+Ciudad+Autonoma+de+Buenos+Aires" target="_blank" rel="noopener">
+                    <i class="fab fa-google"></i> Escribir una reseña en Google
+                </a>
+                <span class="leave-review-note">Te lleva a nuestro perfil de Google · Toma menos de un minuto</span>
             </div>
         </div>
     </section>
