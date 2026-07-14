@@ -3920,28 +3920,26 @@ h1.hero-slogan-block { margin-top: 0; }
 .compare-overlay.active { opacity: 1; pointer-events: all; }
 .compare-modal {
     position: fixed;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -48%);
-    width: min(1060px, 96vw);
-    max-height: 94vh;
-    max-height: 94dvh;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
     background: var(--black-2);
-    border: 1px solid rgba(255,215,0,0.18);
-    border-radius: 22px;
     z-index: 1991;
     opacity: 0; pointer-events: none;
+    transform: translateY(14px);
     transition: opacity 0.3s, transform 0.3s;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
 }
-.compare-modal.active { opacity: 1; pointer-events: all; transform: translate(-50%, -50%); }
+.compare-modal.active { opacity: 1; pointer-events: all; transform: translateY(0); }
 .compare-modal-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 26px;
+    padding: 16px 22px;
+    padding-top: max(16px, env(safe-area-inset-top));
     border-bottom: 1px solid rgba(255,255,255,0.08);
     flex-shrink: 0;
     background: var(--black-2);
@@ -3966,37 +3964,42 @@ h1.hero-slogan-block { margin-top: 0; }
 }
 .compare-close:hover { background: var(--yellow); color: var(--black); }
 .compare-scroll {
-    overflow: auto;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     background: var(--black-2);
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
-.cmp-table {
-    border-collapse: collapse;
-    width: 100%;
-    min-width: 800px;
+/* Grilla: 3 columnas (compu) / 2 columnas (celu). Sin columna de etiquetas ni scroll horizontal. */
+.cmp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 1100px;
+    margin: 0 auto;
     font-family: 'Inter', sans-serif;
 }
 
-/* ── Encabezado de columnas (sticky) ── */
-.cmp-corner {
-    background: var(--black-2);
-    position: sticky; left: 0; top: 0;
-    z-index: 6;
-    width: 170px; min-width: 170px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
+/* ── Encabezado de columnas: queda FIJO arriba mientras bajás ── */
 .cmp-colhead {
     position: sticky; top: 0;
     z-index: 5;
     background: var(--black-2);
-    padding: 24px 18px 26px;
+    padding: 20px 14px 22px;
     text-align: center;
-    vertical-align: top;
-    min-width: 230px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     border-left: 1px solid rgba(255,255,255,0.05);
+    transition: padding 0.25s ease;
 }
+
+/* Al bajar: se va la foto y quedan el selector + Comprar + Más información (como Apple) */
+.cmp-grid--stuck .cmp-colhead { padding: 12px 10px 14px; }
+.cmp-grid--stuck .cmp-img-wrap,
+.cmp-grid--stuck .cmp-name,
+.cmp-grid--stuck .cmp-price { display: none; }
+.cmp-grid--stuck .cmp-select-wrap { margin-bottom: 10px; }
+.cmp-grid--stuck .cmp-col-actions { flex-direction: row; justify-content: center; gap: 14px; }
 .cmp-select-wrap { position: relative; margin-bottom: 18px; }
 .cmp-select {
     width: 100%;
@@ -4099,67 +4102,72 @@ h1.hero-slogan-block { margin-top: 0; }
 .cmp-btn--link i { font-size: 0.62rem; }
 .cmp-btn--link:hover { color: var(--yellow); }
 
-/* ── Filas de secciones y specs ── */
-.cmp-section-cell {
+/* ── Secciones y filas de características ── */
+.cmp-section {
+    grid-column: 1 / -1;
     background: var(--black-3);
     color: var(--white);
     font-weight: 800;
     font-size: 1.05rem;
     letter-spacing: -0.01em;
     text-align: left;
-    padding: 18px 18px;
-    position: sticky; left: 0;
+    padding: 16px 18px;
+    margin-top: 22px;
     border-top: 1px solid rgba(255,255,255,0.08);
     border-left: 3px solid var(--yellow);
 }
-.cmp-rowlabel {
-    position: sticky; left: 0;
-    z-index: 2;
-    background: var(--black-2);
-    color: var(--gray-light);
-    font-size: 0.88rem;
-    font-weight: 500;
-    text-align: left;
-    padding: 17px 18px;
-    border-top: 1px solid rgba(255,255,255,0.07);
-    width: 170px; min-width: 170px;
-    vertical-align: middle;
-}
 .cmp-cell {
     text-align: center;
-    padding: 17px 16px;
-    font-size: 0.92rem;
-    color: var(--white);
+    padding: 26px 16px;
     border-top: 1px solid rgba(255,255,255,0.07);
     border-left: 1px solid rgba(255,255,255,0.05);
-    vertical-align: middle;
-    line-height: 1.4;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    gap: 5px;
 }
-.cmp-cell--empty { color: rgba(255,255,255,0.3); }
-.cmp-cell--muted { color: var(--gray-light); }
-.cmp-cell--price { font-weight: 700; font-size: 1.05rem; color: var(--yellow); }
+.cmp-val {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+.cmp-val--price { color: var(--yellow); font-size: 1.3rem; }
+.cmp-val--muted { color: var(--gray-light); font-weight: 600; }
+.cmp-lbl {
+    font-size: 0.78rem;
+    color: var(--gray);
+    font-weight: 500;
+    line-height: 1.3;
+}
+.cmp-cell--empty .cmp-val { color: rgba(255,255,255,0.25); }
 .cmp-cell-old {
-    display: block;
     font-size: 0.78rem; color: var(--gray);
     font-weight: 500; text-decoration: line-through;
-    margin-bottom: 2px;
 }
 .cmp-empty-msg {
+    grid-column: 1 / -1;
     text-align: center; color: var(--gray);
-    padding: 50px 20px; font-size: 0.95rem;
+    padding: 60px 20px; font-size: 0.95rem;
 }
 
 @media (max-width: 700px) {
-    .compare-modal { width: 96vw; border-radius: 18px; }
-    .compare-modal-head { padding: 16px 18px; }
-    .compare-modal-title { font-size: 1.1rem; }
-    .compare-scroll { overflow-x: auto; }
-    .cmp-table { min-width: 640px; }
-    .cmp-corner, .cmp-rowlabel { width: 120px; min-width: 120px; }
-    .cmp-colhead { min-width: 180px; padding: 18px 12px 20px; }
-    .cmp-name { font-size: 0.95rem; }
-    .cmp-price { font-size: 1rem; }
-    .cmp-rowlabel { font-size: 0.82rem; padding: 14px; }
-    .cmp-cell { font-size: 0.86rem; padding: 14px 10px; }
-    .cmp-section-cell { font-size: 0.98rem; padding: 15px 14px; }
+    .compare-modal-head { padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); }
+    .compare-modal-title { font-size: 1.05rem; }
+    /* Celular: 2 columnas a pantalla completa, sin scroll horizontal */
+    .cmp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cmp-colhead { padding: 14px 10px 16px; }
+    .cmp-select { font-size: 0.75rem; padding: 8px 26px 8px 10px; }
+    .cmp-select-wrap i { right: 10px; }
+    .cmp-name { font-size: 0.88rem; min-height: 2.4em; }
+    .cmp-price { font-size: 0.95rem; margin-bottom: 12px; }
+    .cmp-price-now { font-size: 1rem; }
+    .cmp-btn--buy { padding: 8px 16px; font-size: 0.82rem; }
+    .cmp-btn--link { font-size: 0.75rem; }
+    .cmp-cell { padding: 20px 10px; }
+    .cmp-val { font-size: 0.95rem; }
+    .cmp-val--price { font-size: 1.1rem; }
+    .cmp-lbl { font-size: 0.72rem; }
+    .cmp-section { font-size: 0.95rem; padding: 13px 14px; margin-top: 18px; }
+    .cmp-grid--stuck .cmp-col-actions { gap: 10px; }
 }
