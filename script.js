@@ -1263,7 +1263,7 @@ function compareOptions(selectedId) {
 function compareColHead(slotIdx) {
     const id = compareSlots[slotIdx];
     const p = id ? products.find(x => x.id === id) : null;
-    const select = `<select class="cmp-select" onchange="setCompareSlot(${slotIdx}, this.value)">${compareOptions(id)}</select>`;
+    const select = `<div class="cmp-select-wrap"><select class="cmp-select" onchange="setCompareSlot(${slotIdx}, this.value)">${compareOptions(id)}</select><i class="fas fa-chevron-down"></i></div>`;
     if (!p) {
         return `<th class="cmp-colhead cmp-colhead--empty">
             ${select}
@@ -1276,41 +1276,67 @@ function compareColHead(slotIdx) {
         : `<div class="cmp-img cmp-img--icon"><i class="fas ${p.icon}"></i></div>`;
     const badge = discountBadge(p);
     const price = p.price > 0
-        ? `<div class="cmp-price">${p.oldPrice > p.price ? `<span class="cmp-price-old">${fmt(p.oldPrice)}</span>` : ''}${fmt(p.price)}</div>`
-        : `<div class="cmp-price cmp-price--consult">Consultar</div>`;
+        ? `<div class="cmp-price">${p.oldPrice > p.price ? `<span class="cmp-price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="cmp-price-now">${fmt(p.price)}</span></div>`
+        : `<div class="cmp-price cmp-price--consult">Consultar precio</div>`;
     return `<th class="cmp-colhead">
         ${select}
         <div class="cmp-img-wrap">${badge}${img}</div>
         <div class="cmp-name">${p.name}</div>
         ${price}
         <div class="cmp-col-actions">
-            <button class="cmp-btn cmp-btn--ghost" onclick="openModal(${p.id})">Ver</button>
             <button class="cmp-btn cmp-btn--buy" onclick="quickBuy(${p.id})">Comprar</button>
+            <button class="cmp-btn cmp-btn--link" onclick="openModal(${p.id})">Más información <i class="fas fa-chevron-right"></i></button>
         </div>
     </th>`;
 }
 
+// Agrupa las specs en secciones estilo Apple (Pantalla, Chip, etc.)
+function specGroup(label) {
+    const l = label.toLowerCase();
+    if (/(peso|medida|dimension|tama|largo|ancho|alto|empaque)/.test(l)) return 'Dimensiones y peso';
+    if (/(modelo|aplica|material|marca|incluye|contenido)/.test(l)) return 'General';
+    return 'Especificaciones';
+}
+const SPEC_GROUP_ORDER = ['General', 'Especificaciones', 'Dimensiones y peso'];
+
 function renderCompare() {
     const sel = compareSlots.map(id => id ? products.find(p => p.id === id) : null);
     const active = sel.filter(Boolean);
+    const nCols = compareSlots.length;
     // unión de etiquetas de specs en orden de aparición
     const labels = [];
     active.forEach(p => (p.allSpecs || p.specs || []).forEach(s => {
         if (!labels.includes(s.l)) labels.push(s.l);
     }));
-    const thead = `<tr><th class="cmp-corner"></th>${compareSlots.map((_, i) => compareColHead(i)).join('')}</tr>`;
-    let rows;
+    const thead = `<tr class="cmp-headrow"><th class="cmp-corner"></th>${compareSlots.map((_, i) => compareColHead(i)).join('')}</tr>`;
+
+    let rows = '';
     if (!labels.length) {
-        rows = `<tr><td class="cmp-rowlabel"></td><td class="cmp-cell" colspan="${compareSlots.length}" style="text-align:center;color:var(--gray)">Elegí al menos una herramienta para ver sus características.</td></tr>`;
+        rows = `<tr><td class="cmp-empty-msg" colspan="${nCols + 1}">Elegí al menos una herramienta para ver sus características.</td></tr>`;
     } else {
-        rows = labels.map(l => {
-            const cells = sel.map(p => {
-                if (!p) return '<td class="cmp-cell cmp-cell--empty">—</td>';
-                const spec = (p.allSpecs || p.specs || []).find(s => s.l === l);
-                return `<td class="cmp-cell">${spec ? spec.v : '—'}</td>`;
-            }).join('');
-            return `<tr><td class="cmp-rowlabel">${l}</td>${cells}</tr>`;
+        // fila de precio destacada arriba de todo
+        const priceCells = sel.map(p => {
+            if (!p) return '<td class="cmp-cell cmp-cell--empty">—</td>';
+            if (!(p.price > 0)) return '<td class="cmp-cell cmp-cell--muted">Consultar</td>';
+            return `<td class="cmp-cell cmp-cell--price">${p.oldPrice > p.price ? `<span class="cmp-cell-old">${fmt(p.oldPrice)}</span>` : ''}${fmt(p.price)}</td>`;
         }).join('');
+        rows += `<tr><td class="cmp-rowlabel">Precio</td>${priceCells}</tr>`;
+
+        // agrupar etiquetas por sección
+        const groups = {};
+        labels.forEach(l => { const g = specGroup(l); (groups[g] = groups[g] || []).push(l); });
+        SPEC_GROUP_ORDER.forEach(g => {
+            if (!groups[g] || !groups[g].length) return;
+            rows += `<tr class="cmp-section"><td class="cmp-section-cell" colspan="${nCols + 1}">${g}</td></tr>`;
+            groups[g].forEach(l => {
+                const cells = sel.map(p => {
+                    if (!p) return '<td class="cmp-cell cmp-cell--empty">—</td>';
+                    const spec = (p.allSpecs || p.specs || []).find(s => s.l === l);
+                    return `<td class="cmp-cell">${spec ? spec.v : '—'}</td>`;
+                }).join('');
+                rows += `<tr><td class="cmp-rowlabel">${l}</td>${cells}</tr>`;
+            });
+        });
     }
     document.getElementById('compareTable').innerHTML = `<thead>${thead}</thead><tbody>${rows}</tbody>`;
 }
