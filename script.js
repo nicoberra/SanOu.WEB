@@ -1236,6 +1236,14 @@ function filterProducts(filter) {
     document.getElementById('productos').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// Abrir/cerrar reseñas largas de Google
+function toggleReview(btn) {
+    const p = btn.previousElementSibling;
+    if (!p) return;
+    const open = p.classList.toggle('open');
+    btn.textContent = open ? 'Ver menos' : 'Ver más';
+}
+
 // Muestra el banner de la guía de crimpadoras solo en "Todas" o "Pinzas"
 function toggleGuiaBanner(filter) {
     const banner = document.getElementById('guiaBanner');
@@ -2152,7 +2160,7 @@ function initScrollReveal() {
     if (!('IntersectionObserver' in window)) return; // sin soporte: todo visible, no tocar nada
 
     const selectors = [
-        '.why-us-item', '.feature-card', '.testimonial-card:not(.testi-extra)',
+        '.why-us-item', '.feature-card', '.review-card',
         '.about-split', '.cta-pedido-inner', '.ubicacion-card', '.mail-card',
         '.leave-review-inner'
     ];
@@ -2562,14 +2570,6 @@ function injectStructuredData() {
     script.textContent = JSON.stringify(productSchemas);
     document.head.appendChild(script);
 }
-
-// ─── VER MÁS TESTIMONIOS ─────────────────────────────────────────
-function verMasTestimonios() {
-    document.querySelectorAll('.testi-extra').forEach(el => el.classList.add('visible'));
-    const btn = document.getElementById('btnVerMasTestis');
-    if (btn) btn.style.display = 'none';
-}
-
 
 // ─── RESEÑAS DE USUARIOS ─────────────────────────────────────────
 // Pegá acá la URL de tu Google Apps Script después de desplegarlo
