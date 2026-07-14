@@ -1265,13 +1265,12 @@ function visibleCols() {
     return window.matchMedia('(max-width: 700px)').matches ? 2 : 3;
 }
 
-function compareColHead(slotIdx) {
+// Tarjeta de producto: foto + nombre + precio. NO es fija: se va al bajar.
+function compareColCard(slotIdx) {
     const id = compareSlots[slotIdx];
     const p = id ? products.find(x => x.id === id) : null;
-    const select = `<div class="cmp-select-wrap"><select class="cmp-select" onchange="setCompareSlot(${slotIdx}, this.value)">${compareOptions(id)}</select><i class="fas fa-chevron-down"></i></div>`;
     if (!p) {
-        return `<div class="cmp-colhead cmp-colhead--empty">
-            ${select}
+        return `<div class="cmp-colcard cmp-colcard--empty">
             <div class="cmp-img cmp-img--placeholder"><i class="fas fa-plus"></i></div>
         </div>`;
     }
@@ -1283,16 +1282,23 @@ function compareColHead(slotIdx) {
     const price = p.price > 0
         ? `<div class="cmp-price">${p.oldPrice > p.price ? `<span class="cmp-price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="cmp-price-now">${fmt(p.price)}</span></div>`
         : `<div class="cmp-price cmp-price--consult">Consultar precio</div>`;
-    return `<div class="cmp-colhead">
-        ${select}
+    return `<div class="cmp-colcard">
         <div class="cmp-img-wrap">${badge}${img}</div>
         <div class="cmp-name">${p.name}</div>
         ${price}
-        <div class="cmp-col-actions">
+    </div>`;
+}
+
+// Barra compacta: selector + botones. Esta SÍ queda fija arriba al bajar.
+function compareColBar(slotIdx) {
+    const id = compareSlots[slotIdx];
+    const p = id ? products.find(x => x.id === id) : null;
+    const select = `<div class="cmp-select-wrap"><select class="cmp-select" onchange="setCompareSlot(${slotIdx}, this.value)">${compareOptions(id)}</select><i class="fas fa-chevron-down"></i></div>`;
+    const actions = p ? `<div class="cmp-col-actions">
             <button class="cmp-btn cmp-btn--buy" onclick="quickBuy(${p.id})">Comprar</button>
             <button class="cmp-btn cmp-btn--link" onclick="openModal(${p.id})">Más información <i class="fas fa-chevron-right"></i></button>
-        </div>
-    </div>`;
+        </div>` : '';
+    return `<div class="cmp-colbar">${select}${actions}</div>`;
 }
 
 // Agrupa las specs en secciones que se van revelando al bajar
@@ -1317,8 +1323,9 @@ function renderCompare() {
         if (!labels.includes(s.l)) labels.push(s.l);
     }));
 
-    // encabezado fijo con las columnas de producto (sin columna de etiquetas)
-    let html = sel.map((_, i) => compareColHead(i)).join('');
+    // fila 1: tarjetas (se van al bajar) — fila 2: barra compacta (queda fija)
+    let html = sel.map((_, i) => compareColCard(i)).join('');
+    html += sel.map((_, i) => compareColBar(i)).join('');
 
     if (!labels.length) {
         html += `<div class="cmp-empty-msg">Elegí al menos una herramienta para ver sus características.</div>`;
@@ -1363,8 +1370,6 @@ function setCompareSlot(i, val) {
     renderCompare();
 }
 
-let _cmpScrollBound = false;
-
 function openCompare() {
     // por defecto arranca comparando las dos primeras crimpadoras
     if (compareSlots.every(x => x === null)) {
@@ -1375,17 +1380,8 @@ function openCompare() {
     document.getElementById('compareOverlay').classList.add('active');
     document.getElementById('compareModal').classList.add('active');
     document.body.style.overflow = 'hidden';
-
-    // al bajar, achicar el encabezado de productos
     const sc = document.querySelector('.compare-scroll');
-    if (sc && !_cmpScrollBound) {
-        _cmpScrollBound = true;
-        sc.addEventListener('scroll', () => {
-            document.getElementById('compareTable')
-                .classList.toggle('cmp-grid--stuck', sc.scrollTop > 200);
-        }, { passive: true });
-    }
-    if (sc) { sc.scrollTop = 0; document.getElementById('compareTable').classList.remove('cmp-grid--stuck'); }
+    if (sc) sc.scrollTop = 0;
 }
 
 function closeCompare() {
