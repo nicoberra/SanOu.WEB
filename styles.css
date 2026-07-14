@@ -859,7 +859,7 @@ section { padding: 90px 0; }
 }
 
 /* Imágenes de fondo por categoría */
-[data-cat="pinzas"]      { background-image: url('productos/Pinzas/HHY-70A/1.jpeg'); }
+[data-cat="pinzas"]      { background-image: url('productos/Crimpadoras/HHY-70A/1.jpeg'); }
 [data-cat="dobladoras"]  { background-image: url('productos/Dobladoras/HHW-2J/1.webp'); }
 [data-cat="cortahierro"] { background-image: url('productos/cortahierro/Cortadora de Varilla 22mm/1.jpeg'); }
 [data-cat="mordazas"]    { background-image: url('productos/mordazas/categoria cuadro.png'); }
@@ -3885,3 +3885,223 @@ section { padding: 90px 0; }
 
 /* H1 del hero: mantener el diseño del eslogan (sin margen extra del h1) */
 h1.hero-slogan-block { margin-top: 0; }
+
+/* ══════════ COMPARADOR DE HERRAMIENTAS ══════════ */
+.compare-open-btn {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: transparent;
+    color: var(--white);
+    border: 1px solid rgba(255,215,0,0.35);
+    border-radius: 12px;
+    padding: 11px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.compare-open-btn i { color: var(--yellow); }
+.compare-open-btn:hover {
+    background: rgba(255,215,0,0.08);
+    border-color: var(--yellow);
+    transform: translateY(-1px);
+}
+
+.compare-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.82);
+    z-index: 1990;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+}
+.compare-overlay.active { opacity: 1; pointer-events: all; }
+.compare-modal {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -48%);
+    width: min(1000px, 96vw);
+    max-height: 92vh;
+    max-height: 92dvh;
+    background: var(--black-2);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 20px;
+    z-index: 1991;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.compare-modal.active { opacity: 1; pointer-events: all; transform: translate(-50%, -50%); }
+.compare-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+}
+.compare-modal-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--white);
+    display: flex; align-items: center; gap: 10px;
+}
+.compare-modal-title i { color: var(--yellow); }
+.compare-close {
+    background: var(--black-3);
+    border: none; color: var(--white);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    cursor: pointer; font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+.compare-close:hover { background: var(--yellow); color: var(--black); }
+.compare-scroll {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.cmp-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 620px;
+}
+.cmp-corner {
+    background: var(--black-2);
+    position: sticky; left: 0; top: 0;
+    z-index: 5;
+    width: 140px; min-width: 140px;
+}
+.cmp-colhead {
+    position: sticky; top: 0;
+    z-index: 4;
+    background: var(--black-2);
+    padding: 16px 12px 18px;
+    text-align: center;
+    vertical-align: top;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    min-width: 200px;
+}
+.cmp-select {
+    width: 100%;
+    background: var(--black-3);
+    color: var(--white);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 9px;
+    padding: 8px 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+.cmp-select:focus { outline: none; border-color: var(--yellow); }
+.cmp-img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    margin-bottom: 10px;
+}
+.cmp-img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    display: block;
+}
+.cmp-img--icon {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.4rem; color: var(--yellow); background: var(--black-3);
+}
+.cmp-img--placeholder {
+    width: 100%; aspect-ratio: 1 / 1;
+    border: 2px dashed rgba(255,255,255,0.15);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; color: rgba(255,255,255,0.25);
+    background: transparent;
+}
+.cmp-img-wrap .discount-badge { top: 8px; left: 8px; font-size: 0.72rem; padding: 3px 8px; }
+.cmp-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.25;
+    margin-bottom: 6px;
+    min-height: 2.4em;
+}
+.cmp-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.35rem;
+    color: var(--yellow);
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+}
+.cmp-price-old {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    color: var(--gray);
+    text-decoration: line-through;
+}
+.cmp-price--consult { font-size: 0.95rem; color: var(--gray-light); font-family: 'Inter', sans-serif; }
+.cmp-col-actions { display: flex; flex-direction: column; gap: 7px; }
+.cmp-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.2s, background 0.2s;
+}
+.cmp-btn--ghost {
+    background: transparent; color: var(--white);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.cmp-btn--ghost:hover { border-color: var(--yellow); color: var(--yellow); }
+.cmp-btn--buy { background: var(--yellow); color: var(--black); }
+.cmp-btn--buy:hover { filter: brightness(1.08); }
+
+.cmp-rowlabel {
+    position: sticky; left: 0;
+    z-index: 3;
+    background: var(--black-3);
+    color: var(--gray-light);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: left;
+    padding: 13px 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    width: 140px; min-width: 140px;
+}
+.cmp-cell {
+    text-align: center;
+    padding: 13px 12px;
+    font-size: 0.86rem;
+    color: var(--white);
+    border-left: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    vertical-align: middle;
+}
+.cmp-cell--empty { color: rgba(255,255,255,0.3); }
+.cmp-table tbody tr:nth-child(even) .cmp-cell { background: rgba(255,255,255,0.02); }
+.cmp-table tbody tr:nth-child(even) .cmp-rowlabel { background: var(--black-3); }
+
+@media (max-width: 700px) {
+    .compare-modal { width: 96vw; border-radius: 16px; }
+    .compare-scroll { overflow-x: auto; }
+    .cmp-table { min-width: 560px; }
+    .cmp-corner, .cmp-rowlabel { width: 108px; min-width: 108px; }
+    .cmp-colhead { min-width: 165px; padding: 12px 8px 14px; }
+    .cmp-name { font-size: 0.82rem; }
+    .cmp-price { font-size: 1.2rem; }
+}

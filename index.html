@@ -29,13 +29,13 @@
     <link rel="icon" type="image/png" href="tuerca-icon.png">
     <link rel="apple-touch-icon" href="tuerca-icon.png">
     <title>San Ou - Herramientas Hidráulicas | Importador directo Argentina</title>
-    <meta name="description" content="Importadores directos de herramientas hidráulicas hace más de 12 años. Pinzas, cilindros, bombas, extractores y más. Stock disponible. Envíos a todo el país.">
+    <meta name="description" content="Importadores directos de herramientas hidráulicas hace más de 12 años. Crimpadoras, cilindros, bombas, extractores y más. Stock disponible. Envíos a todo el país.">
     <meta name="keywords" content="herramientas hidráulicas, pinza hidráulica, cilindro hidráulico, bomba hidráulica, extractor hidráulico, sacabocados, Argentina">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://sanou.com.ar/">
     <!-- Open Graph -->
     <meta property="og:title" content="San Ou - Herramientas Hidráulicas Argentina">
-    <meta property="og:description" content="Importadores directos con más de 12 años. Pinzas, cilindros, bombas hidráulicas y más. Stock disponible, envíos a todo el país.">
+    <meta property="og:description" content="Importadores directos con más de 12 años. Crimpadoras, cilindros, bombas hidráulicas y más. Stock disponible, envíos a todo el país.">
     <meta property="og:image" content="https://sanou.com.ar/sticker.png">
     <meta property="og:url" content="https://sanou.com.ar/">
     <meta property="og:type" content="website">
@@ -43,7 +43,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="San Ou - Herramientas Hidráulicas Argentina">
-    <meta name="twitter:description" content="Importadores directos. Pinzas, cilindros, bombas hidráulicas. Stock siempre disponible.">
+    <meta name="twitter:description" content="Importadores directos. Crimpadoras, cilindros, bombas hidráulicas. Stock siempre disponible.">
     <meta name="twitter:image" content="https://sanou.com.ar/sticker.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,7 +57,7 @@
       "@context": "https://schema.org",
       "@type": "Store",
       "name": "San Ou",
-      "description": "Importadores directos de herramientas hidráulicas e industriales hace más de 12 años. Pinzas, cilindros, bombas, extractores, sacabocados y más. Stock disponible. Envíos a todo el país.",
+      "description": "Importadores directos de herramientas hidráulicas e industriales hace más de 12 años. Crimpadoras, cilindros, bombas, extractores, sacabocados y más. Stock disponible. Envíos a todo el país.",
       "image": "https://sanou.com.ar/sticker.png",
       "logo": "https://sanou.com.ar/sticker.png",
       "url": "https://sanou.com.ar/",
@@ -117,6 +117,18 @@
     <div class="modal" id="productModal">
         <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
         <div class="modal-body" id="modalBody"></div>
+    </div>
+
+    <!-- Comparador de herramientas -->
+    <div class="compare-overlay" id="compareOverlay" onclick="closeCompare()"></div>
+    <div class="compare-modal" id="compareModal">
+        <div class="compare-modal-head">
+            <h3 class="compare-modal-title"><i class="fas fa-scale-balanced"></i> Comparar herramientas</h3>
+            <button class="compare-close" onclick="closeCompare()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="compare-scroll">
+            <table class="cmp-table" id="compareTable"></table>
+        </div>
     </div>
 
     <!-- Cart Overlay -->
@@ -313,7 +325,7 @@
         <div class="container">
             <h2 class="section-title text-center">Categorías</h2>
             <div class="categories-grid">
-                <div class="category-card" onclick="filterProducts('pinzas')" data-cat="pinzas"><h3>Pinzas</h3></div>
+                <div class="category-card" onclick="filterProducts('pinzas')" data-cat="pinzas"><h3>Crimpadoras</h3></div>
                 <div class="category-card" onclick="filterProducts('dobladoras')" data-cat="dobladoras"><h3>Dobladoras de Caño</h3></div>
                 <div class="category-card" onclick="filterProducts('cortahierro')" data-cat="cortahierro"><h3>Corta Hierro</h3></div>
                 <div class="category-card" onclick="filterProducts('mordazas')" data-cat="mordazas"><h3>Mordazas de Torno</h3></div>
@@ -379,7 +391,7 @@
                     </button>
                     <div class="filter-dropdown-menu" id="filterDropdownMenu">
                         <div class="filter-option active" data-filter="all" onclick="selectFilter('all', 'Todas las categorías')">Todas las categorías</div>
-                        <div class="filter-option" data-filter="pinzas" onclick="selectFilter('pinzas', 'Pinzas')">Pinzas</div>
+                        <div class="filter-option" data-filter="pinzas" onclick="selectFilter('pinzas', 'Crimpadoras')">Crimpadoras</div>
                         <div class="filter-option" data-filter="dobladoras" onclick="selectFilter('dobladoras', 'Dobladoras de caño')">Dobladoras de caño</div>
                         <div class="filter-option" data-filter="cortahierro" onclick="selectFilter('cortahierro', 'Corta hierro')">Corta hierro</div>
                         <div class="filter-option" data-filter="mordazas" onclick="selectFilter('mordazas', 'Mordazas de torno')">Mordazas de torno</div>
@@ -393,8 +405,11 @@
                         <div class="filter-option" data-filter="otros" onclick="selectFilter('otros', 'Otros')">Otros</div>
                     </div>
                 </div>
+                <button class="compare-open-btn" onclick="openCompare()">
+                    <i class="fas fa-scale-balanced"></i> Comparar herramientas
+                </button>
             </div>
-            <a href="guia-crimpadoras-hidraulicas.html" class="guia-banner">
+            <a href="guia-crimpadoras-hidraulicas.html" class="guia-banner" id="guiaBanner">
                 <div class="guia-banner-text">
                     <span class="guia-banner-icon">🔧</span>
                     <div>
@@ -809,7 +824,7 @@
                 </div>
                 <div class="footer-cats">
                     <h4>Categorías</h4>
-                    <a href="#productos" onclick="filterProducts('pinzas')">Pinzas</a>
+                    <a href="#productos" onclick="filterProducts('pinzas')">Crimpadoras</a>
                     <a href="#productos" onclick="filterProducts('dobladoras')">Dobladoras de caño</a>
                     <a href="#productos" onclick="filterProducts('bombas')">Bomba hidráulica</a>
                     <a href="#productos" onclick="filterProducts('cilindros')">Cilindros hidráulicos</a>

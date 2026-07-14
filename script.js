@@ -168,7 +168,7 @@ const PRICES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdb
 // ─── PRODUCTOS ──────────────────────────────────────────────────
 const products = [
     // Pinzas
-    { id: 26, name: 'Pinza Hidráulica HHYJ-50', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–50 mm²', imgs: ['1.png', '2.webp'], folder: 'HHYJ-50', catFolder: 'Pinzas',
+    { id: 26, name: 'Pinza Hidráulica HHYJ-50', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–50 mm²', imgs: ['1.png', '2.webp'], folder: 'HHYJ-50', catFolder: 'Crimpadoras',
       desc: 'Pinza para indentar terminales de cobre con crimpado hexagonal. Diseño compacto y liviano.',
       specs: [
         { l: 'Rango de crimpado', v: '6–50 mm²' },
@@ -185,7 +185,7 @@ const products = [
         { l: 'Medidas de empaque', v: '400 × 130 × 50 mm' }
       ]
     },
-    { id: 1, name: 'Pinza Hidráulica HHY-70A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–70 mm²', imgs: 2, folder: 'HHY-70A', ext: 'jpeg', catFolder: 'Pinzas',
+    { id: 1, name: 'Pinza Hidráulica HHY-70A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–70 mm²', imgs: 2, folder: 'HHY-70A', ext: 'jpeg', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica para indentar/engastar terminales. Incluye 7 matrices y maletín plástico de transporte.',
       specs: [
         { l: 'Rango de crimpado', v: '6–70 mm²' },
@@ -204,7 +204,7 @@ const products = [
         { l: 'Medidas de empaque', v: '355 × 173 × 83 mm' }
       ]
     },
-    { id: 2, name: 'Pinza Hidráulica HHY-120A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '10–120 mm²', imgs: 2, folder: 'HHY-120A', ext: 'jpeg', catFolder: 'Pinzas',
+    { id: 2, name: 'Pinza Hidráulica HHY-120A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '10–120 mm²', imgs: 2, folder: 'HHY-120A', ext: 'jpeg', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica para indentar/engastar terminales y conectores. Incluye 8 matrices y maletín plástico.',
       specs: [
         { l: 'Rango de crimpado', v: '10–120 mm²' },
@@ -223,7 +223,7 @@ const products = [
         { l: 'Medidas de empaque', v: '430 × 190 × 90 mm' }
       ]
     },
-    { id: 3, name: 'Pinza Hidráulica HHY-300A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 1, folder: 'HHY-300A', ext: 'jpeg', catFolder: 'Pinzas',
+    { id: 3, name: 'Pinza Hidráulica HHY-300A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 1, folder: 'HHY-300A', ext: 'jpeg', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica para indentar/engastar terminales y conectores. Incluye 11 matrices y maletín plástico moldeado.',
       specs: [
         { l: 'Rango de crimpado', v: '16–300 mm²' },
@@ -242,7 +242,7 @@ const products = [
         { l: 'Medidas de empaque', v: '533 × 206 × 102 mm' }
       ]
     },
-    { id: 24, name: 'Pinza Hidráulica HHY-300 (con zafe)', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300 (con zafe)', ext: 'jpeg', catFolder: 'Pinzas',
+    { id: 24, name: 'Pinza Hidráulica HHY-300 (con zafe)', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300 (con zafe)', ext: 'jpeg', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica para terminales con válvula de seguridad (zafe). Mayor fuerza y seguridad en el crimpado.',
       specs: [
         { l: 'Rango de crimpado', v: '16–300 mm²' },
@@ -261,7 +261,7 @@ const products = [
         { l: 'Medidas de empaque', v: '540 × 120 × 240 mm' }
       ]
     },
-    { id: 25, name: 'Pinza Hidráulica HHY-300CF + Bomba', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300CF + Bomba', ext: 'webp', catFolder: 'Pinzas',
+    { id: 25, name: 'Pinza Hidráulica HHY-300CF + Bomba', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300CF + Bomba', ext: 'webp', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica con bomba manual incluida HHB-600A. Manguera 1.2 m y caja metálica de transporte.',
       specs: [
         { l: 'Rango de crimpado', v: '16–300 mm²' },
@@ -282,7 +282,7 @@ const products = [
         { l: 'Medidas de empaque', v: '490 × 260 × 130 mm' }
       ]
     },
-    { id: 27, name: 'Pinza Hidráulica HHY-400B con Zafe', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: ['1.png','2.webp','3.webp','4.jpeg'], folder: 'HHY-400B con zafe', catFolder: 'Pinzas',
+    { id: 27, name: 'Pinza Hidráulica HHY-400B con Zafe', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: ['1.png','2.webp','3.webp','4.jpeg'], folder: 'HHY-400B con zafe', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica para indentar terminales con zafe y sistema de seguridad CCD/CCG.',
       specs: [
         { l: 'Rango de crimpado', v: '16–400 mm²' },
@@ -300,7 +300,7 @@ const products = [
         { l: 'Medidas de empaque', v: '770 × 135 × 240 mm' }
       ]
     },
-    { id: 28, name: 'Pinza Hidráulica HHY-400A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: 3, folder: 'HHY-400A', ext: 'jpeg', catFolder: 'Pinzas',
+    { id: 28, name: 'Pinza Hidráulica HHY-400A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: 3, folder: 'HHY-400A', ext: 'jpeg', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica de alta fuerza para indentar terminales. Incluye 12 matrices y maletín de transporte.',
       specs: [
         { l: 'Rango de crimpado', v: '16–400 mm²' },
@@ -318,7 +318,7 @@ const products = [
         { l: 'Medidas de empaque', v: '625 × 110 × 240 mm' }
       ]
     },
-    { id: 29, name: 'Pinza Hidráulica HHY-500 + Bomba', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–500 mm²', imgs: 3, folder: 'HHY-500 + Bomba', ext: 'jpeg', catFolder: 'Pinzas',
+    { id: 29, name: 'Pinza Hidráulica HHY-500 + Bomba', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–500 mm²', imgs: 3, folder: 'HHY-500 + Bomba', ext: 'jpeg', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica de máxima capacidad con bomba manual HHB-600A. Cabeza tipo yugo, caja metálica incluida.',
       specs: [
         { l: 'Rango de crimpado', v: '16–500 mm²' },
@@ -941,7 +941,7 @@ const products = [
 ];
 
 const CAT_NAMES = {
-    pinzas:      'Pinzas',
+    pinzas:      'Crimpadoras',
     dobladoras:  'Dobladoras de caño',
     cortahierro: 'Corta hierro',
     mordazas:    'Mordazas de torno',
@@ -1231,8 +1231,111 @@ function filterProducts(filter) {
         o.classList.toggle('active', o.dataset.filter === filter));
 
     document.getElementById('searchInput').value = '';
+    toggleGuiaBanner(filter);
     renderProducts(filter, true); // con filtro: mostrar TODOS, sin botón "Ver más"
     document.getElementById('productos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Muestra el banner de la guía de crimpadoras solo en "Todas" o "Pinzas"
+function toggleGuiaBanner(filter) {
+    const banner = document.getElementById('guiaBanner');
+    if (!banner) return;
+    banner.style.display = (filter === 'all' || filter === 'pinzas') ? '' : 'none';
+}
+
+// ─── COMPARADOR DE HERRAMIENTAS (estilo Apple) ──────────────────
+let compareSlots = [null, null, null]; // hasta 3 columnas (ids de producto)
+
+function compareOptions(selectedId) {
+    let html = '<option value="">— Elegí una herramienta —</option>';
+    Object.keys(CAT_NAMES).forEach(cat => {
+        const items = products.filter(p => p.category === cat);
+        if (!items.length) return;
+        html += `<optgroup label="${CAT_NAMES[cat]}">`;
+        items.forEach(p => {
+            html += `<option value="${p.id}"${p.id === selectedId ? ' selected' : ''}>${p.name}</option>`;
+        });
+        html += '</optgroup>';
+    });
+    return html;
+}
+
+function compareColHead(slotIdx) {
+    const id = compareSlots[slotIdx];
+    const p = id ? products.find(x => x.id === id) : null;
+    const select = `<select class="cmp-select" onchange="setCompareSlot(${slotIdx}, this.value)">${compareOptions(id)}</select>`;
+    if (!p) {
+        return `<th class="cmp-colhead cmp-colhead--empty">
+            ${select}
+            <div class="cmp-img cmp-img--placeholder"><i class="fas fa-plus"></i></div>
+        </th>`;
+    }
+    const imgs = getImgs(p);
+    const img = imgs.length
+        ? `<img src="${imgs[0]}" alt="${p.name}" class="cmp-img" onerror="this.outerHTML='<div class=\\'cmp-img cmp-img--icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">`
+        : `<div class="cmp-img cmp-img--icon"><i class="fas ${p.icon}"></i></div>`;
+    const badge = discountBadge(p);
+    const price = p.price > 0
+        ? `<div class="cmp-price">${p.oldPrice > p.price ? `<span class="cmp-price-old">${fmt(p.oldPrice)}</span>` : ''}${fmt(p.price)}</div>`
+        : `<div class="cmp-price cmp-price--consult">Consultar</div>`;
+    return `<th class="cmp-colhead">
+        ${select}
+        <div class="cmp-img-wrap">${badge}${img}</div>
+        <div class="cmp-name">${p.name}</div>
+        ${price}
+        <div class="cmp-col-actions">
+            <button class="cmp-btn cmp-btn--ghost" onclick="openModal(${p.id})">Ver</button>
+            <button class="cmp-btn cmp-btn--buy" onclick="quickBuy(${p.id})">Comprar</button>
+        </div>
+    </th>`;
+}
+
+function renderCompare() {
+    const sel = compareSlots.map(id => id ? products.find(p => p.id === id) : null);
+    const active = sel.filter(Boolean);
+    // unión de etiquetas de specs en orden de aparición
+    const labels = [];
+    active.forEach(p => (p.allSpecs || p.specs || []).forEach(s => {
+        if (!labels.includes(s.l)) labels.push(s.l);
+    }));
+    const thead = `<tr><th class="cmp-corner"></th>${compareSlots.map((_, i) => compareColHead(i)).join('')}</tr>`;
+    let rows;
+    if (!labels.length) {
+        rows = `<tr><td class="cmp-rowlabel"></td><td class="cmp-cell" colspan="${compareSlots.length}" style="text-align:center;color:var(--gray)">Elegí al menos una herramienta para ver sus características.</td></tr>`;
+    } else {
+        rows = labels.map(l => {
+            const cells = sel.map(p => {
+                if (!p) return '<td class="cmp-cell cmp-cell--empty">—</td>';
+                const spec = (p.allSpecs || p.specs || []).find(s => s.l === l);
+                return `<td class="cmp-cell">${spec ? spec.v : '—'}</td>`;
+            }).join('');
+            return `<tr><td class="cmp-rowlabel">${l}</td>${cells}</tr>`;
+        }).join('');
+    }
+    document.getElementById('compareTable').innerHTML = `<thead>${thead}</thead><tbody>${rows}</tbody>`;
+}
+
+function setCompareSlot(i, val) {
+    compareSlots[i] = val ? parseInt(val, 10) : null;
+    renderCompare();
+}
+
+function openCompare() {
+    // por defecto arranca comparando las dos primeras pinzas
+    if (compareSlots.every(x => x === null)) {
+        const pinzas = products.filter(p => p.category === 'pinzas');
+        compareSlots = [pinzas[0] ? pinzas[0].id : null, pinzas[1] ? pinzas[1].id : null, null];
+    }
+    renderCompare();
+    document.getElementById('compareOverlay').classList.add('active');
+    document.getElementById('compareModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCompare() {
+    document.getElementById('compareOverlay').classList.remove('active');
+    document.getElementById('compareModal').classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 // ─── BUSCADOR ────────────────────────────────────────────────────
@@ -1948,6 +2051,7 @@ loadPricesFromSheet().then(() => {
         const cat = catMatch[1];
         const label = CAT_NAMES[cat];
         if (label) {
+            toggleGuiaBanner(cat);
             renderProducts(cat, true); // categoría desde URL = filtro: todos, sin botón
             renderFeatured();
             renderDestacadosGrid();
