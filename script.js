@@ -186,6 +186,7 @@ const products = [
       ]
     },
     { id: 1, name: 'Pinza Hidráulica HHY-70A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–70 mm²', imgs: 2, folder: 'HHY-70A', ext: 'jpeg', catFolder: 'Crimpadoras',
+      instagram: 'https://www.instagram.com/reel/DVegLgtCTTj/',
       desc: 'Pinza hidráulica para indentar/engastar terminales. Incluye 7 matrices y maletín plástico de transporte.',
       specs: [
         { l: 'Rango de crimpado', v: '6–70 mm²' },
@@ -225,6 +226,7 @@ const products = [
       ]
     },
     { id: 3, name: 'Pinza Hidráulica HHY-300A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 1, folder: 'HHY-300A', ext: 'jpeg', catFolder: 'Crimpadoras',
+      instagram: 'https://www.instagram.com/reel/DVRfnj7iYuR/',
       desc: 'Pinza hidráulica para indentar/engastar terminales y conectores. Incluye 11 matrices y maletín plástico moldeado.',
       specs: [
         { l: 'Rango de crimpado', v: '16–300 mm²' },
@@ -244,6 +246,7 @@ const products = [
       ]
     },
     { id: 24, name: 'Pinza Hidráulica HHY-300 (con zafe)', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300 (con zafe)', ext: 'jpeg', catFolder: 'Crimpadoras',
+      instagram: 'https://www.instagram.com/reel/DX9xUiNJFbh/',
       desc: 'Pinza hidráulica para terminales con válvula de seguridad (zafe). Mayor fuerza y seguridad en el crimpado.',
       specs: [
         { l: 'Rango de crimpado', v: '16–300 mm²' },
@@ -284,6 +287,7 @@ const products = [
       ]
     },
     { id: 27, name: 'Pinza Hidráulica HHY-400B con Zafe', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: ['1.png','2.webp','3.webp','4.jpeg'], folder: 'HHY-400B con zafe', catFolder: 'Crimpadoras',
+      instagram: 'https://www.instagram.com/reel/DYcqYxAJZ3N/',
       desc: 'Pinza hidráulica para indentar terminales con zafe y sistema de seguridad CCD/CCG.',
       specs: [
         { l: 'Rango de crimpado', v: '16–400 mm²' },
@@ -320,6 +324,7 @@ const products = [
       ]
     },
     { id: 29, name: 'Pinza Hidráulica HHY-500 + Bomba', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–500 mm²', imgs: 3, folder: 'HHY-500 + Bomba', ext: 'jpeg', catFolder: 'Crimpadoras',
+      instagram: 'https://www.instagram.com/reel/DYC5EnHBxjz/',
       desc: 'Pinza hidráulica de máxima capacidad con bomba manual HHB-600A. Cabeza tipo yugo, caja metálica incluida.',
       specs: [
         { l: 'Rango de crimpado', v: '16–500 mm²' },
@@ -427,6 +432,7 @@ const products = [
     },
     // Corta hierro
     { id: 7, name: 'Cortadora Hidráulica HHG-16', category: 'cortahierro', price: 100000, icon: 'fa-bolt', badge: 'hasta Ø16 mm', imgs: ['1.png','2.jpeg','3.webp'], folder: 'Cortadora de Varilla 16mm', catFolder: 'cortahierro',
+      instagram: 'https://www.instagram.com/reel/DV3kmFEDTG5/',
       desc: 'Cortadora hidráulica de varillas de acero. Corte limpio sin deformación. Compacta y liviana.',
       specs: [
         { l: 'Diámetro máx.', v: 'Ø 16 mm' },
@@ -441,6 +447,7 @@ const products = [
       ]
     },
     { id: 8, name: 'Cortadora Hidráulica HHG-22', category: 'cortahierro', price: 100000, icon: 'fa-bolt', badge: 'Ø4–22 mm', imgs: 1, folder: 'Cortadora de Varilla 22mm', ext: 'jpeg',
+      instagram: 'https://www.instagram.com/reel/DWEoY78hbu0/',
       desc: 'Cortadora hidráulica de mayor capacidad. Corta varillas de acero hasta Ø22mm sin esfuerzo.',
       specs: [
         { l: 'Rango de corte', v: 'Ø 4–22 mm' },
@@ -627,6 +634,7 @@ const products = [
     },
     // Sacabocados
     { id: 16, name: 'Sacabocados Hidráulico HHK-8', category: 'sacabocados', price: 100000, icon: 'fa-bullseye', badge: 'Ø22–60 mm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'HHK-8',
+      instagram: 'https://www.instagram.com/reel/DW7BwTygYxn/',
       desc: 'Sacabocados hidráulico para chapas y tableros eléctricos. Incluye 6 matrices y llave.',
       specs: [
         { l: 'Rango de corte', v: 'Ø 22–60 mm' },
@@ -904,6 +912,7 @@ const products = [
       ]
     },
     { id: 47, name: 'Soporte para Taladro Universal – Banco', sheetName: 'Soporte Para Taladro Universal Apto Herramienta De Banco', category: 'otros', price: 0, icon: 'fa-ruler-vertical', badge: 'Columna 400 mm', imgs: ['1.webp'], folder: 'Soporte Para Taladro Universal Apto Herramienta De Banco', catFolder: 'Otros',
+      instagram: 'https://www.instagram.com/reel/DY2GajdhM41/',
       desc: 'Soporte universal para convertir tu taladro en un taladro de banco. Columna de 400 mm, base de metal de 15 × 15 cm y regla graduada para perforaciones precisas y controladas. No incluye prensa ni mandril.',
       specs: [
         { l: 'Altura de columna', v: '400 mm' },
