@@ -948,6 +948,28 @@ const products = [
         { l: 'Compartimentos', v: '1 compartimento amplio' }
       ]
     },
+    { id: 49, name: 'Tijera Cortacable Manual HHD-500', sheetName: 'Tijera Manual Hasta Hhd-500 Mm', category: 'otros', price: 0, icon: 'fa-scissors', badge: 'hasta 500 mm²', imgs: ['1.jpeg','2.webp','3.webp','4.jpeg'], folder: 'Tijera Manual Hasta Hhd-500 Mm', catFolder: 'Otros',
+      instagram: 'https://www.instagram.com/reel/Da0GDWRh7wm/',
+      desc: 'Tijera cortacable manual para cortar cable de cobre y aluminio de hasta 500 mm². Hoja de acero con cuchilla curva que sujeta el cable y lo corta sin aplastarlo. Mangos metálicos de 80 cm que multiplican la fuerza, con empuñaduras de goma antideslizante. Diseño ergonómico ambidiestro: cómoda para diestros y zurdos.',
+      specs: [
+        { l: 'Capacidad de corte', v: 'Hasta 500 mm²' },
+        { l: 'Largo total', v: '80 cm' },
+        { l: 'Material de la hoja', v: 'Acero' }
+      ],
+      allSpecs: [
+        { l: 'Modelo', v: 'HHD-500' },
+        { l: 'Capacidad de corte', v: 'Hasta 500 mm²' },
+        { l: 'Aplicación', v: 'Cable de cobre y aluminio' },
+        { l: 'Accionamiento', v: 'Manual, mangos largos' },
+        { l: 'Largo total', v: '80 cm' },
+        { l: 'Material de la hoja', v: 'Acero' },
+        { l: 'Material del mango', v: 'Metal' },
+        { l: 'Empuñaduras', v: 'Goma antideslizante' },
+        { l: 'Orientación de la mano', v: 'Ambidiestro' },
+        { l: 'Diseño ergonómico', v: 'Sí' },
+        { l: 'Incluye estuche', v: 'No' }
+      ]
+    },
 ];
 
 const CAT_NAMES = {
