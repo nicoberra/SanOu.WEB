@@ -4189,6 +4189,38 @@ h1.hero-slogan-block { margin-top: 0; }
     .cmp-colbar .cmp-col-actions { gap: 10px; }
 }
 
+/* ══════════ BOTÓN VIDEO DE INSTAGRAM (modal de producto) ══════════ */
+.btn-ig-video {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    align-self: flex-start;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: var(--white);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.btn-ig-video i {
+    font-size: 1.1rem;
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.btn-ig-video:hover {
+    border-color: #dc2743;
+    background: rgba(220, 39, 67, 0.1);
+    transform: translateY(-1px);
+}
+@media (max-width: 700px) {
+    .btn-ig-video { width: 100%; justify-content: center; }
+}
+
 /* ══════════ CTA: DEJAR RESEÑA EN GOOGLE ══════════ */
 .leave-review-cta {
     max-width: 620px;

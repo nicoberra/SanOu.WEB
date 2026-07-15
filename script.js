@@ -205,6 +205,7 @@ const products = [
       ]
     },
     { id: 2, name: 'Pinza Hidráulica HHY-120A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '10–120 mm²', imgs: 2, folder: 'HHY-120A', ext: 'jpeg', catFolder: 'Crimpadoras',
+      instagram: 'https://www.instagram.com/reel/DZa4q0NpACl/',
       desc: 'Pinza hidráulica para indentar/engastar terminales y conectores. Incluye 8 matrices y maletín plástico.',
       specs: [
         { l: 'Rango de crimpado', v: '10–120 mm²' },
@@ -1194,6 +1195,7 @@ function openModal(id) {
                 <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
                 <h2 class="modal-title">${p.name}</h2>
                 <p class="modal-desc">${p.desc}</p>
+                ${p.instagram ? `<a class="btn-ig-video" href="${p.instagram}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Ver video en Instagram</a>` : ''}
                 <div class="specs-table modal-specs">${specsRows(p.allSpecs || p.specs)}</div>
                 ${p.price > 0 ? `<div class="product-price-bar"><span class="price-label">Precio</span><div class="price-values">${p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="price-amount">${fmt(p.price)}</span></div></div>` : '<div class="modal-consultar">Consultar precio por WhatsApp</div>'}
                 <div class="modal-buttons">
