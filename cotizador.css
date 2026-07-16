@@ -15,6 +15,45 @@ body {
     print-color-adjust: exact;
 }
 
+/* ── Pantalla de acceso ── */
+.cot-lock {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--negro);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+}
+body:not(.bloqueado) .cot-lock { display: none; }
+.cot-lock-caja {
+    width: 100%; max-width: 380px; text-align: center;
+    display: flex; flex-direction: column; gap: 12px;
+}
+.cot-lock-logo { width: 170px; margin: 0 auto 6px; }
+.cot-lock-caja h1 { color: #fff; font-size: 1.25rem; }
+.cot-lock-caja p { color: #999; font-size: 0.85rem; margin-bottom: 6px; }
+.cot-lock-caja input {
+    background: #2a2a2a; color: #fff;
+    border: 1px solid #3d3d3d; border-radius: 10px;
+    padding: 14px; font-family: inherit; font-size: 1rem; text-align: center;
+}
+.cot-lock-caja input:focus { outline: none; border-color: var(--amarillo); }
+.cot-lock-caja button {
+    background: var(--amarillo); color: var(--negro);
+    border: none; border-radius: 980px;
+    padding: 14px; font-size: 0.98rem; font-weight: 800;
+    font-family: inherit; cursor: pointer;
+}
+.cot-lock-caja button:hover { filter: brightness(1.07); }
+.cot-lock-err {
+    display: none; color: #ff6b6b; font-size: 0.82rem; line-height: 1.5;
+}
+.cot-lock-err.on { display: block; }
+.cot-salir {
+    margin-left: auto; background: #333; color: #ccc;
+    border: none; border-radius: 8px; padding: 6px 13px;
+    font-size: 0.75rem; font-weight: 600; font-family: inherit; cursor: pointer;
+}
+.cot-salir:hover { background: #444; color: #fff; }
+
 /* ── Panel de carga ── */
 .cot-panel {
     max-width: 900px;

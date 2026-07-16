@@ -8,13 +8,30 @@
     <link rel="icon" type="image/png" href="tuerca-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="cotizador.css">
+    <!-- Oculta el contenido antes de que cargue el JS (evita que se vea un instante) -->
+    <style>body.bloqueado .cot-panel, body.bloqueado .cot-hoja { display: none !important; }</style>
 </head>
-<body>
+<body class="bloqueado">
+
+<!-- ══ PANTALLA DE ACCESO ══ -->
+<div class="cot-lock no-print" id="cotLock">
+    <div class="cot-lock-caja">
+        <img src="sticker.png" alt="San Ou" class="cot-lock-logo">
+        <h1>Cotizador interno</h1>
+        <p>Ingresá la clave para continuar.</p>
+        <input type="password" id="claveInput" placeholder="Clave" autocomplete="current-password">
+        <div class="cot-lock-err" id="claveError"></div>
+        <button onclick="probarClave()">Entrar</button>
+    </div>
+</div>
 
 <!-- ══ PANEL DE CARGA (no sale en el PDF) ══ -->
 <div class="cot-panel no-print">
     <div class="cot-panel-inner">
-        <h1>Cotizador San Ou <span class="cot-badge">uso interno</span></h1>
+        <h1>
+            Cotizador San Ou <span class="cot-badge">uso interno</span>
+            <button class="cot-salir" onclick="cerrarSesionCotizador()" title="Cerrar sesión en este dispositivo">Salir</button>
+        </h1>
 
         <div class="cot-campo">
             <label>Agregar producto</label>

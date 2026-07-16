@@ -3,6 +3,71 @@
 // Usa los productos y precios en vivo del Google Sheet.
 // ─────────────────────────────────────────────────────────────────
 
+// ─── CLAVE DE ACCESO ─────────────────────────────────────────────
+// Acá va la HUELLA (hash) de la clave, no la clave.
+// Para cambiarla: abrí generar-clave.html, escribí tu clave nueva
+// y pegá acá la huella que te da.
+//
+// OJO: esto frena a una persona común, no a alguien técnico: el
+// contenido de esta página se puede leer igual desde el código fuente.
+const CLAVE_HASH = 'PEGAR_AQUI_LA_HUELLA';
+
+const DIAS_RECORDAR = 30;
+
+async function huella(txt) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sanou::' + txt));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function accesoVigente() {
+    try {
+        const v = parseInt(localStorage.getItem('sanou_cotiz_ok') || '0', 10);
+        return v > Date.now();
+    } catch (e) { return false; }
+}
+
+function desbloquear() {
+    try { localStorage.setItem('sanou_cotiz_ok', String(Date.now() + DIAS_RECORDAR * 864e5)); } catch (e) {}
+    document.body.classList.remove('bloqueado');
+}
+
+function cerrarSesionCotizador() {
+    try { localStorage.removeItem('sanou_cotiz_ok'); } catch (e) {}
+    location.reload();
+}
+
+async function probarClave() {
+    const input = document.getElementById('claveInput');
+    const err   = document.getElementById('claveError');
+    const val   = input.value;
+    if (!val.trim()) return;
+    if (CLAVE_HASH === 'PEGAR_AQUI_LA_HUELLA') {
+        err.textContent = 'Falta configurar la clave: abrí generar-clave.html y pegá la huella en cotizador.js.';
+        err.classList.add('on');
+        return;
+    }
+    if (await huella(val) === CLAVE_HASH) {
+        desbloquear();
+    } else {
+        err.textContent = 'Clave incorrecta.';
+        err.classList.add('on');
+        input.value = '';
+        input.focus();
+    }
+}
+
+function initBloqueo() {
+    if (accesoVigente()) { document.body.classList.remove('bloqueado'); return; }
+    const input = document.getElementById('claveInput');
+    if (input) {
+        input.addEventListener('keydown', e => {
+            document.getElementById('claveError').classList.remove('on');
+            if (e.key === 'Enter') probarClave();
+        });
+        setTimeout(() => input.focus(), 100);
+    }
+}
+
 const EMPRESA = {
     razonSocial: 'BR TRADE SRL',
     marca:       'San Ou',
@@ -193,6 +258,7 @@ function imprimirCotizacion() {
 
 // ─── INICIO ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+    initBloqueo();
     pintarDatosEmpresa();
     pintarNumeroYFechas();
     renderItems();
