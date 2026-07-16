@@ -16,7 +16,7 @@
 //
 // OJO: esto protege la CLAVE, no el contenido. Alguien técnico puede
 // leer esta página desde el código fuente sin pasar por el candado.
-const CLAVE_HASH = 'PEGAR_AQUI_LA_HUELLA';
+const CLAVE_HASH = 'cee92583f674a5ef9fa78953f4d1483eb1aa1f9eeba27612ec72abb0063fd52a';
 
 const PBKDF2_VUELTAS = 250000;
 const PBKDF2_SAL = 'sanou::cotizador::v2';
