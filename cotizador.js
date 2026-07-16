@@ -133,10 +133,10 @@ function renderItems() {
                     <strong>${p.name}</strong>
                     <span class="cot-item-desc">${(p.specs || []).map(s => s.l + ': ' + s.v).join(' · ')}</span>
                 </td>
-                <td class="col-cant"><input type="number" min="1" value="${it.cantidad}" onchange="cambiarCantidad(${it.id}, this.value)"></td>
-                <td class="col-precio"><input type="text" value="${it.precioFinal.toFixed(2)}" onchange="cambiarPrecio(${it.id}, this.value)" title="Precio final con IVA"></td>
-                <td class="col-unit">${money(netoUnit)}</td>
-                <td class="col-sub">${money(subtotal)}
+                <td class="col-cant" data-label="Cantidad"><input type="number" min="1" inputmode="numeric" value="${it.cantidad}" onchange="cambiarCantidad(${it.id}, this.value)"></td>
+                <td class="col-precio no-print" data-label="Precio final c/IVA"><input type="text" inputmode="decimal" value="${it.precioFinal.toFixed(2)}" onchange="cambiarPrecio(${it.id}, this.value)" title="Precio final con IVA"></td>
+                <td class="col-unit" data-label="P. unitario neto">${money(netoUnit)}</td>
+                <td class="col-sub" data-label="Subtotal">${money(subtotal)}
                     <button class="cot-quitar no-print" onclick="quitarItem(${it.id})" title="Quitar">&times;</button>
                 </td>
             </tr>`;

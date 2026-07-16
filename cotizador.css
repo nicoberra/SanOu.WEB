@@ -179,6 +179,45 @@ body {
     .cot-head-der { text-align: left; }
     .cot-hoja { padding: 20px; }
     .cot-totales { width: 100%; }
+
+    /* En pantalla chica la tabla no entra: cada ítem pasa a ser una tarjeta.
+       (Al imprimir vuelve a ser tabla — ver @media print más abajo.) */
+    .cot-tabla thead { display: none; }
+    .cot-tabla, .cot-tabla tbody, .cot-tabla tr, .cot-tabla td { display: block; width: 100%; }
+    .cot-tabla tr {
+        border: 1px solid var(--linea);
+        border-radius: 10px;
+        padding: 12px 14px 10px;
+        margin-bottom: 12px;
+        position: relative;
+    }
+    .cot-tabla tbody td { border-bottom: none; padding: 5px 0; }
+    .cot-tabla .col-n {
+        position: absolute; top: 12px; right: 40px;
+        width: auto; color: var(--gris); font-size: 0.75rem;
+    }
+    .cot-tabla .col-desc { padding-right: 60px; }
+    /* Etiqueta + valor en una línea */
+    .cot-tabla td[data-label] {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; width: 100%; text-align: right;
+    }
+    .cot-tabla td[data-label]::before {
+        content: attr(data-label);
+        font-size: 0.75rem; font-weight: 600; color: var(--gris);
+        text-align: left; flex-shrink: 0;
+    }
+    .cot-tabla td[data-label] input {
+        width: 130px; flex-shrink: 0;
+        padding: 9px 10px; font-size: 0.9rem;
+    }
+    .cot-tabla .col-sub {
+        border-top: 1px solid var(--linea);
+        margin-top: 6px; padding-top: 9px !important;
+        font-size: 0.95rem;
+    }
+    .cot-quitar { top: 10px; right: 12px; font-size: 1.5rem; padding: 4px 8px; }
+    .cot-vacio { border: 1px dashed var(--linea); border-radius: 10px; }
 }
 
 /* ══════════ IMPRESIÓN / PDF ══════════ */
@@ -190,7 +229,25 @@ body {
         max-width: none; box-shadow: none;
         border-radius: 0; padding: 0; margin: 0;
     }
-    .cot-tabla thead { display: table-header-group; }
+    /* Volver a formato tabla aunque se imprima desde el celular */
+    .cot-tabla { display: table !important; }
+    .cot-tabla thead { display: table-header-group !important; }
+    .cot-tabla tbody { display: table-row-group !important; }
+    .cot-tabla tr {
+        display: table-row !important;
+        border: none !important; padding: 0 !important; margin: 0 !important;
+    }
+    .cot-tabla td {
+        display: table-cell !important;
+        width: auto !important; text-align: left;
+        border-bottom: 1px solid var(--linea) !important;
+        padding: 9px 8px !important;
+    }
+    .cot-tabla td[data-label]::before { content: none !important; }
+    .cot-tabla .col-n { position: static !important; text-align: center; }
+    .cot-tabla .col-desc { padding-right: 8px !important; }
+    .cot-tabla .col-unit, .cot-tabla .col-sub { text-align: right !important; }
+    .cot-tabla .col-sub { border-top: none !important; margin-top: 0 !important; }
     .cot-tabla tbody tr { page-break-inside: avoid; }
     .cot-totales, .cot-condiciones { page-break-inside: avoid; }
     .cot-cliente-grid { background: #f6f6f7 !important; }
