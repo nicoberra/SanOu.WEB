@@ -111,18 +111,7 @@ const EMPRESA = {
 const IVA = 0.105;
 const VALIDEZ_DIAS = 7;
 
-let items = [];            // { id, cantidad, precioUnit }
-let numeroCotizacion = '';
-
-// ── Número correlativo: 0001-00000001 (se guarda en el navegador) ──
-function proximoNumero() {
-    let n = parseInt(localStorage.getItem('sanou_cotiz_nro') || '0', 10) + 1;
-    return '0001-' + String(n).padStart(8, '0');
-}
-function confirmarNumero() {
-    const n = parseInt(localStorage.getItem('sanou_cotiz_nro') || '0', 10) + 1;
-    localStorage.setItem('sanou_cotiz_nro', String(n));
-}
+let items = [];            // { id, cantidad, precioFinal }
 
 // ── Fechas ──
 function hoyISO() { return new Date().toISOString().slice(0, 10); }
@@ -245,7 +234,7 @@ function pintarDatosEmpresa() {
     const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
     set('emRazon', EMPRESA.razonSocial);
     set('emCuit', 'CUIT ' + EMPRESA.cuit);
-    set('emIibb', 'Ingresos Brutos ' + EMPRESA.iibb);
+    set('emIibb', 'IIBB ' + EMPRESA.iibb);
     set('emInicio', 'Inicio de actividades: ' + EMPRESA.inicioAct);
     set('emCondIva', EMPRESA.condIva);
     set('emDom', EMPRESA.domicilio);
@@ -254,9 +243,7 @@ function pintarDatosEmpresa() {
     set('emWeb', EMPRESA.web);
 }
 
-function pintarNumeroYFechas() {
-    numeroCotizacion = proximoNumero();
-    document.getElementById('cotNumero').textContent = numeroCotizacion;
+function pintarFechas() {
     const fEmision = document.getElementById('fechaEmision');
     const fVence   = document.getElementById('fechaVence');
     if (fEmision) fEmision.value = hoyISO();
@@ -278,7 +265,7 @@ function imprimirCotizacion() {
         if (src.type === 'date' && v) v = fmtFecha(v);
         span.textContent = v || '—';
     });
-    confirmarNumero();
+
     window.print();
 }
 
@@ -286,7 +273,7 @@ function imprimirCotizacion() {
 document.addEventListener('DOMContentLoaded', async () => {
     initBloqueo();
     pintarDatosEmpresa();
-    pintarNumeroYFechas();
+    pintarFechas();
     renderItems();
     // Traer precios actualizados del Google Sheet
     try { await loadPricesFromSheet(); } catch (e) { console.warn('No se pudieron traer precios del Sheet', e); }

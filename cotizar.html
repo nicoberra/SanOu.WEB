@@ -109,29 +109,12 @@
 <div class="cot-hoja" id="hoja">
 
     <header class="cot-head">
-        <div class="cot-head-izq">
-            <img src="sticker.png" alt="San Ou" class="cot-logo">
-            <div class="cot-emisor">
-                <strong id="emRazon"></strong>
-                <span id="emDom"></span>
-                <span id="emTel"></span>
-                <span id="emMail"></span>
-                <span id="emWeb"></span>
-            </div>
-        </div>
-        <div class="cot-head-der">
-            <div class="cot-titulo">COTIZACIÓN</div>
-            <div class="cot-nro">N° <span id="cotNumero"></span></div>
-            <div class="cot-fiscal">
-                <span id="emCuit"></span>
-                <span id="emIibb"></span>
-                <span id="emCondIva"></span>
-                <span id="emInicio"></span>
-            </div>
-            <div class="cot-fechas">
-                <span><b>Fecha:</b> <span data-print-from="fechaEmision"></span></span>
-                <span><b>Válida hasta:</b> <span data-print-from="fechaVence"></span></span>
-            </div>
+        <img src="sticker.png" alt="San Ou" class="cot-logo">
+        <div class="cot-titulo">COTIZACIÓN</div>
+        <div class="cot-fechas">
+            <span><b>Fecha:</b> <span data-print-from="fechaEmision"></span></span>
+            <span class="cot-sep">·</span>
+            <span><b>Válida hasta:</b> <span data-print-from="fechaVence"></span></span>
         </div>
     </header>
 
@@ -180,8 +163,17 @@
     </section>
 
     <footer class="cot-pie">
-        <span id="emRazonPie">BR TRADE SRL — San Ou</span>
-        <span>Gracias por su consulta.</span>
+        <strong id="emRazon"></strong>
+        <span id="emDom"></span>
+        <span class="cot-pie-fiscal">
+            <span id="emCuit"></span> · <span id="emIibb"></span>
+        </span>
+        <span class="cot-pie-fiscal">
+            <span id="emCondIva"></span> · <span id="emInicio"></span>
+        </span>
+        <span class="cot-pie-contacto">
+            <span id="emTel"></span> · <span id="emMail"></span> · <span id="emWeb"></span>
+        </span>
     </footer>
 </div>
 
