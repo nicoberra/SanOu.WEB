@@ -2618,8 +2618,19 @@ function initHeroVideo() {
     ];
     const video = document.getElementById('heroVideo');
     if (!video) return;
+
     const chosen = videos[Math.floor(Math.random() * videos.length)];
-    video.src = chosen;
-    video.load();
-    video.play().catch(() => {});
+
+    // El video pesa varios MB. Se carga recién cuando la página ya terminó
+    // de cargar lo importante (fotos, precios, textos), así no compite con eso.
+    const cargar = () => {
+        if (video.dataset.cargado) return;
+        video.dataset.cargado = '1';
+        video.src = chosen;
+        video.load();
+        video.play().catch(() => {});
+    };
+
+    if (document.readyState === 'complete') cargar();
+    else window.addEventListener('load', cargar, { once: true });
 }
