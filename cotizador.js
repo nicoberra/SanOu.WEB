@@ -1,0 +1,205 @@
+// ─────────────────────────────────────────────────────────────────
+// COTIZADOR SAN OU — genera cotizaciones formales en PDF
+// Usa los productos y precios en vivo del Google Sheet.
+// ─────────────────────────────────────────────────────────────────
+
+const EMPRESA = {
+    razonSocial: 'BR TRADE SRL',
+    marca:       'San Ou',
+    cuit:        '30-71077182-7',
+    iibb:        '902-631235-0',
+    inicioAct:   '30/05/2008',
+    condIva:     'IVA Responsable Inscripto',
+    domicilio:   'Marcelo Gamboa 6306 — Versalles, CABA',
+    telefono:    '+54 9 11 3175-1517',
+    email:       'ventas@sanou.com.ar',
+    web:         'sanou.com.ar'
+};
+
+// Alícuota reducida (bienes de capital)
+const IVA = 0.105;
+const VALIDEZ_DIAS = 7;
+
+let items = [];            // { id, cantidad, precioUnit }
+let numeroCotizacion = '';
+
+// ── Número correlativo: 0001-00000001 (se guarda en el navegador) ──
+function proximoNumero() {
+    let n = parseInt(localStorage.getItem('sanou_cotiz_nro') || '0', 10) + 1;
+    return '0001-' + String(n).padStart(8, '0');
+}
+function confirmarNumero() {
+    const n = parseInt(localStorage.getItem('sanou_cotiz_nro') || '0', 10) + 1;
+    localStorage.setItem('sanou_cotiz_nro', String(n));
+}
+
+// ── Fechas ──
+function hoyISO() { return new Date().toISOString().slice(0, 10); }
+function fmtFecha(iso) {
+    const [a, m, d] = iso.split('-');
+    return `${d}/${m}/${a}`;
+}
+function fechaVencimiento(dias) {
+    const f = new Date();
+    f.setDate(f.getDate() + dias);
+    return f.toISOString().slice(0, 10);
+}
+
+// ── Moneda ──
+function money(n) {
+    return '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ─── CÁLCULO ─────────────────────────────────────────────────────
+// Los precios del Sheet son FINALES (IVA incluido). Para la cotización
+// se desglosa hacia atrás: neto = final / 1,105. Así el TOTAL coincide
+// exactamente con el precio publicado en la web.
+function netoDesdeFinal(final) { return final / (1 + IVA); }
+
+function calcularTotales() {
+    let subtotalNeto = 0;
+    items.forEach(it => { subtotalNeto += netoDesdeFinal(it.precioFinal) * it.cantidad; });
+    const ivaMonto = subtotalNeto * IVA;
+    return {
+        subtotalNeto,
+        ivaMonto,
+        total: subtotalNeto + ivaMonto
+    };
+}
+
+// ─── ÍTEMS ───────────────────────────────────────────────────────
+function agregarItem(id) {
+    id = parseInt(id, 10);
+    if (!id) return;
+    if (items.some(i => i.id === id)) { alert('Ese producto ya está en la cotización.'); return; }
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    items.push({ id, cantidad: 1, precioFinal: p.price > 0 ? p.price : 0 });
+    renderItems();
+}
+
+function quitarItem(id) {
+    items = items.filter(i => i.id !== id);
+    renderItems();
+}
+
+function cambiarCantidad(id, val) {
+    const it = items.find(i => i.id === id);
+    if (!it) return;
+    it.cantidad = Math.max(1, parseInt(val, 10) || 1);
+    renderItems();
+}
+
+function cambiarPrecio(id, val) {
+    const it = items.find(i => i.id === id);
+    if (!it) return;
+    it.precioFinal = Math.max(0, parseFloat(String(val).replace(/[^\d.,]/g, '').replace(',', '.')) || 0);
+    renderItems();
+}
+
+// ─── RENDER: selector de productos agrupado por categoría ────────
+function renderSelector() {
+    const sel = document.getElementById('selectorProducto');
+    if (!sel) return;
+    let html = '<option value="">+ Agregar producto…</option>';
+    Object.keys(CAT_NAMES).forEach(cat => {
+        const lista = products.filter(p => p.category === cat);
+        if (!lista.length) return;
+        html += `<optgroup label="${CAT_NAMES[cat]}">`;
+        lista.forEach(p => {
+            const precio = p.price > 0 ? ' — ' + money(p.price) : ' — (sin precio)';
+            html += `<option value="${p.id}">${p.name}${precio}</option>`;
+        });
+        html += '</optgroup>';
+    });
+    sel.innerHTML = html;
+}
+
+// ─── RENDER: tabla de ítems ──────────────────────────────────────
+function renderItems() {
+    const tbody = document.getElementById('itemsBody');
+    if (!tbody) return;
+
+    if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="cot-vacio">Agregá productos para armar la cotización.</td></tr>`;
+    } else {
+        tbody.innerHTML = items.map((it, i) => {
+            const p = products.find(x => x.id === it.id);
+            const netoUnit = netoDesdeFinal(it.precioFinal);
+            const subtotal = netoUnit * it.cantidad;
+            return `<tr>
+                <td class="col-n">${i + 1}</td>
+                <td class="col-desc">
+                    <strong>${p.name}</strong>
+                    <span class="cot-item-desc">${(p.specs || []).map(s => s.l + ': ' + s.v).join(' · ')}</span>
+                </td>
+                <td class="col-cant"><input type="number" min="1" value="${it.cantidad}" onchange="cambiarCantidad(${it.id}, this.value)"></td>
+                <td class="col-precio"><input type="text" value="${it.precioFinal.toFixed(2)}" onchange="cambiarPrecio(${it.id}, this.value)" title="Precio final con IVA"></td>
+                <td class="col-unit">${money(netoUnit)}</td>
+                <td class="col-sub">${money(subtotal)}
+                    <button class="cot-quitar no-print" onclick="quitarItem(${it.id})" title="Quitar">&times;</button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    const t = calcularTotales();
+    document.getElementById('totSubtotal').textContent = money(t.subtotalNeto);
+    document.getElementById('totIva').textContent      = money(t.ivaMonto);
+    document.getElementById('totFinal').textContent    = money(t.total);
+}
+
+// ─── ENCABEZADO / DATOS ──────────────────────────────────────────
+function pintarDatosEmpresa() {
+    const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    set('emRazon', EMPRESA.razonSocial);
+    set('emCuit', 'CUIT ' + EMPRESA.cuit);
+    set('emIibb', 'Ingresos Brutos ' + EMPRESA.iibb);
+    set('emInicio', 'Inicio de actividades: ' + EMPRESA.inicioAct);
+    set('emCondIva', EMPRESA.condIva);
+    set('emDom', EMPRESA.domicilio);
+    set('emTel', EMPRESA.telefono);
+    set('emMail', EMPRESA.email);
+    set('emWeb', EMPRESA.web);
+}
+
+function pintarNumeroYFechas() {
+    numeroCotizacion = proximoNumero();
+    document.getElementById('cotNumero').textContent = numeroCotizacion;
+    const fEmision = document.getElementById('fechaEmision');
+    const fVence   = document.getElementById('fechaVence');
+    if (fEmision) fEmision.value = hoyISO();
+    if (fVence)   fVence.value   = fechaVencimiento(VALIDEZ_DIAS);
+}
+
+// ─── IMPRIMIR / PDF ──────────────────────────────────────────────
+function imprimirCotizacion() {
+    if (!items.length) { alert('Agregá al menos un producto antes de generar la cotización.'); return; }
+    const cliente = document.getElementById('cliNombre');
+    if (cliente && !cliente.value.trim()) {
+        if (!confirm('No cargaste el nombre del cliente. ¿Generar igual?')) return;
+    }
+    // Pasar los valores de los inputs al PDF (los input no se imprimen bien)
+    document.querySelectorAll('[data-print-from]').forEach(span => {
+        const src = document.getElementById(span.dataset.printFrom);
+        if (!src) return;
+        let v = src.value || '';
+        if (src.type === 'date' && v) v = fmtFecha(v);
+        span.textContent = v || '—';
+    });
+    confirmarNumero();
+    window.print();
+}
+
+// ─── INICIO ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    pintarDatosEmpresa();
+    pintarNumeroYFechas();
+    renderItems();
+    // Traer precios actualizados del Google Sheet
+    try { await loadPricesFromSheet(); } catch (e) { console.warn('No se pudieron traer precios del Sheet', e); }
+    renderSelector();
+    renderItems();
+    const aviso = document.getElementById('avisoPrecios');
+    if (aviso) aviso.textContent = 'Precios actualizados desde el Sheet.';
+});

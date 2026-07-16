@@ -1,0 +1,200 @@
+/* ══════════ COTIZADOR SAN OU ══════════ */
+:root {
+    --amarillo: #FFD700;
+    --negro: #1a1a1a;
+    --gris: #666;
+    --linea: #d8d8dd;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #ececed;
+    color: var(--negro);
+    padding: 24px 16px 60px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ── Panel de carga ── */
+.cot-panel {
+    max-width: 900px;
+    margin: 0 auto 28px;
+    background: var(--negro);
+    border-radius: 16px;
+    padding: 26px;
+    color: #fff;
+}
+.cot-panel h1 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+}
+.cot-badge {
+    background: var(--amarillo); color: var(--negro);
+    font-size: 0.62rem; font-weight: 800;
+    padding: 3px 9px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+}
+.cot-campo { margin-bottom: 14px; }
+.cot-campo label {
+    display: block; font-size: 0.78rem; font-weight: 600;
+    color: #bbb; margin-bottom: 5px;
+}
+.cot-campo input, .cot-campo select, .cot-campo textarea {
+    width: 100%;
+    background: #2a2a2a; color: #fff;
+    border: 1px solid #3d3d3d; border-radius: 9px;
+    padding: 10px 12px;
+    font-family: inherit; font-size: 0.9rem;
+}
+.cot-campo input:focus, .cot-campo select:focus, .cot-campo textarea:focus {
+    outline: none; border-color: var(--amarillo);
+}
+.cot-campo small { display: block; color: #888; font-size: 0.72rem; margin-top: 4px; }
+.cot-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cot-btn-pdf {
+    width: 100%; margin-top: 8px;
+    background: var(--amarillo); color: var(--negro);
+    border: none; border-radius: 980px;
+    padding: 15px; font-size: 1rem; font-weight: 800;
+    font-family: inherit; cursor: pointer;
+}
+.cot-btn-pdf:hover { filter: brightness(1.07); }
+.cot-ayuda { display: block; text-align: center; color: #888; font-size: 0.75rem; margin-top: 9px; }
+
+/* ── La hoja de la cotización ── */
+.cot-hoja {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 32px 34px;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.14);
+}
+
+/* Encabezado */
+.cot-head {
+    display: flex; justify-content: space-between;
+    gap: 24px; padding-bottom: 18px;
+    border-bottom: 3px solid var(--amarillo);
+}
+.cot-head-izq { display: flex; flex-direction: column; gap: 12px; }
+.cot-logo { width: 190px; height: auto; }
+.cot-emisor { display: flex; flex-direction: column; gap: 2px; font-size: 0.78rem; color: #444; }
+.cot-emisor strong { font-size: 0.95rem; color: var(--negro); }
+.cot-head-der { text-align: right; display: flex; flex-direction: column; gap: 7px; }
+.cot-titulo {
+    font-size: 1.9rem; font-weight: 800;
+    letter-spacing: 0.05em; line-height: 1;
+}
+.cot-nro { font-size: 0.95rem; font-weight: 700; color: #333; }
+.cot-fiscal { display: flex; flex-direction: column; gap: 1px; font-size: 0.72rem; color: #555; }
+.cot-fechas { display: flex; flex-direction: column; gap: 1px; font-size: 0.78rem; margin-top: 4px; }
+
+/* Cliente */
+.cot-cliente { margin-top: 20px; }
+.cot-cliente h2, .cot-condiciones h2 {
+    font-size: 0.72rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--gris); margin-bottom: 8px;
+}
+.cot-cliente-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5px 20px; font-size: 0.84rem;
+    background: #f6f6f7; border-radius: 8px; padding: 12px 14px;
+}
+.cot-cliente-grid .span-2 { grid-column: 1 / -1; }
+
+/* Tabla */
+.cot-tabla { width: 100%; border-collapse: collapse; margin-top: 22px; }
+.cot-tabla thead th {
+    background: var(--negro); color: #fff;
+    font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 9px 8px; text-align: left;
+}
+.cot-tabla thead th.col-cant, .cot-tabla thead th.col-precio,
+.cot-tabla thead th.col-unit, .cot-tabla thead th.col-sub { text-align: right; }
+.cot-tabla thead th.col-n { text-align: center; width: 30px; }
+.cot-tabla tbody td {
+    padding: 9px 8px; font-size: 0.84rem;
+    border-bottom: 1px solid var(--linea);
+    vertical-align: top;
+}
+.cot-tabla .col-n { text-align: center; color: var(--gris); }
+.cot-tabla .col-desc strong { display: block; font-weight: 700; }
+.cot-item-desc { display: block; font-size: 0.72rem; color: var(--gris); margin-top: 2px; }
+.cot-tabla .col-cant, .cot-tabla .col-precio { width: 78px; }
+.cot-tabla .col-unit, .cot-tabla .col-sub { text-align: right; white-space: nowrap; }
+.cot-tabla .col-sub { font-weight: 700; position: relative; padding-right: 26px; }
+.cot-tabla input {
+    width: 100%; text-align: right;
+    border: 1px solid var(--linea); border-radius: 6px;
+    padding: 5px 7px; font-family: inherit; font-size: 0.82rem;
+}
+.cot-quitar {
+    position: absolute; right: 0; top: 7px;
+    background: none; border: none; color: #c00;
+    font-size: 1.1rem; cursor: pointer; line-height: 1; padding: 0 3px;
+}
+.cot-vacio { text-align: center; color: var(--gris); padding: 26px 0; font-style: italic; }
+
+/* Totales */
+.cot-totales {
+    margin-top: 16px; margin-left: auto;
+    width: 290px;
+}
+.cot-tot-fila {
+    display: flex; justify-content: space-between;
+    padding: 7px 10px; font-size: 0.86rem;
+}
+.cot-tot-final {
+    background: var(--negro); color: #fff;
+    font-size: 1.05rem; font-weight: 800;
+    border-radius: 7px; margin-top: 5px;
+    padding: 11px 10px;
+}
+.cot-tot-final span:last-child { color: var(--amarillo); }
+
+/* Condiciones */
+.cot-condiciones { margin-top: 26px; }
+.cot-condiciones ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.cot-condiciones li { font-size: 0.78rem; color: #444; padding-left: 12px; position: relative; }
+.cot-condiciones li::before {
+    content: '•'; position: absolute; left: 0; color: var(--amarillo); font-weight: 800;
+}
+.cot-obs { font-size: 0.78rem; color: #444; margin-top: 9px; }
+.cot-legal { font-size: 0.7rem; color: #888; margin-top: 10px; font-style: italic; }
+
+.cot-pie {
+    margin-top: 26px; padding-top: 12px;
+    border-top: 1px solid var(--linea);
+    display: flex; justify-content: space-between;
+    font-size: 0.72rem; color: var(--gris);
+}
+
+@media (max-width: 780px) {
+    .cot-grid-2, .cot-cliente-grid { grid-template-columns: 1fr; }
+    .cot-head { flex-direction: column; }
+    .cot-head-der { text-align: left; }
+    .cot-hoja { padding: 20px; }
+    .cot-totales { width: 100%; }
+}
+
+/* ══════════ IMPRESIÓN / PDF ══════════ */
+@media print {
+    @page { size: A4; margin: 12mm; }
+    body { background: #fff; padding: 0; }
+    .no-print { display: none !important; }
+    .cot-hoja {
+        max-width: none; box-shadow: none;
+        border-radius: 0; padding: 0; margin: 0;
+    }
+    .cot-tabla thead { display: table-header-group; }
+    .cot-tabla tbody tr { page-break-inside: avoid; }
+    .cot-totales, .cot-condiciones { page-break-inside: avoid; }
+    .cot-cliente-grid { background: #f6f6f7 !important; }
+    .cot-tabla thead th { background: var(--negro) !important; color: #fff !important; }
+    .cot-tot-final { background: var(--negro) !important; color: #fff !important; }
+    .cot-tot-final span:last-child { color: var(--amarillo) !important; }
+}

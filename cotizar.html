@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Cotizador — San Ou</title>
+    <link rel="icon" type="image/png" href="tuerca-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="cotizador.css">
+</head>
+<body>
+
+<!-- ══ PANEL DE CARGA (no sale en el PDF) ══ -->
+<div class="cot-panel no-print">
+    <div class="cot-panel-inner">
+        <h1>Cotizador San Ou <span class="cot-badge">uso interno</span></h1>
+
+        <div class="cot-campo">
+            <label>Agregar producto</label>
+            <select id="selectorProducto" onchange="agregarItem(this.value); this.value='';"></select>
+            <small id="avisoPrecios">Cargando precios…</small>
+        </div>
+
+        <div class="cot-grid-2">
+            <div class="cot-campo">
+                <label>Cliente / Razón social</label>
+                <input type="text" id="cliNombre" placeholder="Ej: Electricidad del Sur S.R.L.">
+            </div>
+            <div class="cot-campo">
+                <label>CUIT</label>
+                <input type="text" id="cliCuit" placeholder="30-12345678-9">
+            </div>
+        </div>
+
+        <div class="cot-grid-2">
+            <div class="cot-campo">
+                <label>Condición IVA</label>
+                <select id="cliCondIva">
+                    <option>IVA Responsable Inscripto</option>
+                    <option>Monotributista</option>
+                    <option>Consumidor Final</option>
+                    <option>IVA Exento</option>
+                </select>
+            </div>
+            <div class="cot-campo">
+                <label>Contacto (tel / mail)</label>
+                <input type="text" id="cliContacto" placeholder="11 5555-5555 / compras@cliente.com">
+            </div>
+        </div>
+
+        <div class="cot-campo">
+            <label>Dirección del cliente</label>
+            <input type="text" id="cliDom" placeholder="Av. Siempre Viva 742, CABA">
+        </div>
+
+        <div class="cot-grid-2">
+            <div class="cot-campo">
+                <label>Fecha de emisión</label>
+                <input type="date" id="fechaEmision">
+            </div>
+            <div class="cot-campo">
+                <label>Válida hasta</label>
+                <input type="date" id="fechaVence">
+            </div>
+        </div>
+
+        <div class="cot-grid-2">
+            <div class="cot-campo">
+                <label>Forma de pago</label>
+                <input type="text" id="condPago" value="Transferencia / Efectivo">
+            </div>
+            <div class="cot-campo">
+                <label>Plazo de entrega</label>
+                <input type="text" id="condEntrega" value="Inmediata con stock disponible">
+            </div>
+        </div>
+
+        <div class="cot-campo">
+            <label>Observaciones (opcional)</label>
+            <textarea id="obs" rows="2" placeholder="Ej: Envío bonificado por volumen."></textarea>
+        </div>
+
+        <button class="cot-btn-pdf" onclick="imprimirCotizacion()">
+            Generar cotización en PDF
+        </button>
+        <small class="cot-ayuda">Se abre el diálogo de impresión → elegí <strong>“Guardar como PDF”</strong>.</small>
+    </div>
+</div>
+
+<!-- ══ LA COTIZACIÓN (esto es lo que se imprime) ══ -->
+<div class="cot-hoja" id="hoja">
+
+    <header class="cot-head">
+        <div class="cot-head-izq">
+            <img src="sticker.png" alt="San Ou" class="cot-logo">
+            <div class="cot-emisor">
+                <strong id="emRazon"></strong>
+                <span id="emDom"></span>
+                <span id="emTel"></span>
+                <span id="emMail"></span>
+                <span id="emWeb"></span>
+            </div>
+        </div>
+        <div class="cot-head-der">
+            <div class="cot-titulo">COTIZACIÓN</div>
+            <div class="cot-nro">N° <span id="cotNumero"></span></div>
+            <div class="cot-fiscal">
+                <span id="emCuit"></span>
+                <span id="emIibb"></span>
+                <span id="emCondIva"></span>
+                <span id="emInicio"></span>
+            </div>
+            <div class="cot-fechas">
+                <span><b>Fecha:</b> <span data-print-from="fechaEmision"></span></span>
+                <span><b>Válida hasta:</b> <span data-print-from="fechaVence"></span></span>
+            </div>
+        </div>
+    </header>
+
+    <section class="cot-cliente">
+        <h2>Cliente</h2>
+        <div class="cot-cliente-grid">
+            <div><b>Razón social:</b> <span data-print-from="cliNombre"></span></div>
+            <div><b>CUIT:</b> <span data-print-from="cliCuit"></span></div>
+            <div><b>Condición IVA:</b> <span data-print-from="cliCondIva"></span></div>
+            <div><b>Contacto:</b> <span data-print-from="cliContacto"></span></div>
+            <div class="span-2"><b>Dirección:</b> <span data-print-from="cliDom"></span></div>
+        </div>
+    </section>
+
+    <table class="cot-tabla">
+        <thead>
+            <tr>
+                <th class="col-n">#</th>
+                <th class="col-desc">Descripción</th>
+                <th class="col-cant">Cant.</th>
+                <th class="col-precio no-print">P. final c/IVA</th>
+                <th class="col-unit">P. unitario</th>
+                <th class="col-sub">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+    </table>
+
+    <section class="cot-totales">
+        <div class="cot-tot-fila"><span>Subtotal (neto)</span><span id="totSubtotal">$0,00</span></div>
+        <div class="cot-tot-fila"><span>IVA 10,5%</span><span id="totIva">$0,00</span></div>
+        <div class="cot-tot-fila cot-tot-final"><span>TOTAL</span><span id="totFinal">$0,00</span></div>
+    </section>
+
+    <section class="cot-condiciones">
+        <h2>Condiciones</h2>
+        <ul>
+            <li><b>Validez de la oferta:</b> hasta la fecha indicada. Pasado ese plazo, los precios pueden variar.</li>
+            <li><b>Forma de pago:</b> <span data-print-from="condPago"></span></li>
+            <li><b>Plazo de entrega:</b> <span data-print-from="condEntrega"></span></li>
+            <li><b>Garantía:</b> todos los productos cuentan con garantía de fábrica.</li>
+            <li><b>Moneda:</b> pesos argentinos (ARS). Precios sujetos a disponibilidad de stock.</li>
+        </ul>
+        <p class="cot-obs"><b>Observaciones:</b> <span data-print-from="obs"></span></p>
+        <p class="cot-legal">Este documento es un presupuesto comercial y no constituye comprobante fiscal.</p>
+    </section>
+
+    <footer class="cot-pie">
+        <span id="emRazonPie">BR TRADE SRL — San Ou</span>
+        <span>Gracias por su consulta.</span>
+    </footer>
+</div>
+
+<script src="script.js"></script>
+<script src="cotizador.js"></script>
+</body>
+</html>
