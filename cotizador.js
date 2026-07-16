@@ -10,7 +10,7 @@
 //
 // OJO: esto frena a una persona común, no a alguien técnico: el
 // contenido de esta página se puede leer igual desde el código fuente.
-const CLAVE_HASH = 'PEGAR_AQUI_LA_HUELLA';
+const CLAVE_HASH = '8cea72b776f4ebed9179499244551f6dfdce0e2326ff7626b4a0036cd99e9a04';
 
 const DIAS_RECORDAR = 30;
 
