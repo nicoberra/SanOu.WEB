@@ -4,19 +4,34 @@
 // ─────────────────────────────────────────────────────────────────
 
 // ─── CLAVE DE ACCESO ─────────────────────────────────────────────
-// Acá va la HUELLA (hash) de la clave, no la clave.
+// Acá va la HUELLA (hash) de la clave, nunca la clave.
+//
+// Se usa PBKDF2 con 250.000 vueltas: para vos entrar es instantáneo,
+// pero para alguien que quiera adivinar la clave probando millones por
+// segundo, cada intento le cuesta 250.000 veces más. Eso convierte un
+// ataque de segundos en uno de años.
+//
 // Para cambiarla: abrí generar-clave.html, escribí tu clave nueva
 // y pegá acá la huella que te da.
 //
-// OJO: esto frena a una persona común, no a alguien técnico: el
-// contenido de esta página se puede leer igual desde el código fuente.
-const CLAVE_HASH = '8cea72b776f4ebed9179499244551f6dfdce0e2326ff7626b4a0036cd99e9a04';
+// OJO: esto protege la CLAVE, no el contenido. Alguien técnico puede
+// leer esta página desde el código fuente sin pasar por el candado.
+const CLAVE_HASH = 'PEGAR_AQUI_LA_HUELLA';
 
+const PBKDF2_VUELTAS = 250000;
+const PBKDF2_SAL = 'sanou::cotizador::v2';
 const DIAS_RECORDAR = 30;
 
 async function huella(txt) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sanou::' + txt));
-    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+    const enc = new TextEncoder();
+    const clave = await crypto.subtle.importKey('raw', enc.encode(txt), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({
+        name: 'PBKDF2',
+        salt: enc.encode(PBKDF2_SAL),
+        iterations: PBKDF2_VUELTAS,
+        hash: 'SHA-256'
+    }, clave, 256);
+    return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function accesoVigente() {
@@ -36,9 +51,13 @@ function cerrarSesionCotizador() {
     location.reload();
 }
 
+let _verificando = false;
+
 async function probarClave() {
+    if (_verificando) return;
     const input = document.getElementById('claveInput');
     const err   = document.getElementById('claveError');
+    const btn   = document.getElementById('claveBtn');
     const val   = input.value;
     if (!val.trim()) return;
     if (CLAVE_HASH === 'PEGAR_AQUI_LA_HUELLA') {
@@ -46,13 +65,20 @@ async function probarClave() {
         err.classList.add('on');
         return;
     }
-    if (await huella(val) === CLAVE_HASH) {
-        desbloquear();
-    } else {
-        err.textContent = 'Clave incorrecta.';
-        err.classList.add('on');
-        input.value = '';
-        input.focus();
+    _verificando = true;
+    if (btn) { btn.disabled = true; btn.textContent = 'Verificando…'; }
+    try {
+        if (await huella(val) === CLAVE_HASH) {
+            desbloquear();
+        } else {
+            err.textContent = 'Clave incorrecta.';
+            err.classList.add('on');
+            input.value = '';
+            input.focus();
+        }
+    } finally {
+        _verificando = false;
+        if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
     }
 }
 
