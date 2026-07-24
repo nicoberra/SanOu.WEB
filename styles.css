@@ -3669,6 +3669,16 @@ section { padding: 90px 0; }
     color: var(--gray);
     border-color: rgba(255,255,255,0.12);
 }
+.stock-chip--low {
+    background: rgba(255,140,0,0.14);
+    color: #ff9d2e;
+    border-color: rgba(255,140,0,0.4);
+    animation: chipPulse 1.8s ease-in-out infinite;
+}
+@keyframes chipPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,140,0,0); }
+    50%      { box-shadow: 0 0 0 4px rgba(255,140,0,0.12); }
+}
 
 /* Hero: título con más impacto */
 .hero-slogan-white, .hero-slogan-yellow {

@@ -550,7 +550,7 @@ const products = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
-    { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: ['1.jpeg','2.webp'], folder: '200MM',
+    { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: ['1.jpeg','2.webp'], folder: '200MM', lowStock: true,
       desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 200 mm' },
@@ -1133,11 +1133,17 @@ function discountBadge(p) {
 }
 
 // Tarjeta de producto (compartida entre la grilla de productos y la de destacados)
+function stockChipHTML(p) {
+    if (p.inStock === false)
+        return '<span class="stock-chip stock-chip--out">Sin stock</span>';
+    if (p.lowStock)
+        return '<span class="stock-chip stock-chip--low"><i class="fas fa-fire"></i> ¡Pocas unidades!</span>';
+    return '<span class="stock-chip"><i class="fas fa-check"></i> En stock</span>';
+}
+
 function productCardHTML(p) {
     const isFav = getFavs().includes(p.id);
-    const stockChip = p.inStock !== false
-        ? '<span class="stock-chip"><i class="fas fa-check"></i> En stock</span>'
-        : '<span class="stock-chip stock-chip--out">Sin stock</span>';
+    const stockChip = stockChipHTML(p);
     return `
         <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
             ${discountBadge(p)}
