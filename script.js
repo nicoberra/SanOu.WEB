@@ -1,5 +1,5 @@
 // ─── KLAVIYO ─────────────────────────────────────────────────────
-const KL_KEY = 'UVQQT2';
+const KL_KEY = 'Ygitdg';
 let klUserEmail = localStorage.getItem('kl_email') || null;
 let klUserName  = localStorage.getItem('kl_name')  || null;
 let klModalMostrado = false;
