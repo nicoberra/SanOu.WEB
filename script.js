@@ -1701,7 +1701,12 @@ function parseCsvLine(line) {
 async function loadPricesFromSheet() {
     if (!PRICES_CSV_URL) return;
     try {
-        const res = await fetch(PRICES_CSV_URL);
+        // Timeout: si el Sheet no responde en 7s, abortamos para NO colgar
+        // el arranque del catálogo (antes esto dejaba la página muerta).
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 7000);
+        const res = await fetch(PRICES_CSV_URL, { signal: ctrl.signal });
+        clearTimeout(t);
         const text = await res.text();
         const rows = text.trim().split('\n').slice(1); // saltar encabezado
         // Columnas fijas: 0=Nombre, 1=Precios, 2=Stock, 3=Precio mercado libre, 4=DESTACADO
@@ -2133,45 +2138,73 @@ function sendWaMessage() {
 }
 
 // ─── INIT ────────────────────────────────────────────────────────
-loadPricesFromSheet().then(() => {
-    // Copia MEZCLADA solo para la vista "Todas las categorías".
-    // El array original 'products' queda intacto, así cada categoría conserva su orden.
-    productsShuffled = products.slice();
-    for (let i = productsShuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [productsShuffled[i], productsShuffled[j]] = [productsShuffled[j], productsShuffled[i]];
-    }
+// ─── ARRANQUE DEL CATÁLOGO ───────────────────────────────────────
+// IMPORTANTE: el catálogo NO debe depender de que carguen los precios.
+// Si el fetch al Sheet se cuelga (red lenta/inestable), igual dibujamos
+// todo, así los botones y productos SIEMPRE funcionan. Cuando llegan los
+// precios, se refresca la vista con los valores reales.
+let _catalogoDibujado = false;
 
-    const hash = window.location.hash;
+function dibujarCatalogo() {
+    if (_catalogoDibujado) return;
+    _catalogoDibujado = true;
+    try {
+        // Copia MEZCLADA solo para la vista "Todas las categorías".
+        productsShuffled = products.slice();
+        for (let i = productsShuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [productsShuffled[i], productsShuffled[j]] = [productsShuffled[j], productsShuffled[i]];
+        }
 
-    // Abrir categoría si viene en la URL (#categoria-XXX)
-    const catMatch = hash.match(/^#categoria-(\w+)$/);
-    if (catMatch) {
-        const cat = catMatch[1];
-        const label = CAT_NAMES[cat];
-        if (label) {
+        const hash = window.location.hash;
+
+        // Abrir categoría si viene en la URL (#categoria-XXX)
+        const catMatch = hash.match(/^#categoria-(\w+)$/);
+        if (catMatch && CAT_NAMES[catMatch[1]]) {
+            const cat = catMatch[1];
             toggleGuiaBanner(cat);
-            renderProducts(cat, true); // categoría desde URL = filtro: todos, sin botón
+            renderProducts(cat, true);
             renderFeatured();
             renderDestacadosGrid();
-            document.getElementById('filterDropdownLabel').textContent = label;
+            const lbl = document.getElementById('filterDropdownLabel');
+            if (lbl) lbl.textContent = CAT_NAMES[cat];
             document.querySelectorAll('.filter-option').forEach(o => o.classList.toggle('active', o.dataset.filter === cat));
             setTimeout(() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
             return;
         }
-    }
 
-    renderProducts('all');
-    renderFeatured();
-    renderDestacadosGrid();
+        renderProducts('all');
+        renderFeatured();
+        renderDestacadosGrid();
 
-    // Abrir producto si viene en la URL (#producto-ID)
-    const match = hash.match(/^#producto-(\d+)$/);
-    if (match) {
-        const id = parseInt(match[1]);
-        setTimeout(() => openModal(id), 500);
+        // Abrir producto si viene en la URL (#producto-ID)
+        const match = hash.match(/^#producto-(\d+)$/);
+        if (match) {
+            const id = parseInt(match[1]);
+            setTimeout(() => openModal(id), 500);
+        }
+    } catch (e) {
+        console.warn('Error dibujando el catálogo:', e);
     }
+}
+
+// Refresca la vista actual (para mostrar precios/stock reales al llegar el Sheet).
+function refrescarCatalogo() {
+    try {
+        renderProducts(_currentFilter, _currentFilter !== 'all');
+        renderFeatured();
+        renderDestacadosGrid();
+    } catch (e) { console.warn('Error refrescando el catálogo:', e); }
+}
+
+// Cargar precios y luego dibujar (o refrescar si la red de seguridad ya dibujó).
+loadPricesFromSheet().finally(() => {
+    if (_catalogoDibujado) refrescarCatalogo();
+    else dibujarCatalogo();
 });
+
+// Red de seguridad: pase lo que pase, a los 4s el catálogo se muestra.
+setTimeout(dibujarCatalogo, 4000);
 
 // Abrir widget WhatsApp automáticamente al entrar (solo desktop)
 window.addEventListener('load', () => {
