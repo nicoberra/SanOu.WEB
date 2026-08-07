@@ -57,19 +57,19 @@ window.addEventListener('load', () => {
 });
 
 function actualizarSeccionRegistro() {
+    const barra      = document.getElementById('registrate');
     const inner      = document.getElementById('ecbInner');
     const registered = document.getElementById('ecbRegistered');
-    const msg        = document.getElementById('ecbRegisteredMsg');
     if (!inner || !registered) return;
+    // Siempre ocultamos el cartel de "ya estás suscripto".
+    registered.style.display = 'none';
     if (klUserEmail) {
-        inner.style.display      = 'none';
-        registered.style.display = 'flex';
-        if (msg) msg.textContent = klUserName
-            ? `¡Hola, ${klUserName}! Ya estás suscripto. Por acá te vamos a avisar de ofertas y productos nuevos.`
-            : '¡Ya estás suscripto! Por acá te vamos a avisar de ofertas y productos nuevos.';
+        // Ya suscripto: no mostramos nada (ni formulario ni cartel).
+        if (barra) barra.style.display = 'none';
     } else {
-        inner.style.display      = '';
-        registered.style.display = 'none';
+        // Visitante nuevo: mostramos el formulario para suscribirse.
+        if (barra) barra.style.display = '';
+        inner.style.display = '';
     }
 }
 
