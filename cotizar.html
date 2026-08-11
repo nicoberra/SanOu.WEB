@@ -94,6 +94,12 @@
         </div>
 
         <div class="cot-campo">
+            <label>Costo de envío (opcional)</label>
+            <input type="text" id="costoEnvio" inputmode="decimal" placeholder="0" value="" oninput="cambiarEnvio(this.value)">
+            <small class="cot-ayuda">Dejalo vacío o en 0 si el envío no se cobra o se coordina aparte.</small>
+        </div>
+
+        <div class="cot-campo">
             <label>Observaciones (opcional)</label>
             <textarea id="obs" rows="2" placeholder="Ej: Envío bonificado por volumen."></textarea>
         </div>
@@ -146,6 +152,7 @@
     <section class="cot-totales">
         <div class="cot-tot-fila"><span>Subtotal (neto)</span><span id="totSubtotal">$0,00</span></div>
         <div class="cot-tot-fila"><span>IVA 10,5%</span><span id="totIva">$0,00</span></div>
+        <div class="cot-tot-fila" id="filaEnvio" style="display:none"><span>Envío</span><span id="totEnvio">$0,00</span></div>
         <div class="cot-tot-fila cot-tot-final"><span>TOTAL</span><span id="totFinal">$0,00</span></div>
     </section>
 

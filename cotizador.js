@@ -136,14 +136,24 @@ function money(n) {
 // exactamente con el precio publicado en la web.
 function netoDesdeFinal(final) { return final / (1 + IVA); }
 
+let envio = 0; // costo de envío (monto final que paga el cliente)
+
+function cambiarEnvio(val) {
+    envio = Math.max(0, parseFloat(String(val).replace(/[^\d.,]/g, '').replace(',', '.')) || 0);
+    renderItems();
+}
+
 function calcularTotales() {
     let subtotalNeto = 0;
     items.forEach(it => { subtotalNeto += netoDesdeFinal(it.precioFinal) * it.cantidad; });
     const ivaMonto = subtotalNeto * IVA;
+    // El envío se suma como monto final (aparte), no se le desglosa IVA:
+    // es un presupuesto comercial, no un comprobante fiscal.
     return {
         subtotalNeto,
         ivaMonto,
-        total: subtotalNeto + ivaMonto
+        envio,
+        total: subtotalNeto + ivaMonto + envio
     };
 }
 
@@ -227,6 +237,13 @@ function renderItems() {
     document.getElementById('totSubtotal').textContent = money(t.subtotalNeto);
     document.getElementById('totIva').textContent      = money(t.ivaMonto);
     document.getElementById('totFinal').textContent    = money(t.total);
+
+    // Fila de envío: solo aparece si se cargó un costo
+    const filaEnvio = document.getElementById('filaEnvio');
+    if (filaEnvio) {
+        filaEnvio.style.display = t.envio > 0 ? '' : 'none';
+        document.getElementById('totEnvio').textContent = money(t.envio);
+    }
 }
 
 // ─── ENCABEZADO / DATOS ──────────────────────────────────────────
