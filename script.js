@@ -1559,11 +1559,15 @@ function updateCartUI() {
     if (totalRow) totalRow.style.display = 'flex';
     totalEl.textContent = fmt(total);
 
-    itemsEl.innerHTML = cart.map(item => `
+    itemsEl.innerHTML = cart.map(item => {
+        const prod = products.find(p => p.id === item.id);
+        const imgs = prod ? getImgs(prod) : [];
+        const media = imgs.length
+            ? `<img src="${imgs[0]}" alt="${item.name}" class="cart-item-img" loading="lazy" onerror="this.outerHTML='<div class=\\'cart-item-icon\\'><i class=\\'fas ${item.icon}\\'></i></div>'">`
+            : `<div class="cart-item-icon"><i class="fas ${item.icon}"></i></div>`;
+        return `
         <div class="cart-item">
-            <div class="cart-item-icon">
-                <i class="fas ${item.icon}"></i>
-            </div>
+            ${media}
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
                 <div class="cart-item-unit">Precio unitario: ${fmt(item.price)}</div>
@@ -1578,7 +1582,8 @@ function updateCartUI() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // ─── ABRIR / CERRAR CARRITO ──────────────────────────────────────
