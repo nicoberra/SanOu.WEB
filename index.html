@@ -200,6 +200,9 @@
                 <button class="orders-btn header-icon-btn" onclick="openOrders()" title="Mis pedidos">
                     <i class="fas fa-history"></i>
                 </button>
+                <button class="cuenta-btn header-icon-btn" id="cuentaBtn" onclick="openCuenta()" title="Mi cuenta">
+                    <i class="fas fa-user"></i>
+                </button>
                 <button class="cart-btn" onclick="openCart()">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count" id="cartCount">0</span>
@@ -864,6 +867,16 @@
             <button onclick="closeFavs()"><i class="fas fa-times"></i></button>
         </div>
         <div class="fav-body" id="favBody"></div>
+    </aside>
+
+    <!-- Panel: Mi Cuenta -->
+    <div class="cuenta-overlay" id="cuentaOverlay" onclick="closeCuenta()"></div>
+    <aside class="cuenta-panel" id="cuentaPanel">
+        <div class="cuenta-panel-header">
+            <h2><i class="fas fa-user"></i> Mi cuenta</h2>
+            <button onclick="closeCuenta()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cuenta-panel-body" id="cuentaBody"></div>
     </aside>
 
     <script src="script.js"></script>

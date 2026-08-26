@@ -4,6 +4,145 @@ let klUserEmail = localStorage.getItem('kl_email') || null;
 let klUserName  = localStorage.getItem('kl_name')  || null;
 let klModalMostrado = false;
 
+// ─── CLIENTES → GOOGLE SHEETS ────────────────────────────────────
+// URL del Apps Script que guarda cada cliente en la pestaña "Clientes".
+const CLIENTES_URL = 'https://script.google.com/macros/s/AKfycbyyh8qMMznYxgPrEZt2V16nsA4SSa3ANRfUc_V_Y-LKF-uuMXCKXlNqNGDfYWLnRAEt/exec';
+
+// Guarda/actualiza el cliente en el Sheet. Fire-and-forget (no-cors).
+function guardarClienteEnSheet(datos) {
+    if (!CLIENTES_URL) return;
+    try {
+        const params = new URLSearchParams({
+            nombre:   datos.nombre   || '',
+            email:    datos.email    || '',
+            telefono: datos.telefono || '',
+            empresa:  datos.empresa  || '',
+            ciudad:   datos.ciudad   || '',
+            origen:   datos.origen   || 'web'
+        });
+        fetch(CLIENTES_URL + '?' + params.toString(), { mode: 'no-cors' });
+    } catch (e) { /* silencioso: no frenar al cliente si falla la red */ }
+}
+
+// ─── MI CUENTA ───────────────────────────────────────────────────
+function clienteRegistrado() { return !!localStorage.getItem('kl_email'); }
+
+function openCuenta() {
+    renderCuenta();
+    document.getElementById('cuentaOverlay').classList.add('active');
+    document.getElementById('cuentaPanel').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeCuenta() {
+    document.getElementById('cuentaOverlay').classList.remove('active');
+    document.getElementById('cuentaPanel').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function actualizarBotonCuenta() {
+    const btn = document.getElementById('cuentaBtn');
+    if (btn) btn.classList.toggle('logueado', clienteRegistrado());
+}
+
+function formularioCuentaHTML(pref) {
+    pref = pref || {};
+    return `
+        <p class="cuenta-intro">Registrate para que te reconozcamos, guardar tus favoritos y recibir ofertas.</p>
+        <form class="cuenta-form" onsubmit="registrarCliente(event)">
+            <input type="text"  id="ccNombre"   placeholder="Nombre y apellido *" value="${pref.nombre||''}" required autocomplete="name">
+            <input type="email" id="ccEmail"    placeholder="Email *" value="${pref.email||''}" required autocomplete="email">
+            <input type="tel"   id="ccTelefono" placeholder="Teléfono / WhatsApp *" value="${pref.telefono||''}" required autocomplete="tel">
+            <input type="text"  id="ccEmpresa"  placeholder="Empresa / Rubro (opcional)" value="${pref.empresa||''}" autocomplete="organization">
+            <input type="text"  id="ccCiudad"   placeholder="Ciudad (opcional)" value="${pref.ciudad||''}" autocomplete="address-level2">
+            <button type="submit" class="cuenta-submit">Crear mi cuenta</button>
+            <span class="cuenta-legal">Tus datos son solo para contactarte. No los compartimos.</span>
+        </form>
+    `;
+}
+
+function renderCuenta() {
+    const body = document.getElementById('cuentaBody');
+    if (!body) return;
+    const email = localStorage.getItem('kl_email');
+    if (!email) { body.innerHTML = formularioCuentaHTML(); return; }
+
+    const nombre   = localStorage.getItem('kl_name')    || '';
+    const telefono = localStorage.getItem('kl_phone')   || '';
+    const empresa  = localStorage.getItem('kl_empresa') || '';
+    const ciudad   = localStorage.getItem('kl_ciudad')  || '';
+    const dato = (etq, val) => val ? `<div class="cuenta-dato"><span>${etq}</span><strong>${val}</strong></div>` : '';
+    const faltaTel = !telefono;
+    body.innerHTML = `
+        <div class="cuenta-saludo">
+            <div class="cuenta-avatar">${(nombre || email).charAt(0).toUpperCase()}</div>
+            <div class="cuenta-saludo-txt">
+                <div class="cuenta-hola">¡Hola${nombre ? ', ' + nombre : ''}!</div>
+                <div class="cuenta-mail">${email}</div>
+            </div>
+        </div>
+        <div class="cuenta-datos">
+            ${dato('Teléfono', telefono)}
+            ${dato('Empresa / Rubro', empresa)}
+            ${dato('Ciudad', ciudad)}
+        </div>
+        <button class="cuenta-completar${faltaTel ? '' : ' cuenta-ghost'}" onclick="editarCuenta()">
+            ${faltaTel ? 'Completar mis datos' : 'Editar mis datos'}
+        </button>
+        <div class="cuenta-acciones">
+            <button onclick="closeCuenta(); openFavs();"><i class="fas fa-heart"></i> Mis favoritos</button>
+            <button onclick="closeCuenta(); openOrders();"><i class="fas fa-history"></i> Mis pedidos</button>
+        </div>
+        <button class="cuenta-logout" onclick="cerrarSesionCliente()"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+    `;
+}
+
+function editarCuenta() {
+    const body = document.getElementById('cuentaBody');
+    if (!body) return;
+    body.innerHTML = formularioCuentaHTML({
+        nombre:   localStorage.getItem('kl_name')    || '',
+        email:    localStorage.getItem('kl_email')   || '',
+        telefono: localStorage.getItem('kl_phone')   || '',
+        empresa:  localStorage.getItem('kl_empresa') || '',
+        ciudad:   localStorage.getItem('kl_ciudad')  || ''
+    });
+}
+
+function registrarCliente(e) {
+    e.preventDefault();
+    const nombre   = document.getElementById('ccNombre').value.trim();
+    const email    = document.getElementById('ccEmail').value.trim();
+    const telefono = document.getElementById('ccTelefono').value.trim();
+    const empresa  = document.getElementById('ccEmpresa').value.trim();
+    const ciudad   = document.getElementById('ccCiudad').value.trim();
+    if (!email || !nombre || !telefono) return;
+
+    // Identidad local (para "Mi cuenta" y el saludo)
+    klUserEmail = email; klUserName = nombre;
+    localStorage.setItem('kl_email', email);
+    localStorage.setItem('kl_name', nombre);
+    localStorage.setItem('kl_phone', telefono);
+    localStorage.setItem('kl_empresa', empresa);
+    localStorage.setItem('kl_ciudad', ciudad);
+
+    // Guardar en tu Google Sheets (pestaña Clientes)
+    guardarClienteEnSheet({ nombre, email, telefono, empresa, ciudad, origen: 'registro web' });
+    // Identificar también en Klaviyo
+    klPush(['identify', { '$email': email, '$first_name': nombre, '$phone_number': telefono }]);
+
+    actualizarSeccionRegistro();
+    actualizarBotonCuenta();
+    renderCuenta();
+}
+
+function cerrarSesionCliente() {
+    ['kl_email','kl_name','kl_phone','kl_empresa','kl_ciudad'].forEach(k => localStorage.removeItem(k));
+    klUserEmail = null; klUserName = null;
+    actualizarSeccionRegistro();
+    actualizarBotonCuenta();
+    renderCuenta();
+}
+
 function abrirKlModal() {
     if (klUserEmail || klModalMostrado) return;
     klModalMostrado = true;
@@ -96,6 +235,7 @@ window.addEventListener('load', () => {
     }
 
     initIosNotifSwipe();
+    actualizarBotonCuenta();
 
     setTimeout(() => {
         const n = document.getElementById('iosNotif');
@@ -134,6 +274,8 @@ function registrarseDesdeSeccion(e) {
     if (nombre) localStorage.setItem('kl_name', nombre);
 
     klPush(['identify', { '$email': email, '$first_name': nombre || '' }]);
+    guardarClienteEnSheet({ nombre, email, origen: 'barra registro' });
+    if (typeof actualizarBotonCuenta === 'function') actualizarBotonCuenta();
 
     actualizarSeccionRegistro();
     cerrarIosNotif();
@@ -159,6 +301,8 @@ function guardarEmailKlaviyo(e) {
 
     // Identificar en Klaviyo
     klPush(['identify', { '$email': email, '$first_name': nombre || '' }]);
+    guardarClienteEnSheet({ nombre, email, origen: 'popup carrito' });
+    if (typeof actualizarBotonCuenta === 'function') actualizarBotonCuenta();
 
     cerrarKlModal();
     actualizarSeccionRegistro();
