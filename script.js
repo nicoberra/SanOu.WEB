@@ -30,6 +30,53 @@ function cerrarIosNotif() {
     n.classList.add('hide');
 }
 
+// Permite descartar la notificación deslizándola hacia arriba con el dedo (celu)
+function initIosNotifSwipe() {
+    const n = document.getElementById('iosNotif');
+    if (!n) return;
+    let startY = 0, dy = 0, dragging = false;
+
+    n.addEventListener('touchstart', e => {
+        startY = e.touches[0].clientY;
+        dy = 0;
+        dragging = true;
+        n.style.transition = 'none';
+    }, { passive: true });
+
+    n.addEventListener('touchmove', e => {
+        if (!dragging) return;
+        dy = e.touches[0].clientY - startY;
+        if (dy > 0) dy = dy * 0.25; // resistencia si arrastra hacia abajo
+        n.style.transform = `translateX(-50%) translateY(${dy}px)`;
+    }, { passive: true });
+
+    n.addEventListener('touchend', () => {
+        if (!dragging) return;
+        dragging = false;
+        n.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
+        if (dy < -40) {
+            // deslizó lo suficiente hacia arriba: descartar
+            n.style.transform = 'translateX(-50%) translateY(-140px)';
+            n.style.opacity = '0';
+            setTimeout(() => {
+                cerrarIosNotif();
+                n.style.transform = '';
+                n.style.opacity = '';
+                n.style.transition = '';
+            }, 250);
+        } else {
+            // no llegó: vuelve a su lugar
+            n.style.transform = '';
+            setTimeout(() => { n.style.transition = ''; }, 260);
+        }
+    });
+
+    // Si fue un deslizamiento (no un toque), no abrir el modal por el onclick
+    n.addEventListener('click', e => {
+        if (Math.abs(dy) > 10) { e.stopImmediatePropagation(); e.preventDefault(); }
+    }, true);
+}
+
 // Mostrar notificación iOS al entrar
 window.addEventListener('load', () => {
     // Actualizar sección visible de registro
@@ -47,6 +94,8 @@ window.addEventListener('load', () => {
         if (titleEl) titleEl.textContent = '¡Bienvenido a San Ou! 👋';
         if (msgEl)   msgEl.textContent   = 'Dejá tu mail y recibí ofertas exclusivas';
     }
+
+    initIosNotifSwipe();
 
     setTimeout(() => {
         const n = document.getElementById('iosNotif');
