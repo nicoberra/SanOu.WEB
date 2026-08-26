@@ -2110,11 +2110,18 @@ function descargarPDF() {
     }
 })();
 
+let _waAutoCloseTimer = null;
+
+function cancelarWaAutoClose() {
+    if (_waAutoCloseTimer) { clearTimeout(_waAutoCloseTimer); _waAutoCloseTimer = null; }
+}
+
 function toggleWaWidget() {
     const popup = document.getElementById('waWidgetPopup');
     if (!popup) return;
     const isOpen = popup.classList.contains('open');
     if (isOpen) {
+        cancelarWaAutoClose();
         popup.style.opacity = '0';
         popup.style.transform = 'scale(0.85) translateY(20px)';
         setTimeout(() => { popup.classList.remove('open'); }, 280);
@@ -2125,7 +2132,17 @@ function toggleWaWidget() {
             popup.style.opacity = '1';
             popup.style.transform = 'scale(1) translateY(0)';
         });
-        document.getElementById('waWidgetInput').focus();
+        const input = document.getElementById('waWidgetInput');
+        if (input) {
+            input.focus();
+            // Si el cliente empieza a escribir, no lo cerramos automáticamente
+            input.addEventListener('input', cancelarWaAutoClose, { once: true });
+        }
+        // Auto-cerrar a los 15s si el cliente no lo cierra ni interactúa
+        cancelarWaAutoClose();
+        _waAutoCloseTimer = setTimeout(() => {
+            if (popup.classList.contains('open')) toggleWaWidget();
+        }, 15000);
     }
 }
 
