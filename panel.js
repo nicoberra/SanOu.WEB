@@ -70,6 +70,7 @@ function navegar(sec) {
     document.querySelectorAll('.panel-nav-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.sec === sec));
     if (sec === 'panel') renderDashboard();
+    else if (sec === 'facturacion') renderFacturacion();
     else if (sec === 'clientes') renderClientes();
     else if (sec === 'productos') renderProductos();
     else if (sec === 'cotizaciones') renderCotizador();
@@ -128,6 +129,89 @@ async function renderDashboard(){
 function renderCotizador() {
     document.getElementById('vista').innerHTML =
         `<iframe class="panel-iframe" src="cotizar.html" title="Cotizador"></iframe>`;
+}
+
+// ─── FACTURACIÓN ─────────────────────────────────────────────────
+function parseFechaCRM(f){
+    if(!f) return null;
+    const d = new Date(String(f).replace(' ', 'T'));
+    return isNaN(d) ? null : d;
+}
+function montoVenta(p){
+    let m = parseInt(String(p.monto || '').replace(/[^\d]/g, ''), 10) || 0;
+    if (p.enviocobrado === 'Sí') m += parseInt(String(p.enviomonto || '').replace(/[^\d]/g, ''), 10) || 0;
+    return m;
+}
+function lunesDe(d){ const x=new Date(d); const day=(x.getDay()+6)%7; x.setDate(x.getDate()-day); x.setHours(0,0,0,0); return x; }
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+async function renderFacturacion(){
+    const v = document.getElementById('vista');
+    v.innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando facturación…</div>`;
+    await ensurePedidos();
+    if (seccionActual !== 'facturacion') return;
+
+    const ventas = pedidos.map(p => ({ fecha: parseFechaCRM(p.fecha), monto: montoVenta(p) })).filter(x => x.fecha);
+    if (!ventas.length) {
+        v.innerHTML = `<div class="panel-vacio"><i class="fas fa-coins"></i><h3>Sin ventas todavía</h3><p>Cargá pedidos y acá vas a ver la facturación por semana y por mes.</p></div>`;
+        return;
+    }
+
+    const ahora = new Date();
+    const iniSemana = lunesDe(ahora);
+    const iniMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const enSemana = ventas.filter(x => x.fecha >= iniSemana);
+    const enMes    = ventas.filter(x => x.fecha >= iniMes);
+
+    // Promedios (sobre el tiempo transcurrido desde la primera venta)
+    const primera = ventas.map(x => x.fecha).sort((a,b)=>a-b)[0];
+    const semanasSpan = Math.max(1, Math.ceil((ahora - primera) / (7*864e5)));
+    const mesesSpan   = Math.max(1, (ahora.getFullYear()-primera.getFullYear())*12 + (ahora.getMonth()-primera.getMonth()) + 1);
+    const totalMonto  = ventas.reduce((s,x)=>s+x.monto, 0);
+    const avgVSem = (ventas.length / semanasSpan), avgVMes = (ventas.length / mesesSpan);
+    const avgMSem = (totalMonto / semanasSpan),    avgMMes = (totalMonto / mesesSpan);
+
+    // Agrupar por mes y por semana
+    const porMes = {}, porSem = {};
+    ventas.forEach(x => {
+        const mk = x.fecha.getFullYear()+'-'+x.fecha.getMonth();
+        (porMes[mk] = porMes[mk] || {monto:0, n:0, d:x.fecha}); porMes[mk].monto += x.monto; porMes[mk].n++;
+        const lk = lunesDe(x.fecha); const sk = lk.getTime();
+        (porSem[sk] = porSem[sk] || {monto:0, n:0, d:lk}); porSem[sk].monto += x.monto; porSem[sk].n++;
+    });
+    const meses = Object.values(porMes).sort((a,b)=>b.d-a.d).slice(0,6);
+    const sems  = Object.values(porSem).sort((a,b)=>b.d-a.d).slice(0,6);
+    const etMes = d => MESES[d.getMonth()]+' '+d.getFullYear();
+    const etSem = d => { const f=new Date(d); f.setDate(f.getDate()+6); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} – ${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}`; };
+
+    v.innerHTML = `
+        <div class="dash-cards">
+            <div class="dash-card"><div class="dash-ic"><i class="fas fa-calendar-week"></i></div>
+                <div class="dash-val dash-val-sm">${fmtMoney(enSemana.reduce((s,x)=>s+x.monto,0))}</div>
+                <div class="dash-tit">Esta semana</div><div class="dash-sub">${enSemana.length} venta${enSemana.length!==1?'s':''}</div></div>
+            <div class="dash-card"><div class="dash-ic"><i class="fas fa-calendar-days"></i></div>
+                <div class="dash-val dash-val-sm">${fmtMoney(enMes.reduce((s,x)=>s+x.monto,0))}</div>
+                <div class="dash-tit">Este mes</div><div class="dash-sub">${enMes.length} venta${enMes.length!==1?'s':''}</div></div>
+        </div>
+
+        <div class="fact-prom">
+            <h4>Promedios</h4>
+            <div class="fact-prom-grid">
+                <div><span>${avgVSem.toFixed(1)}</span> ventas / semana</div>
+                <div><span>${avgVMes.toFixed(1)}</span> ventas / mes</div>
+                <div><span>${fmtMoney(Math.round(avgMSem))}</span> por semana</div>
+                <div><span>${fmtMoney(Math.round(avgMMes))}</span> por mes</div>
+            </div>
+        </div>
+
+        <div class="dash-lista">
+            <h4>📅 Por mes</h4>
+            ${meses.map(m => `<div class="fact-fila"><span>${etMes(m.d)}</span><span class="fact-n">${m.n} venta${m.n!==1?'s':''}</span><b>${fmtMoney(m.monto)}</b></div>`).join('')}
+        </div>
+        <div class="dash-lista">
+            <h4>🗓️ Por semana</h4>
+            ${sems.map(s => `<div class="fact-fila"><span>${etSem(s.d)}</span><span class="fact-n">${s.n} venta${s.n!==1?'s':''}</span><b>${fmtMoney(s.monto)}</b></div>`).join('')}
+        </div>`;
 }
 
 function enConstruccion(sec) {

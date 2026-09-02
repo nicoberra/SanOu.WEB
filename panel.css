@@ -74,6 +74,17 @@ body:not(.bloqueado) .panel-lock{display:none}
 .dash-lista h4 i{color:var(--am);font-size:.72rem;margin-left:auto}
 .dash-li{color:var(--gris2);font-size:.84rem;padding:8px 0;border-top:1px solid rgba(255,255,255,.06)}
 
+/* ── Facturación ── */
+.fact-prom{background:var(--neg2);border:1px solid var(--linea);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.fact-prom h4{color:#fff;font-size:.9rem;margin-bottom:12px}
+.fact-prom-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fact-prom-grid div{color:var(--gris2);font-size:.8rem}
+.fact-prom-grid span{display:block;color:var(--am);font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.5px;line-height:1.1}
+.fact-fila{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.06);font-size:.85rem}
+.fact-fila>span:first-child{color:var(--gris2);flex:1}
+.fact-n{color:var(--gris);font-size:.76rem}
+.fact-fila b{color:var(--am);min-width:80px;text-align:right}
+
 /* ── Toggle Mis clientes / Clientes web ── */
 .cli-tabs{display:flex;gap:8px;margin-bottom:14px}
 .cli-tab{flex:1;background:var(--neg2);border:1px solid var(--linea);color:var(--gris2);border-radius:10px;
@@ -158,7 +169,7 @@ body:not(.bloqueado) .panel-lock{display:none}
 .picker-listo{background:var(--am);color:var(--neg);border:none;border-radius:10px;padding:11px 20px;font-weight:800;font-family:inherit;cursor:pointer}
 .picker-cats{display:flex;gap:7px;padding:10px 16px;overflow-x:auto;border-bottom:1px solid var(--linea);-webkit-overflow-scrolling:touch}
 .pk-cat{white-space:nowrap;background:var(--neg2);border:1px solid var(--linea);color:var(--gris2);border-radius:980px;
-    padding:8px 14px;font-size:.8rem;font-weight:600;font-family:inherit;cursor:pointer}
+    padding:10px 16px;font-size:.82rem;font-weight:600;font-family:inherit;cursor:pointer}
 .pk-cat.active{background:var(--am);color:var(--neg);border-color:var(--am)}
 .picker-body{flex:1;overflow-y:auto;padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-content:start}
 .pk-card{background:var(--neg2);border:1px solid var(--linea);border-radius:12px;padding:10px;cursor:pointer;position:relative;transition:border-color .2s}
