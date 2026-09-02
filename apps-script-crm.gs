@@ -139,6 +139,26 @@ function listar(tab) {
 function agregar(tab, p) {
   var sh = hoja(tab);
   var cols = TABS[tab];
+
+  // En Clientes: si ya existe ese email, actualiza esa fila (no duplica).
+  if (tab === 'Clientes' && p.email) {
+    var colEmail = -1;
+    for (var c = 0; c < cols.length; c++) if (cols[c].k === 'email') colEmail = c;
+    if (colEmail >= 0) {
+      var datos = sh.getDataRange().getValues();
+      var buscado = String(p.email).trim().toLowerCase();
+      for (var i = 1; i < datos.length; i++) {
+        if (String(datos[i][colEmail]).trim().toLowerCase() === buscado) {
+          for (var c2 = 0; c2 < cols.length; c2++) {
+            var k = cols[c2].k;
+            if (k !== 'id' && k !== 'fecha' && p[k]) sh.getRange(i + 1, c2 + 1).setValue(p[k]);
+          }
+          return String(datos[i][0]);
+        }
+      }
+    }
+  }
+
   var id = 'r' + Date.now() + Math.floor(Math.random() * 1000);
   var fila = cols.map(function (c) {
     if (c.k === 'id')    return id;

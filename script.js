@@ -4,21 +4,25 @@ let klUserEmail = localStorage.getItem('kl_email') || null;
 let klUserName  = localStorage.getItem('kl_name')  || null;
 let klModalMostrado = false;
 
-// ─── CLIENTES → GOOGLE SHEETS ────────────────────────────────────
-// URL del Apps Script que guarda cada cliente en la pestaña "Clientes".
-const CLIENTES_URL = 'https://script.google.com/macros/s/AKfycbyyh8qMMznYxgPrEZt2V16nsA4SSa3ANRfUc_V_Y-LKF-uuMXCKXlNqNGDfYWLnRAEt/exec';
+// ─── CLIENTES → CRM PRIVADO (Google Sheets) ─────────────────────
+// Escribe en la MISMA planilla privada del CRM (pestaña Clientes),
+// vía el Apps Script del panel. Ya NO usa la planilla publicada.
+const CLIENTES_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
 
-// Guarda/actualiza el cliente en el Sheet. Fire-and-forget (no-cors).
+// Guarda/actualiza el cliente en el CRM. Fire-and-forget (no-cors).
+// El backend hace upsert por email (no duplica si ya existe).
 function guardarClienteEnSheet(datos) {
     if (!CLIENTES_URL) return;
     try {
         const params = new URLSearchParams({
+            action:   'add',
+            tab:      'Clientes',
             nombre:   datos.nombre   || '',
             email:    datos.email    || '',
             telefono: datos.telefono || '',
             empresa:  datos.empresa  || '',
             ciudad:   datos.ciudad   || '',
-            origen:   datos.origen   || 'web'
+            notas:    datos.origen   || 'web'
         });
         fetch(CLIENTES_URL + '?' + params.toString(), { mode: 'no-cors' });
     } catch (e) { /* silencioso: no frenar al cliente si falla la red */ }
