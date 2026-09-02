@@ -16,14 +16,17 @@ var CRM_ID = '12RjmHKOV3LvvN6kA04b9bf92k-dkvXS5C8qenNGHHKw';
 // Cada columna: k = clave para la API, h = título que se ve en la planilla.
 var TABS = {
   'Clientes': [
-    { k: 'id',       h: 'id' },
-    { k: 'fecha',    h: 'Fecha' },
-    { k: 'nombre',   h: 'Nombre' },
-    { k: 'telefono', h: 'Teléfono' },
-    { k: 'email',    h: 'Email' },
-    { k: 'empresa',  h: 'Empresa / Rubro' },
-    { k: 'ciudad',   h: 'Ciudad' },
-    { k: 'notas',    h: 'Notas' }
+    { k: 'id',        h: 'id' },
+    { k: 'fecha',     h: 'Fecha' },
+    { k: 'nombre',    h: 'Nombre' },
+    { k: 'telefono',  h: 'Teléfono' },
+    { k: 'email',     h: 'Email' },
+    { k: 'empresa',   h: 'Empresa / Rubro' },
+    { k: 'ciudad',    h: 'Ciudad' },
+    { k: 'notas',     h: 'Notas' },
+    { k: 'razon',     h: 'Razón social' },
+    { k: 'cuit',      h: 'CUIT' },
+    { k: 'direccion', h: 'Dirección' }
   ],
   'Cotizaciones': [
     { k: 'id',       h: 'id' },
@@ -94,12 +97,16 @@ function responder(obj, callback) {
 function hoja(tab) {
   var ss = SpreadsheetApp.openById(CRM_ID);
   var sh = ss.getSheetByName(tab);
+  var titulos = TABS[tab].map(function (c) { return c.h; });
   if (!sh) {
-    var titulos = TABS[tab].map(function (c) { return c.h; });
     sh = ss.insertSheet(tab);
     sh.appendRow(titulos);
     sh.getRange(1, 1, 1, titulos.length).setFontWeight('bold');
     sh.setFrozenRows(1);
+  } else if (sh.getLastColumn() < titulos.length) {
+    // Si agregamos columnas nuevas, completar la fila de títulos (sin tocar los datos).
+    sh.getRange(1, 1, 1, titulos.length).setValues([titulos]);
+    sh.getRange(1, 1, 1, titulos.length).setFontWeight('bold');
   }
   return sh;
 }

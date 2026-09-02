@@ -36,8 +36,11 @@ async function huella(txt) {
 
 function accesoVigente() {
     try {
-        const v = parseInt(localStorage.getItem('sanou_cotiz_ok') || '0', 10);
-        return v > Date.now();
+        // Vale la sesión del cotizador O la del panel (mismo dominio, misma clave):
+        // así, si ya entraste al panel, el cotizador se abre sin pedir clave de nuevo.
+        const c = parseInt(localStorage.getItem('sanou_cotiz_ok')  || '0', 10);
+        const p = parseInt(localStorage.getItem('sanou_panel_ok') || '0', 10);
+        return c > Date.now() || p > Date.now();
     } catch (e) { return false; }
 }
 

@@ -70,7 +70,13 @@ function navegar(sec) {
     document.querySelectorAll('.panel-nav-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.sec === sec));
     if (sec === 'clientes') renderClientes();
+    else if (sec === 'cotizaciones') renderCotizador();
     else enConstruccion(sec);
+}
+
+function renderCotizador() {
+    document.getElementById('vista').innerHTML =
+        `<iframe class="panel-iframe" src="cotizar.html" title="Cotizador"></iframe>`;
 }
 
 function enConstruccion(sec) {
@@ -156,6 +162,10 @@ function abrirFormCliente(id) {
         <form class="panel-form" onsubmit="guardarCliente(event, '${id || ''}')">
             <label>Nombre *</label>
             <input type="text" id="fNombre" value="${esc(c.nombre)}" required>
+            <div class="panel-form-2">
+                <div><label>Razón social</label><input type="text" id="fRazon" value="${esc(c.razon)}"></div>
+                <div><label>CUIT</label><input type="text" id="fCuit" value="${esc(c.cuit)}" inputmode="numeric"></div>
+            </div>
             <label>Teléfono / WhatsApp</label>
             <input type="tel" id="fTel" value="${esc(c.telefono)}" inputmode="tel">
             <label>Email</label>
@@ -164,6 +174,8 @@ function abrirFormCliente(id) {
                 <div><label>Empresa / Rubro</label><input type="text" id="fEmpresa" value="${esc(c.empresa)}"></div>
                 <div><label>Ciudad</label><input type="text" id="fCiudad" value="${esc(c.ciudad)}"></div>
             </div>
+            <label>Dirección</label>
+            <input type="text" id="fDireccion" value="${esc(c.direccion)}">
             <label>Notas</label>
             <textarea id="fNotas" rows="2">${esc(c.notas)}</textarea>
             <button type="submit" class="panel-form-submit" id="btnGuardarCli">Guardar</button>
@@ -176,12 +188,15 @@ async function guardarCliente(e, id) {
     e.preventDefault();
     const btn = document.getElementById('btnGuardarCli');
     const datos = {
-        nombre:   document.getElementById('fNombre').value.trim(),
-        telefono: document.getElementById('fTel').value.trim(),
-        email:    document.getElementById('fEmail').value.trim(),
-        empresa:  document.getElementById('fEmpresa').value.trim(),
-        ciudad:   document.getElementById('fCiudad').value.trim(),
-        notas:    document.getElementById('fNotas').value.trim()
+        nombre:    document.getElementById('fNombre').value.trim(),
+        razon:     document.getElementById('fRazon').value.trim(),
+        cuit:      document.getElementById('fCuit').value.trim(),
+        telefono:  document.getElementById('fTel').value.trim(),
+        email:     document.getElementById('fEmail').value.trim(),
+        empresa:   document.getElementById('fEmpresa').value.trim(),
+        ciudad:    document.getElementById('fCiudad').value.trim(),
+        direccion: document.getElementById('fDireccion').value.trim(),
+        notas:     document.getElementById('fNotas').value.trim()
     };
     if (!datos.nombre) return;
     btn.disabled = true; btn.textContent = 'Guardando…';

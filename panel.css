@@ -83,6 +83,17 @@ body:not(.bloqueado) .panel-lock{display:none}
 .cli-wa:hover{background:rgba(37,211,102,.25);color:#25D366}
 .cli-del:hover{color:#ff6b6b;border-color:rgba(255,80,80,.4)}
 
+/* ── Cotizador embebido ── */
+.panel-iframe{
+    width:100%;
+    height:calc(100dvh - 130px);
+    min-height:520px;
+    border:none;
+    border-radius:14px;
+    background:var(--neg2);
+    display:block;
+}
+
 /* ── Vacío / próximamente ── */
 .panel-vacio{text-align:center;color:var(--gris);padding:70px 20px}
 .panel-vacio i{font-size:2.6rem;color:var(--am);opacity:.5;margin-bottom:14px;display:block}
