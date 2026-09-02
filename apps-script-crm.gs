@@ -144,22 +144,28 @@ function agregar(tab, p) {
   var sh = hoja(tab);
   var cols = TABS[tab];
 
-  // En Clientes: si ya existe ese email, actualiza esa fila (no duplica).
-  if (tab === 'Clientes' && p.email) {
-    var colEmail = -1;
-    for (var c = 0; c < cols.length; c++) if (cols[c].k === 'email') colEmail = c;
-    if (colEmail >= 0) {
-      var datos = sh.getDataRange().getValues();
-      var buscado = String(p.email).trim().toLowerCase();
-      for (var i = 1; i < datos.length; i++) {
-        if (String(datos[i][colEmail]).trim().toLowerCase() === buscado) {
-          for (var c2 = 0; c2 < cols.length; c2++) {
-            var k = cols[c2].k;
-            if (k !== 'id' && k !== 'fecha' && p[k]) sh.getRange(i + 1, c2 + 1).setValue(p[k]);
-          }
-          return String(datos[i][0]);
-        }
+  // En Clientes: no duplicar. Busca coincidencia por email, si no por CUIT,
+  // si no (cuando no hay email ni CUIT) por nombre. Si existe, actualiza esa fila.
+  if (tab === 'Clientes') {
+    var idx = {};
+    for (var c = 0; c < cols.length; c++) idx[cols[c].k] = c;
+    var datos = sh.getDataRange().getValues();
+    var soloDig = function(x){ return String(x || '').replace(/\D/g, ''); };
+    var match = -1;
+    for (var i = 1; i < datos.length && match < 0; i++) {
+      if (p.email && idx.email != null && String(datos[i][idx.email]).trim().toLowerCase() === String(p.email).trim().toLowerCase())
+        match = i;
+      else if (!p.email && p.cuit && idx.cuit != null && soloDig(datos[i][idx.cuit]) && soloDig(datos[i][idx.cuit]) === soloDig(p.cuit))
+        match = i;
+      else if (!p.email && !p.cuit && p.nombre && idx.nombre != null && String(datos[i][idx.nombre]).trim().toLowerCase() === String(p.nombre).trim().toLowerCase())
+        match = i;
+    }
+    if (match >= 0) {
+      for (var c2 = 0; c2 < cols.length; c2++) {
+        var k = cols[c2].k;
+        if (k !== 'id' && k !== 'fecha' && p[k]) sh.getRange(match + 1, c2 + 1).setValue(p[k]);
       }
+      return String(datos[match][0]);
     }
   }
 

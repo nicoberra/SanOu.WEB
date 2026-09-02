@@ -292,6 +292,26 @@ function guardarCotizacionEnCRM() {
     } catch (e) { /* silencioso */ }
 }
 
+// Agrega/actualiza como cliente a la persona del presupuesto.
+function guardarClienteDesdeCotizacion() {
+    try {
+        const nombre = (document.getElementById('cliNombre').value || '').trim();
+        if (!nombre) return;
+        const contacto = (document.getElementById('cliContacto').value || '').trim();
+        const emailM = contacto.match(/[\w.+-]+@[\w.-]+\.\w+/);
+        const params = new URLSearchParams({
+            action: 'add', tab: 'Clientes',
+            nombre: nombre,
+            cuit: (document.getElementById('cliCuit').value || '').trim(),
+            direccion: (document.getElementById('cliDom').value || '').trim(),
+            telefono: contacto.replace(/[^\d]/g, ''),
+            email: emailM ? emailM[0] : '',
+            origen: 'cotización'
+        });
+        fetch(CRM_COTIZ_URL + '?' + params.toString(), { mode: 'no-cors' });
+    } catch (e) { /* silencioso */ }
+}
+
 function imprimirCotizacion() {
     if (!items.length) { alert('Agregá al menos un producto antes de generar la cotización.'); return; }
     const cliente = document.getElementById('cliNombre');
@@ -299,6 +319,7 @@ function imprimirCotizacion() {
         if (!confirm('No cargaste el nombre del cliente. ¿Generar igual?')) return;
     }
     guardarCotizacionEnCRM();
+    guardarClienteDesdeCotizacion();
     // Pasar los valores de los inputs al PDF (los input no se imprimen bien)
     document.querySelectorAll('[data-print-from]').forEach(span => {
         const src = document.getElementById(span.dataset.printFrom);

@@ -91,6 +91,12 @@ async function renderDashboard(){
     await ensureClientes(); await ensurePedidos(); await ensureSeguimientos(); await ensureCotizaciones();
     if (seccionActual !== 'panel') return;
 
+    const ahora = new Date();
+    const iniSemana = lunesDe(ahora), iniMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const ventas = pedidos.map(p => ({ fecha: parseFechaCRM(p.fecha), monto: montoVenta(p) })).filter(x => x.fecha);
+    const factSemana = ventas.filter(x => x.fecha >= iniSemana).reduce((s, x) => s + x.monto, 0);
+    const factMes    = ventas.filter(x => x.fecha >= iniMes).reduce((s, x) => s + x.monto, 0);
+
     const pend      = pedidos.filter(p => p.estado === 'Pendiente');
     const porCobrar = pedidos.filter(p => p.estado !== 'Cobrado');
     const cobrados  = pedidos.filter(p => p.estado === 'Cobrado');
@@ -99,6 +105,10 @@ async function renderDashboard(){
     const cotAbiertas = cotizaciones.filter(c => !c.estado || c.estado === 'Abierta');
     const web = clientes.filter(esWeb).length;
 
+    const compradores = new Set(pedidos.map(p => norm(p.cliente)).filter(Boolean));
+    const nComp = compradores.size;
+    const noComp = Math.max(0, clientes.length - nComp);
+
     const card = (tit, val, sub, icon, sec, chico) => `
         <div class="dash-card" onclick="navegar('${sec}')">
             <div class="dash-ic"><i class="fas ${icon}"></i></div>
@@ -106,7 +116,6 @@ async function renderDashboard(){
             <div class="dash-tit">${esc(tit)}</div>
             ${sub ? `<div class="dash-sub">${esc(sub)}</div>` : ''}
         </div>`;
-
     const listaMini = (tit, items, sec) => !items.length ? '' : `
         <div class="dash-lista">
             <h4 onclick="navegar('${sec}')">${tit} <i class="fas fa-arrow-right"></i></h4>
@@ -114,14 +123,32 @@ async function renderDashboard(){
         </div>`;
 
     v.innerHTML = `
+        <h4 class="dash-sec">💰 Facturación</h4>
         <div class="dash-cards">
-            ${card('Clientes', clientes.length, web + ' desde la web', 'fa-users', 'clientes')}
+            ${card('Esta semana', fmtMoney(factSemana), ventas.filter(x=>x.fecha>=iniSemana).length + ' ventas', 'fa-calendar-week', 'facturacion', true)}
+            ${card('Este mes', fmtMoney(factMes), ventas.filter(x=>x.fecha>=iniMes).length + ' ventas', 'fa-calendar-days', 'facturacion', true)}
+        </div>
+
+        <h4 class="dash-sec">📦 Ventas</h4>
+        <div class="dash-cards">
             ${card('Pedidos pendientes', pend.length, 'sin entregar', 'fa-hourglass-half', 'pedidos')}
             ${card('Por cobrar', fmtMoney(sumaMontos(porCobrar)), porCobrar.length + ' pedidos', 'fa-hand-holding-dollar', 'pedidos', true)}
             ${card('Cobrado', fmtMoney(sumaMontos(cobrados)), cobrados.length + ' pedidos', 'fa-circle-check', 'pedidos', true)}
-            ${card('Seguimientos', segPend.length, segVenc.length + ' vencidos', 'fa-bell', 'seguimientos')}
-            ${card('Cotizaciones abiertas', cotAbiertas.length, '', 'fa-file-invoice-dollar', 'cotizaciones')}
         </div>
+
+        <h4 class="dash-sec">👥 Clientes</h4>
+        <div class="dash-cards">
+            ${card('Clientes', clientes.length, web + ' de la web', 'fa-users', 'clientes')}
+            ${card('Compraron', nComp, 'hicieron pedidos', 'fa-cart-shopping', 'clientes')}
+            ${card('No compraron', noComp, 'todavía', 'fa-user-clock', 'clientes')}
+        </div>
+
+        <h4 class="dash-sec">⏰ Pendientes</h4>
+        <div class="dash-cards">
+            ${card('Cotizaciones abiertas', cotAbiertas.length, '', 'fa-file-invoice-dollar', 'cotizaciones')}
+            ${card('Seguimientos', segPend.length, segVenc.length + ' vencidos', 'fa-bell', 'seguimientos')}
+        </div>
+
         ${listaMini('⚠️ Seguimientos vencidos', segVenc.slice(0, 5).map(s => `${s.cliente || '(sin cliente)'} — ${s.motivo || ''}`), 'seguimientos')}
         ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin cliente)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}`;
 }
@@ -345,6 +372,7 @@ async function verCliente(id) {
         <div class="ficha-acc">
             <button class="panel-btn-add" onclick="abrirFormPedidoDesde('${esc(c.nombre)}','${esc(c.telefono)}')"><i class="fas fa-plus"></i> Nuevo pedido</button>
             <button class="cli-btn" onclick="abrirFormCliente('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
+            <button class="cli-btn cli-del" onclick="cerrarModal(); borrarCliente('${c.id}')" title="Eliminar cliente"><i class="fas fa-trash"></i></button>
         </div>
         <h4 class="ficha-tit">Historial</h4>
         <div id="fichaHist" class="ficha-hist"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;

@@ -60,7 +60,8 @@ body:not(.bloqueado) .panel-lock{display:none}
 .panel-btn-add:hover{filter:brightness(1.06)}
 
 /* ── Tablero (dashboard) ── */
-.dash-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.dash-sec{color:var(--gris2);font-size:.9rem;font-weight:700;margin:4px 0 10px}
+.dash-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
 .dash-card{background:var(--neg2);border:1px solid var(--linea);border-radius:14px;padding:16px;cursor:pointer;
     transition:transform .2s,border-color .2s;position:relative;overflow:hidden}
 .dash-card:hover{transform:translateY(-3px);border-color:rgba(255,212,0,.35)}
