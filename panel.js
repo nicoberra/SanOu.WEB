@@ -26,7 +26,7 @@ function accesoVigente() {
 function desbloquear() {
     try { localStorage.setItem('sanou_panel_ok', String(Date.now() + DIAS_RECORDAR * 864e5)); } catch (e) {}
     document.body.classList.remove('bloqueado');
-    navegar('clientes');
+    navegar('panel');
 }
 function cerrarSesionPanel() {
     try { localStorage.removeItem('sanou_panel_ok'); } catch (e) {}
@@ -69,12 +69,60 @@ function navegar(sec) {
     seccionActual = sec;
     document.querySelectorAll('.panel-nav-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.sec === sec));
-    if (sec === 'clientes') renderClientes();
+    if (sec === 'panel') renderDashboard();
+    else if (sec === 'clientes') renderClientes();
     else if (sec === 'productos') renderProductos();
     else if (sec === 'cotizaciones') renderCotizador();
     else if (sec === 'pedidos') renderPedidos();
     else if (sec === 'seguimientos') renderSeguimientos();
     else enConstruccion(sec);
+}
+
+// ─── PANEL / TABLERO ─────────────────────────────────────────────
+let cotizaciones = [], _cotCargadas = false;
+async function ensureCotizaciones(){ if(_cotCargadas) return; try{ const r=await crm({action:'list',tab:'Cotizaciones'}); cotizaciones=(r&&r.ok&&r.rows)||[]; _cotCargadas=true; }catch(e){} }
+function sumaMontos(arr){ return arr.reduce((s,x)=>s+(parseInt(String(x.monto||'').replace(/[^\d]/g,''),10)||0),0); }
+function fmtMoney(n){ return '$'+Number(n||0).toLocaleString('es-AR'); }
+
+async function renderDashboard(){
+    const v = document.getElementById('vista');
+    v.innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando panel…</div>`;
+    await ensureClientes(); await ensurePedidos(); await ensureSeguimientos(); await ensureCotizaciones();
+    if (seccionActual !== 'panel') return;
+
+    const pend      = pedidos.filter(p => p.estado === 'Pendiente');
+    const porCobrar = pedidos.filter(p => p.estado !== 'Cobrado');
+    const cobrados  = pedidos.filter(p => p.estado === 'Cobrado');
+    const segPend   = seguimientos.filter(s => s.estado !== 'Hecho');
+    const segVenc   = seguimientos.filter(esVencido);
+    const cotAbiertas = cotizaciones.filter(c => !c.estado || c.estado === 'Abierta');
+    const web = clientes.filter(esWeb).length;
+
+    const card = (tit, val, sub, icon, sec, chico) => `
+        <div class="dash-card" onclick="navegar('${sec}')">
+            <div class="dash-ic"><i class="fas ${icon}"></i></div>
+            <div class="dash-val${chico ? ' dash-val-sm' : ''}">${esc(String(val))}</div>
+            <div class="dash-tit">${esc(tit)}</div>
+            ${sub ? `<div class="dash-sub">${esc(sub)}</div>` : ''}
+        </div>`;
+
+    const listaMini = (tit, items, sec) => !items.length ? '' : `
+        <div class="dash-lista">
+            <h4 onclick="navegar('${sec}')">${tit} <i class="fas fa-arrow-right"></i></h4>
+            ${items.map(t => `<div class="dash-li">${esc(t)}</div>`).join('')}
+        </div>`;
+
+    v.innerHTML = `
+        <div class="dash-cards">
+            ${card('Clientes', clientes.length, web + ' desde la web', 'fa-users', 'clientes')}
+            ${card('Pedidos pendientes', pend.length, 'sin entregar', 'fa-hourglass-half', 'pedidos')}
+            ${card('Por cobrar', fmtMoney(sumaMontos(porCobrar)), porCobrar.length + ' pedidos', 'fa-hand-holding-dollar', 'pedidos', true)}
+            ${card('Cobrado', fmtMoney(sumaMontos(cobrados)), cobrados.length + ' pedidos', 'fa-circle-check', 'pedidos', true)}
+            ${card('Seguimientos', segPend.length, segVenc.length + ' vencidos', 'fa-bell', 'seguimientos')}
+            ${card('Cotizaciones abiertas', cotAbiertas.length, '', 'fa-file-invoice-dollar', 'cotizaciones')}
+        </div>
+        ${listaMini('⚠️ Seguimientos vencidos', segVenc.slice(0, 5).map(s => `${s.cliente || '(sin cliente)'} — ${s.motivo || ''}`), 'seguimientos')}
+        ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin cliente)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}`;
 }
 
 function renderCotizador() {
@@ -219,14 +267,20 @@ async function verCliente(id) {
     abrirModal();
     await ensurePedidos();
     await ensureSeguimientos();
+    await ensureCotizaciones();
+    const n = norm(c.nombre);
     const peds = pedidosDeCliente(c.nombre), segs = segsDeCliente(c.nombre);
+    const cots = cotizaciones.filter(x => norm(x.cliente) === n);
     const hist = document.getElementById('fichaHist');
     if (!hist) return;
-    if (!peds.length && !segs.length) {
-        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos ni seguimientos de este cliente.</div>`;
+    if (!peds.length && !segs.length && !cots.length) {
+        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos, cotizaciones ni seguimientos de este cliente.</div>`;
         return;
     }
     hist.innerHTML =
+        cots.map(x => `<div class="hist-item"><span class="hist-tipo hist-cot"><i class="fas fa-file-invoice-dollar"></i></span>
+            <div><div class="hist-det">${esc(x.detalle) || 'Cotización'}</div><div class="hist-sub">${montoTxt(x.monto)}${x.fecha ? ' · ' + fechaTxt(x.fecha) : ''}</div></div>
+            ${badgeEstado(x.estado || 'Abierta')}</div>`).join('') +
         peds.map(p => `<div class="hist-item"><span class="hist-tipo hist-ped"><i class="fas fa-box"></i></span>
             <div><div class="hist-det">${esc(p.detalle) || 'Pedido'}</div><div class="hist-sub">${montoTxt(p.monto)}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''}</div></div>
             ${badgeEstado(p.estado)}</div>`).join('') +
@@ -433,7 +487,8 @@ function waLink(tel, texto){
     return `https://wa.me/${t.length<=11?'549'+t:t}?text=${encodeURIComponent(texto)}`;
 }
 function badgeEstado(e){
-    const cls = {'Pendiente':'est-pend','Entregado':'est-entr','Cobrado':'est-cobr','Hecho':'est-hecho'}[e]||'est-pend';
+    const cls = {'Pendiente':'est-pend','Entregado':'est-entr','Cobrado':'est-cobr','Hecho':'est-hecho',
+                 'Abierta':'est-abierta','Ganada':'est-cobr','Perdida':'est-perd'}[e]||'est-pend';
     return `<span class="est ${cls}">${esc(e||'Pendiente')}</span>`;
 }
 function montoTxt(v){ const n=String(v==null?'':v).replace(/[^\d]/g,''); return n?'$'+parseInt(n,10).toLocaleString('es-AR'):''; }
@@ -651,7 +706,7 @@ function cerrarModal() {
 
 // ─── ARRANQUE ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    if (accesoVigente()) { document.body.classList.remove('bloqueado'); navegar('clientes'); }
+    if (accesoVigente()) { document.body.classList.remove('bloqueado'); navegar('panel'); }
     else {
         const input = document.getElementById('claveInput');
         input.addEventListener('keydown', e => {

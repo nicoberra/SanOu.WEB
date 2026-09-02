@@ -271,12 +271,34 @@ function pintarFechas() {
 }
 
 // ─── IMPRIMIR / PDF ──────────────────────────────────────────────
+// Guarda la cotización en el CRM (pestaña Cotizaciones) para el historial del cliente.
+const CRM_COTIZ_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
+function guardarCotizacionEnCRM() {
+    try {
+        const cliente = (document.getElementById('cliNombre').value || '').trim();
+        if (!cliente || !items.length) return; // sin cliente/ítems no guardamos
+        const detalle = items.map(it => {
+            const p = products.find(x => x.id === it.id);
+            return it.cantidad + 'x ' + (p ? p.name : 'producto');
+        }).join(', ');
+        const total = calcularTotales().total;
+        const tel = (document.getElementById('cliContacto').value || '').replace(/[^\d]/g, '');
+        const params = new URLSearchParams({
+            action: 'add', tab: 'Cotizaciones',
+            cliente: cliente, telefono: tel, detalle: detalle,
+            monto: String(Math.round(total)), estado: 'Abierta'
+        });
+        fetch(CRM_COTIZ_URL + '?' + params.toString(), { mode: 'no-cors' });
+    } catch (e) { /* silencioso */ }
+}
+
 function imprimirCotizacion() {
     if (!items.length) { alert('Agregá al menos un producto antes de generar la cotización.'); return; }
     const cliente = document.getElementById('cliNombre');
     if (cliente && !cliente.value.trim()) {
         if (!confirm('No cargaste el nombre del cliente. ¿Generar igual?')) return;
     }
+    guardarCotizacionEnCRM();
     // Pasar los valores de los inputs al PDF (los input no se imprimen bien)
     document.querySelectorAll('[data-print-from]').forEach(span => {
         const src = document.getElementById(span.dataset.printFrom);
