@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Panel — San Ou</title>
+    <link rel="icon" type="image/png" href="tuerca-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="panel.css">
+    <style>body.bloqueado .panel-app { display: none !important; }</style>
+</head>
+<body class="bloqueado">
+
+    <!-- Pantalla de acceso -->
+    <div class="panel-lock" id="panelLock">
+        <div class="panel-lock-caja">
+            <img src="sticker.png" alt="San Ou" class="panel-lock-logo">
+            <h1>Panel interno</h1>
+            <p>Ingresá la clave para continuar.</p>
+            <input type="password" id="claveInput" placeholder="Clave" autocomplete="current-password">
+            <div class="panel-lock-err" id="claveError"></div>
+            <button id="claveBtn" onclick="probarClave()">Entrar</button>
+        </div>
+    </div>
+
+    <!-- App -->
+    <div class="panel-app">
+        <header class="panel-top">
+            <div class="panel-top-left">
+                <img src="sticker.png" alt="San Ou" class="panel-logo">
+                <span class="panel-title">CRM</span>
+            </div>
+            <button class="panel-salir" onclick="cerrarSesionPanel()" title="Salir">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </header>
+
+        <nav class="panel-nav" id="panelNav">
+            <button class="panel-nav-btn active" data-sec="clientes" onclick="navegar('clientes')"><i class="fas fa-users"></i> Clientes</button>
+            <button class="panel-nav-btn" data-sec="cotizaciones" onclick="navegar('cotizaciones')"><i class="fas fa-file-invoice-dollar"></i> Cotizaciones</button>
+            <button class="panel-nav-btn" data-sec="pedidos" onclick="navegar('pedidos')"><i class="fas fa-box"></i> Pedidos</button>
+            <button class="panel-nav-btn" data-sec="seguimientos" onclick="navegar('seguimientos')"><i class="fas fa-bell"></i> Seguimientos</button>
+        </nav>
+
+        <main class="panel-main" id="vista"></main>
+    </div>
+
+    <!-- Modal de formulario -->
+    <div class="panel-modal-overlay" id="modalOverlay" onclick="cerrarModal()"></div>
+    <div class="panel-modal" id="modalForm">
+        <div class="panel-modal-head">
+            <h3 id="modalTitulo">Nuevo</h3>
+            <button onclick="cerrarModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="panel-modal-body" id="modalBody"></div>
+    </div>
+
+    <script src="panel.js"></script>
+</body>
+</html>
