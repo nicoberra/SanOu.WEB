@@ -43,14 +43,17 @@ var TABS = {
     { k: 'notas',    h: 'Notas' }
   ],
   'Pedidos': [
-    { k: 'id',       h: 'id' },
-    { k: 'fecha',    h: 'Fecha' },
-    { k: 'cliente',  h: 'Cliente' },
-    { k: 'telefono', h: 'Teléfono' },
-    { k: 'detalle',  h: 'Detalle' },
-    { k: 'monto',    h: 'Monto' },
-    { k: 'estado',   h: 'Estado' },
-    { k: 'notas',    h: 'Notas' }
+    { k: 'id',           h: 'id' },
+    { k: 'fecha',        h: 'Fecha' },
+    { k: 'cliente',      h: 'Cliente' },
+    { k: 'telefono',     h: 'Teléfono' },
+    { k: 'detalle',      h: 'Detalle' },
+    { k: 'monto',        h: 'Monto' },
+    { k: 'estado',       h: 'Estado' },
+    { k: 'notas',        h: 'Notas' },
+    { k: 'envio',        h: 'Envío' },
+    { k: 'enviocobrado', h: 'Envío cobrado' },
+    { k: 'enviomonto',   h: 'Monto envío' }
   ],
   'Seguimientos': [
     { k: 'id',       h: 'id' },

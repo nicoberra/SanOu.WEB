@@ -59,6 +59,19 @@
         <div class="panel-modal-body" id="modalBody"></div>
     </div>
 
+    <!-- Selector de productos: categorías -->
+    <div class="picker-overlay" id="pickerOverlay" onclick="cerrarPicker()"></div>
+    <div class="picker-modal" id="pickerModal">
+        <div class="picker-head">
+            <div class="panel-buscar"><i class="fas fa-search"></i>
+                <input type="text" id="pickerBuscar" placeholder="Buscar producto…" oninput="renderPicker()"></div>
+            <button class="picker-listo" onclick="cerrarPicker()">Listo</button>
+        </div>
+        <div class="picker-cats" id="pickerCats"></div>
+        <div class="picker-body" id="pickerBody"></div>
+    </div>
+
+    <script src="catalogo-productos.js"></script>
     <script src="panel.js"></script>
 </body>
 </html>

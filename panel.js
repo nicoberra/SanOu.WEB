@@ -292,14 +292,7 @@ async function verCliente(id) {
 // Abrir el form de pedido con el cliente precargado (desde la ficha).
 function abrirFormPedidoDesde(nombre, tel) {
     cerrarModal();
-    setTimeout(() => {
-        abrirFormPedido();
-        setTimeout(() => {
-            const c = document.getElementById('pdCliente'), t = document.getElementById('pdTel');
-            if (c) c.value = nombre;
-            if (t && tel) t.value = tel;
-        }, 250);
-    }, 150);
+    setTimeout(() => abrirFormPedido(null, { cliente: nombre, telefono: tel }), 200);
 }
 
 function abrirFormCliente(id) {
@@ -395,6 +388,7 @@ async function renderProductos() {
     try {
         const r = await crm({ action: 'productos_list', tab: 'Clientes' });
         productos = (r && r.ok && r.rows) ? r.rows : [];
+        _preciosCargados = true;
         pintarProductos(productos);
     } catch (e) {
         document.getElementById('listaProd').innerHTML = `<div class="panel-error">No se pudieron cargar los productos.</div>`;
@@ -544,6 +538,7 @@ function pintarPedidos(lista){
             ${p.detalle?`<div class="rec-detalle">${esc(p.detalle)}</div>`:''}
             <div class="rec-meta">
                 ${montoTxt(p.monto)?`<span class="rec-monto">${montoTxt(p.monto)}</span>`:''}
+                ${p.envio==='Sí'?`<span><i class="fas fa-truck"></i> Envío${p.enviocobrado==='Sí'?(montoTxt(p.enviomonto)?' '+montoTxt(p.enviomonto):' cobrado'):' sin cobrar'}</span>`:''}
                 ${p.telefono?`<span><i class="fas fa-phone"></i> ${esc(p.telefono)}</span>`:''}
             </div>
             <div class="rec-acciones">
@@ -557,9 +552,108 @@ function pintarPedidos(lista){
         </div>`;
     }).join('');
 }
-function abrirFormPedido(id){
-    ensureClientes().then(()=>{
-        const p = id?pedidos.find(x=>x.id===id):{};
+// ── Catálogo (fotos + categorías) y precios ──
+function catProds(){ return window.SANOU_PRODUCTOS || []; }
+function catNombres(){ return window.SANOU_CAT_NAMES || {}; }
+let _preciosCargados = false;
+async function ensureProductosPrecios(){
+    if(_preciosCargados) return;
+    try{ const r=await crm({action:'productos_list',tab:'Clientes'}); productos=(r&&r.ok&&r.rows)||[]; _preciosCargados=true; }catch(e){}
+}
+function precioDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p?(parseInt(String(p.precio).replace(/[^\d]/g,''),10)||0):0; }
+function getImgsPanel(p){
+    if(!p||!p.imgs||p.imgs===0) return [];
+    const cf=p.catFolder||p.category, fo=p.folder||p.name;
+    if(Array.isArray(p.imgs)) return p.imgs.map(f=>`productos/${cf}/${fo}/${f}`);
+    const ext=p.ext||'jpg';
+    return Array.from({length:p.imgs},(_,i)=>`productos/${cf}/${fo}/${i+1}.${ext}`);
+}
+function imgTag(p, cls){
+    const im=getImgsPanel(p);
+    return im.length
+        ? `<img src="${im[0]}" class="${cls}" loading="lazy" onerror="this.outerHTML='<div class=\\'${cls} pk-ic\\'><i class=\\'fas ${p.icon||'fa-box'}\\'></i></div>'">`
+        : `<div class="${cls} pk-ic"><i class="fas ${p.icon||'fa-box'}"></i></div>`;
+}
+
+// ── Selector de productos (con categorías y fotos) ──
+let pedidoItems = [];   // {nombre, cantidad}
+let pickerCat = 'all';
+
+function abrirPicker(){
+    ensureProductosPrecios().then(()=>{
+        pickerCat='all';
+        renderPickerCats();
+        renderPicker();
+        document.getElementById('pickerOverlay').classList.add('active');
+        document.getElementById('pickerModal').classList.add('active');
+    });
+}
+function cerrarPicker(){
+    document.getElementById('pickerOverlay').classList.remove('active');
+    document.getElementById('pickerModal').classList.remove('active');
+}
+function renderPickerCats(){
+    const cats=catNombres();
+    const chips=['all', ...Object.keys(cats).filter(k=>catProds().some(p=>p.category===k))];
+    document.getElementById('pickerCats').innerHTML = chips.map(k=>
+        `<button class="pk-cat${k===pickerCat?' active':''}" onclick="pickerCategoria('${k}')">${k==='all'?'Todas':esc(cats[k]||k)}</button>`).join('');
+}
+function pickerCategoria(k){ pickerCat=k; renderPickerCats(); renderPicker(); }
+function renderPicker(){
+    const q=(document.getElementById('pickerBuscar').value||'').toLowerCase().trim();
+    let lista=catProds();
+    if(pickerCat!=='all') lista=lista.filter(p=>p.category===pickerCat);
+    if(q) lista=lista.filter(p=>p.name.toLowerCase().includes(q));
+    document.getElementById('pickerBody').innerHTML = lista.map(p=>{
+        const gi=catProds().indexOf(p), pr=precioDe(p.name);
+        const enPed=pedidoItems.find(x=>norm(x.nombre)===norm(p.name));
+        return `<div class="pk-card" onclick="agregarAlPedido(${gi})">
+            <div class="pk-img-wrap">${imgTag(p,'pk-img')}</div>
+            <div class="pk-info"><div class="pk-nombre">${esc(p.name)}</div><div class="pk-precio">${pr?fmtMoney(pr):'consultar'}</div></div>
+            ${enPed?`<span class="pk-qty">${enPed.cantidad}</span>`:`<span class="pk-add"><i class="fas fa-plus"></i></span>`}
+        </div>`;
+    }).join('') || '<div class="panel-vacio-chico">Sin productos.</div>';
+}
+function agregarAlPedido(gi){
+    const p=catProds()[gi]; if(!p) return;
+    const it=pedidoItems.find(x=>norm(x.nombre)===norm(p.name));
+    if(it) it.cantidad++; else pedidoItems.push({nombre:p.name, cantidad:1});
+    renderPicker(); renderPedidoItems();
+}
+function cambiarCantItem(i,d){ if(!pedidoItems[i])return; pedidoItems[i].cantidad=Math.max(1,pedidoItems[i].cantidad+d); renderPedidoItems(); renderPicker(); }
+function quitarItemPedido(i){ pedidoItems.splice(i,1); renderPedidoItems(); renderPicker(); }
+function renderPedidoItems(){
+    const cont=document.getElementById('pdItems'); if(!cont) return;
+    if(!pedidoItems.length){ cont.innerHTML='<div class="pd-items-vacio">Sin productos. Tocá "Agregar productos".</div>'; }
+    else cont.innerHTML = pedidoItems.map((it,i)=>{
+        const pr=precioDe(it.nombre);
+        return `<div class="pd-item">
+            <span class="pd-item-nom">${esc(it.nombre)}</span>
+            <div class="pd-item-qty">
+                <button type="button" onclick="cambiarCantItem(${i},-1)">−</button>
+                <span>${it.cantidad}</span>
+                <button type="button" onclick="cambiarCantItem(${i},1)">+</button>
+            </div>
+            <span class="pd-item-sub">${pr?fmtMoney(pr*it.cantidad):'-'}</span>
+            <button type="button" class="pd-item-del" onclick="quitarItemPedido(${i})">×</button>
+        </div>`;
+    }).join('');
+    const monto = pedidoItems.reduce((s,it)=>s+precioDe(it.nombre)*it.cantidad,0);
+    const mEl=document.getElementById('pdMontoTxt'); if(mEl) mEl.textContent = fmtMoney(monto);
+}
+function parseDetalle(det){
+    if(!det) return [];
+    return String(det).split(',').map(s=>{ const m=s.trim().match(/^(\d+)x\s+(.+)$/); return m?{nombre:m[2].trim(),cantidad:parseInt(m[1],10)}:null; }).filter(Boolean);
+}
+function toggleEnvio(){ document.getElementById('pdEnvioDet').style.display = document.getElementById('pdEnvio').checked?'block':'none'; }
+function toggleEnvioCobr(){ document.getElementById('pdEnvioMontoWrap').style.display = document.getElementById('pdEnvioCobr').checked?'block':'none'; }
+
+function abrirFormPedido(id, prefill){
+    ensureClientes().then(async ()=>{
+        await ensureProductosPrecios();
+        const p = id?pedidos.find(x=>x.id===id):(prefill||{});
+        pedidoItems = parseDetalle(p.detalle);
+        const conEnvio=(p.envio==='Sí'), envCobr=(p.enviocobrado==='Sí');
         document.getElementById('modalTitulo').textContent = id?'Editar pedido':'Nuevo pedido';
         document.getElementById('modalBody').innerHTML = `
             <form class="panel-form" onsubmit="guardarPedido(event,'${id||''}')">
@@ -568,28 +662,43 @@ function abrirFormPedido(id){
                 ${clientesDatalist()}
                 <label>Teléfono</label>
                 <input type="tel" id="pdTel" value="${esc(p.telefono)}">
-                <label>Detalle del pedido</label>
-                <textarea id="pdDetalle" rows="2" placeholder="Qué productos, cantidades…">${esc(p.detalle)}</textarea>
-                <div class="panel-form-2">
-                    <div><label>Monto</label><input type="text" id="pdMonto" inputmode="numeric" value="${esc(p.monto)}"></div>
-                    <div><label>Estado</label><select id="pdEstado">${PEDIDO_ESTADOS.map(e=>`<option ${e===(p.estado||'Pendiente')?'selected':''}>${e}</option>`).join('')}</select></div>
+                <label>Productos</label>
+                <div class="pd-items" id="pdItems"></div>
+                <button type="button" class="pd-add-prod" onclick="abrirPicker()"><i class="fas fa-plus"></i> Agregar productos</button>
+                <div class="pd-monto-row">Total productos: <b id="pdMontoTxt">$0</b></div>
+                <div class="pd-envio">
+                    <label class="pd-check"><input type="checkbox" id="pdEnvio" ${conEnvio?'checked':''} onchange="toggleEnvio()"> Con envío</label>
+                    <div id="pdEnvioDet" style="display:${conEnvio?'block':'none'}">
+                        <label class="pd-check"><input type="checkbox" id="pdEnvioCobr" ${envCobr?'checked':''} onchange="toggleEnvioCobr()"> Envío cobrado</label>
+                        <div id="pdEnvioMontoWrap" style="display:${envCobr?'block':'none'}">
+                            <label>Monto del envío</label>
+                            <input type="text" id="pdEnvioMonto" inputmode="numeric" value="${esc(p.enviomonto)}">
+                        </div>
+                    </div>
                 </div>
+                <label>Estado</label>
+                <select id="pdEstado">${PEDIDO_ESTADOS.map(e=>`<option ${e===(p.estado||'Pendiente')?'selected':''}>${e}</option>`).join('')}</select>
                 <label>Notas</label>
                 <textarea id="pdNotas" rows="2">${esc(p.notas)}</textarea>
                 <button type="submit" class="panel-form-submit" id="btnGuardarPed">Guardar</button>
             </form>`;
+        renderPedidoItems();
         abrirModal();
-        setTimeout(()=>document.getElementById('pdCliente').focus(),100);
     });
 }
 async function guardarPedido(e,id){
     e.preventDefault();
     const btn=document.getElementById('btnGuardarPed'); btn.disabled=true; btn.textContent='Guardando…';
-    const datos={ cliente:val('pdCliente'), telefono:val('pdTel'), detalle:val('pdDetalle'), monto:val('pdMonto'), estado:val('pdEstado'), notas:val('pdNotas') };
+    const detalle = pedidoItems.map(it=>it.cantidad+'x '+it.nombre).join(', ');
+    const monto = pedidoItems.reduce((s,it)=>s+precioDe(it.nombre)*it.cantidad,0);
+    const envio = document.getElementById('pdEnvio').checked?'Sí':'No';
+    const envCobr = (envio==='Sí' && document.getElementById('pdEnvioCobr').checked)?'Sí':'No';
+    const envMonto = envCobr==='Sí' ? String(val('pdEnvioMonto').replace(/[^\d]/g,'')) : '';
+    const datos={ cliente:val('pdCliente'), telefono:val('pdTel'), detalle, monto:String(monto), estado:val('pdEstado'), notas:val('pdNotas'), envio, enviocobrado:envCobr, enviomonto:envMonto };
     try {
         if(id){ await crm({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
         else { const r=await crm({action:'add',tab:'Pedidos',...datos}); pedidos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
-        cerrarModal(); filtrarPedidos();
+        cerrarModal(); if(seccionActual==='pedidos') filtrarPedidos();
     } catch(err){ btn.disabled=false; btn.textContent='Guardar'; alert('No se pudo guardar. Reintentá.'); }
 }
 
