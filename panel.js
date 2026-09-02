@@ -109,6 +109,20 @@ async function renderDashboard(){
     const nComp = compradores.size;
     const noComp = Math.max(0, clientes.length - nComp);
 
+    // Agenda del día: lo que necesita acción hoy.
+    const agenda = [];
+    if (segVenc.length)     agenda.push({ t: `${segVenc.length} seguimiento${segVenc.length>1?'s':''} vencido${segVenc.length>1?'s':''}`, ic: 'fa-bell', sec: 'seguimientos' });
+    if (porCobrar.length)   agenda.push({ t: `${porCobrar.length} pedido${porCobrar.length>1?'s':''} por cobrar`, ic: 'fa-hand-holding-dollar', sec: 'pedidos' });
+    if (pend.length)        agenda.push({ t: `${pend.length} pedido${pend.length>1?'s':''} por entregar`, ic: 'fa-box', sec: 'pedidos' });
+    if (cotAbiertas.length) agenda.push({ t: `${cotAbiertas.length} cotización${cotAbiertas.length>1?'es':''} sin respuesta`, ic: 'fa-file-invoice-dollar', sec: 'cotizaciones' });
+    const agendaHTML = `
+        <div class="dash-agenda">
+            <h4>📌 Para hoy</h4>
+            ${agenda.length
+                ? `<div class="agenda-chips">${agenda.map(a=>`<button class="agenda-chip" onclick="navegar('${a.sec}')"><i class="fas ${a.ic}"></i> ${esc(a.t)}</button>`).join('')}</div>`
+                : `<div class="agenda-ok">✅ Todo al día. ¡Buen trabajo!</div>`}
+        </div>`;
+
     const card = (tit, val, sub, icon, sec, chico) => `
         <div class="dash-card" onclick="navegar('${sec}')">
             <div class="dash-ic"><i class="fas ${icon}"></i></div>
@@ -123,10 +137,18 @@ async function renderDashboard(){
         </div>`;
 
     v.innerHTML = `
+        ${agendaHTML}
+
         <h4 class="dash-sec">💰 Facturación</h4>
         <div class="dash-cards">
             ${card('Esta semana', fmtMoney(factSemana), ventas.filter(x=>x.fecha>=iniSemana).length + ' ventas', 'fa-calendar-week', 'facturacion', true)}
             ${card('Este mes', fmtMoney(factMes), ventas.filter(x=>x.fecha>=iniMes).length + ' ventas', 'fa-calendar-days', 'facturacion', true)}
+            <div class="dash-card" onclick="navegar('pedidos')" id="ganMesCard">
+                <div class="dash-ic"><i class="fas fa-arrow-trend-up"></i></div>
+                <div class="dash-val dash-val-sm" id="ganMesVal">—</div>
+                <div class="dash-tit">Ganancia (mes)</div>
+                <div class="dash-sub" id="ganMesSub">calculando…</div>
+            </div>
         </div>
 
         <h4 class="dash-sec">📦 Ventas</h4>
@@ -151,6 +173,18 @@ async function renderDashboard(){
 
         ${listaMini('⚠️ Seguimientos vencidos', segVenc.slice(0, 5).map(s => `${s.cliente || '(sin cliente)'} — ${s.motivo || ''}`), 'seguimientos')}
         ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin cliente)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}`;
+
+    // Ganancia del mes (necesita costos USD + dólar): se calcula aparte para no demorar el panel.
+    Promise.all([ensureProductosPrecios(), ensureDolar()]).then(() => {
+        const val = document.getElementById('ganMesVal'), sub = document.getElementById('ganMesSub');
+        if (!val || seccionActual !== 'panel') return;
+        const pedMes = pedidos.filter(p => { const f = parseFechaCRM(p.fecha); return f && f >= iniMes; });
+        let gan = 0, medibles = 0;
+        pedMes.forEach(p => { const g = gananciaPedido(p); if (g.medible && g.venta > 0) { gan += g.ganancia; medibles++; } });
+        if (!dolarValor()) { val.textContent = '—'; sub.textContent = 'sin cotización del dólar'; return; }
+        val.textContent = fmtMoney(gan);
+        sub.textContent = medibles ? `${medibles} de ${pedMes.length} con costo` : 'cargá el costo USD de los productos';
+    });
 }
 
 function renderCotizador() {
@@ -372,6 +406,7 @@ async function verCliente(id) {
         </div>
         <div class="ficha-acc">
             <button class="panel-btn-add" onclick="abrirFormPedidoDesde('${esc(c.nombre)}','${esc(c.telefono)}')"><i class="fas fa-plus"></i> Nuevo pedido</button>
+            ${waLink(c.telefono, `¡Hola ${(c.nombre||'').split(' ')[0]}! Te escribo de San Ou 🔧.`) ? `<a class="cli-btn cli-wa" href="${waLink(c.telefono, `¡Hola ${(c.nombre||'').split(' ')[0]}! Te escribo de San Ou 🔧.`)}" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
             <button class="cli-btn" onclick="abrirFormCliente('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
             <button class="cli-btn cli-del" onclick="cerrarModal(); borrarCliente('${c.id}')" title="Eliminar cliente"><i class="fas fa-trash"></i></button>
         </div>
@@ -686,7 +721,18 @@ async function renderPedidos(){
         const r = await crm({ action:'list', tab:'Pedidos' });
         pedidos = (r&&r.ok&&r.rows)||[];
         pintarPedidos(pedidos);
+        // Costos + dólar en segundo plano: al llegar, repintar con la ganancia.
+        Promise.all([ensureProductosPrecios(), ensureDolar()]).then(()=>pintarPedidos(pedidos));
     } catch(e){ document.getElementById('listaPed').innerHTML = `<div class="panel-error">No se pudieron cargar los pedidos.</div>`; }
+}
+// Mensaje de WhatsApp según el estado del pedido.
+function msgPedido(p){
+    const nom = p.cliente ? ' ' + String(p.cliente).split(' ')[0] : '';
+    if (p.estado === 'Entregado' && montoTxt(p.monto))
+        return `¡Hola${nom}! Te escribo de San Ou 🔧. Te paso que quedó pendiente el pago de tu pedido${montoTxt(p.monto)?' por '+montoTxt(p.monto):''}. ¡Gracias!`;
+    if (p.estado === 'Cobrado')
+        return `¡Hola${nom}! Gracias por tu compra en San Ou 🔧. Cualquier cosa que necesites, quedo a disposición.`;
+    return `¡Hola${nom}! Te escribo de San Ou 🔧 por tu pedido${p.detalle?': '+p.detalle:''}. ¡Ya lo estamos preparando!`;
 }
 function filtrarPedidos(){
     const q=(document.getElementById('buscarPed').value||'').toLowerCase().trim();
@@ -696,7 +742,8 @@ function pintarPedidos(lista){
     const cont=document.getElementById('listaPed'); if(!cont) return;
     if(!lista.length){ cont.innerHTML=`<div class="panel-vacio-chico">No hay pedidos todavía.</div>`; return; }
     cont.innerHTML = lista.map(p=>{
-        const wa = waLink(p.telefono, `¡Hola ${p.cliente||''}! Te escribo de San Ou 🔧 por tu pedido.`);
+        const wa = waLink(p.telefono, msgPedido(p));
+        const g = gananciaPedido(p);
         return `<div class="rec-card">
             <div class="rec-top">
                 <span class="rec-nombre">${esc(p.cliente)||'(sin cliente)'}</span>
@@ -705,6 +752,7 @@ function pintarPedidos(lista){
             ${p.detalle?`<div class="rec-detalle">${esc(p.detalle)}</div>`:''}
             <div class="rec-meta">
                 ${montoTxt(p.monto)?`<span class="rec-monto">${montoTxt(p.monto)}</span>`:''}
+                ${g.medible&&g.costo>0?`<span class="rec-gan ${g.ganancia>=0?'gan-pos':'gan-neg'}"><i class="fas fa-arrow-trend-up"></i> ${fmtMoney(g.ganancia)} · ${g.pct}%</span>`:''}
                 ${p.envio==='Sí'?`<span><i class="fas fa-truck"></i> Envío${p.enviocobrado==='Sí'?(montoTxt(p.enviomonto)?' '+montoTxt(p.enviomonto):' cobrado'):' sin cobrar'}</span>`:''}
                 ${p.telefono?`<span><i class="fas fa-phone"></i> ${esc(p.telefono)}</span>`:''}
             </div>
@@ -728,6 +776,17 @@ async function ensureProductosPrecios(){
     try{ const r=await crm({action:'productos_list',tab:'Clientes'}); productos=(r&&r.ok&&r.rows)||[]; _preciosCargados=true; }catch(e){}
 }
 function precioDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p?(parseInt(String(p.precio).replace(/[^\d]/g,''),10)||0):0; }
+function costoUsdDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p?(parseFloat(String(p.costousd||'').replace(/[^\d.]/g,''))||0):0; }
+// Ganancia de un pedido: venta − costo (costo USD × dólar × cantidad). medible=false si falta algún costo.
+function gananciaPedido(p){
+    const dv = dolarValor();
+    const items = parseDetalle(p.detalle);
+    let costo = 0, medible = items.length > 0 && dv > 0;
+    items.forEach(it => { const cu = costoUsdDe(it.nombre); if (!cu) medible = false; costo += cu * dv * (it.cantidad || 1); });
+    const venta = montoVenta(p);
+    const gan = venta - costo;
+    return { costo, ganancia: gan, pct: venta > 0 ? Math.round(gan / venta * 100) : 0, medible, venta };
+}
 function getImgsPanel(p){
     if(!p||!p.imgs||p.imgs===0) return [];
     const cf=p.catFolder||p.category, fo=p.folder||p.name;
