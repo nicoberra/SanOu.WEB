@@ -72,6 +72,8 @@ function navegar(sec) {
     if (sec === 'clientes') renderClientes();
     else if (sec === 'productos') renderProductos();
     else if (sec === 'cotizaciones') renderCotizador();
+    else if (sec === 'pedidos') renderPedidos();
+    else if (sec === 'seguimientos') renderSeguimientos();
     else enConstruccion(sec);
 }
 
@@ -97,9 +99,24 @@ function esc(s) {
 }
 function soloDigitos(t) { return String(t || '').replace(/\D/g, ''); }
 
+let vistaClientes = 'mis';   // 'mis' (cargados por vos) o 'web' (registrados en la web)
+let _pedidosCargados = false, _segCargados = false;
+
+function norm(s){ s = String(s == null ? '' : s).trim().toLowerCase(); return s.normalize ? s.normalize('NFC') : s; }
+function esWeb(c){ return c.origen === 'web' || (!c.origen && /web|registro|barra|popup/i.test(String(c.notas || ''))); }
+
+async function ensurePedidos(){ if(_pedidosCargados) return; try{ const r=await crm({action:'list',tab:'Pedidos'}); pedidos=(r&&r.ok&&r.rows)||[]; _pedidosCargados=true; }catch(e){} }
+async function ensureSeguimientos(){ if(_segCargados) return; try{ const r=await crm({action:'list',tab:'Seguimientos'}); seguimientos=(r&&r.ok&&r.rows)||[]; _segCargados=true; }catch(e){} }
+function pedidosDeCliente(nombre){ const n=norm(nombre); return pedidos.filter(p=>norm(p.cliente)===n); }
+function segsDeCliente(nombre){ const n=norm(nombre); return seguimientos.filter(s=>norm(s.cliente)===n); }
+
 async function renderClientes() {
     const v = document.getElementById('vista');
     v.innerHTML = `
+        <div class="cli-tabs">
+            <button class="cli-tab active" data-v="mis" onclick="cambiarVistaClientes('mis')">Mis clientes <span id="cntMis"></span></button>
+            <button class="cli-tab" data-v="web" onclick="cambiarVistaClientes('web')">Clientes web <span id="cntWeb"></span></button>
+        </div>
         <div class="panel-sec-head">
             <div class="panel-buscar">
                 <i class="fas fa-search"></i>
@@ -108,52 +125,127 @@ async function renderClientes() {
             <button class="panel-btn-add" onclick="abrirFormCliente()"><i class="fas fa-plus"></i> Nuevo cliente</button>
         </div>
         <div class="panel-lista" id="listaClientes"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
+    document.querySelectorAll('.cli-tab').forEach(b => b.classList.toggle('active', b.dataset.v === vistaClientes));
     try {
         const r = await crm({ action: 'list', tab: 'Clientes' });
         clientes = (r && r.ok && r.rows) ? r.rows : [];
-        pintarClientes(clientes);
+        actualizarContadores();
+        filtrarClientes();
+        ensurePedidos().then(() => { if (seccionActual === 'clientes') filtrarClientes(); }); // sumar contador de pedidos
     } catch (e) {
         document.getElementById('listaClientes').innerHTML =
             `<div class="panel-error">No se pudieron cargar los clientes. Revisá tu conexión.</div>`;
     }
 }
 
+function actualizarContadores() {
+    const web = clientes.filter(esWeb).length, mis = clientes.length - web;
+    const m = document.getElementById('cntMis'), w = document.getElementById('cntWeb');
+    if (m) m.textContent = '(' + mis + ')';
+    if (w) w.textContent = '(' + web + ')';
+}
+
+function cambiarVistaClientes(v) {
+    vistaClientes = v;
+    document.querySelectorAll('.cli-tab').forEach(b => b.classList.toggle('active', b.dataset.v === v));
+    filtrarClientes();
+}
+
 function filtrarClientes() {
-    const q = (document.getElementById('buscarCli').value || '').toLowerCase().trim();
-    if (!q) { pintarClientes(clientes); return; }
-    pintarClientes(clientes.filter(c =>
-        (c.nombre + ' ' + c.empresa + ' ' + c.telefono + ' ' + c.ciudad + ' ' + c.email).toLowerCase().includes(q)));
+    const q = (document.getElementById('buscarCli')?.value || '').toLowerCase().trim();
+    let base = clientes.filter(c => vistaClientes === 'web' ? esWeb(c) : !esWeb(c));
+    if (q) base = base.filter(c =>
+        (c.nombre + ' ' + c.empresa + ' ' + c.telefono + ' ' + c.ciudad + ' ' + c.email + ' ' + c.razon).toLowerCase().includes(q));
+    pintarClientes(base);
 }
 
 function pintarClientes(lista) {
     const cont = document.getElementById('listaClientes');
     if (!cont) return;
     if (!lista.length) {
-        cont.innerHTML = `<div class="panel-vacio-chico">No hay clientes todavía. Agregá el primero con "Nuevo cliente".</div>`;
+        cont.innerHTML = `<div class="panel-vacio-chico">${vistaClientes === 'web'
+            ? 'Todavía no se registró nadie desde la web.'
+            : 'No hay clientes cargados. Agregá el primero con "Nuevo cliente".'}</div>`;
         return;
     }
     cont.innerHTML = lista.map(c => {
         const tel = soloDigitos(c.telefono);
         const wa = tel ? `https://wa.me/${tel.length <= 11 ? '549' + tel : tel}?text=${encodeURIComponent('¡Hola ' + (c.nombre || '') + '! Te escribo de San Ou 🔧')}` : '';
         const sub = [c.empresa, c.ciudad].filter(Boolean).join(' · ');
+        const nped = _pedidosCargados ? pedidosDeCliente(c.nombre).length : 0;
         return `
-        <div class="cli-card">
+        <div class="cli-card" onclick="verCliente('${c.id}')">
             <div class="cli-avatar">${esc((c.nombre || '?').charAt(0).toUpperCase())}</div>
             <div class="cli-info">
-                <div class="cli-nombre">${esc(c.nombre) || '(sin nombre)'}</div>
+                <div class="cli-nombre">${esc(c.nombre) || '(sin nombre)'}${nped ? `<span class="cli-ped-badge"><i class="fas fa-box"></i> ${nped}</span>` : ''}</div>
                 ${sub ? `<div class="cli-sub">${esc(sub)}</div>` : ''}
                 <div class="cli-contacto">
                     ${c.telefono ? `<span><i class="fas fa-phone"></i> ${esc(c.telefono)}</span>` : ''}
                     ${c.email ? `<span><i class="fas fa-envelope"></i> ${esc(c.email)}</span>` : ''}
                 </div>
             </div>
-            <div class="cli-acciones">
+            <div class="cli-acciones" onclick="event.stopPropagation()">
                 ${wa ? `<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
                 <button class="cli-btn" onclick="abrirFormCliente('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
                 <button class="cli-btn cli-del" onclick="borrarCliente('${c.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
             </div>
         </div>`;
     }).join('');
+}
+
+// ── Ficha del cliente con su historial (pedidos + seguimientos) ──
+async function verCliente(id) {
+    const c = clientes.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('modalTitulo').textContent = c.nombre || 'Cliente';
+    document.getElementById('modalBody').innerHTML = `
+        <div class="ficha-datos">
+            ${c.razon ? `<div class="ficha-fila"><span>Razón social</span><b>${esc(c.razon)}</b></div>` : ''}
+            ${c.cuit ? `<div class="ficha-fila"><span>CUIT</span><b>${esc(c.cuit)}</b></div>` : ''}
+            ${c.telefono ? `<div class="ficha-fila"><span>Teléfono</span><b>${esc(c.telefono)}</b></div>` : ''}
+            ${c.email ? `<div class="ficha-fila"><span>Email</span><b>${esc(c.email)}</b></div>` : ''}
+            ${c.empresa ? `<div class="ficha-fila"><span>Empresa/Rubro</span><b>${esc(c.empresa)}</b></div>` : ''}
+            ${c.ciudad ? `<div class="ficha-fila"><span>Ciudad</span><b>${esc(c.ciudad)}</b></div>` : ''}
+            ${c.direccion ? `<div class="ficha-fila"><span>Dirección</span><b>${esc(c.direccion)}</b></div>` : ''}
+            ${c.notas ? `<div class="ficha-fila"><span>Notas</span><b>${esc(c.notas)}</b></div>` : ''}
+            <div class="ficha-origen">${esWeb(c) ? '🌐 Registrado desde la web' : '✍️ Cargado por vos'}</div>
+        </div>
+        <div class="ficha-acc">
+            <button class="panel-btn-add" onclick="abrirFormPedidoDesde('${esc(c.nombre)}','${esc(c.telefono)}')"><i class="fas fa-plus"></i> Nuevo pedido</button>
+            <button class="cli-btn" onclick="abrirFormCliente('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
+        </div>
+        <h4 class="ficha-tit">Historial</h4>
+        <div id="fichaHist" class="ficha-hist"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
+    abrirModal();
+    await ensurePedidos();
+    await ensureSeguimientos();
+    const peds = pedidosDeCliente(c.nombre), segs = segsDeCliente(c.nombre);
+    const hist = document.getElementById('fichaHist');
+    if (!hist) return;
+    if (!peds.length && !segs.length) {
+        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos ni seguimientos de este cliente.</div>`;
+        return;
+    }
+    hist.innerHTML =
+        peds.map(p => `<div class="hist-item"><span class="hist-tipo hist-ped"><i class="fas fa-box"></i></span>
+            <div><div class="hist-det">${esc(p.detalle) || 'Pedido'}</div><div class="hist-sub">${montoTxt(p.monto)}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''}</div></div>
+            ${badgeEstado(p.estado)}</div>`).join('') +
+        segs.map(s => `<div class="hist-item"><span class="hist-tipo hist-seg"><i class="fas fa-bell"></i></span>
+            <div><div class="hist-det">${esc(s.motivo) || 'Seguimiento'}</div><div class="hist-sub">${s.objetivo ? fechaTxt(s.objetivo) : ''}</div></div>
+            ${badgeEstado(s.estado)}</div>`).join('');
+}
+
+// Abrir el form de pedido con el cliente precargado (desde la ficha).
+function abrirFormPedidoDesde(nombre, tel) {
+    cerrarModal();
+    setTimeout(() => {
+        abrirFormPedido();
+        setTimeout(() => {
+            const c = document.getElementById('pdCliente'), t = document.getElementById('pdTel');
+            if (c) c.value = nombre;
+            if (t && tel) t.value = tel;
+        }, 250);
+    }, 150);
 }
 
 function abrirFormCliente(id) {
@@ -207,10 +299,14 @@ async function guardarCliente(e, id) {
             const c = clientes.find(x => x.id === id);
             if (c) Object.assign(c, datos);            // actualizar en el acto
         } else {
+            datos.origen = 'panel';                     // cargado por vos (no web)
             const r = await crm({ action: 'add', tab: 'Clientes', ...datos });
             clientes.unshift({ id: (r && r.id) || ('tmp' + Date.now()), fecha: '', ...datos });
+            vistaClientes = 'mis';                       // mostrarlo en "Mis clientes"
         }
         cerrarModal();
+        actualizarContadores();
+        document.querySelectorAll('.cli-tab').forEach(b => b.classList.toggle('active', b.dataset.v === vistaClientes));
         filtrarClientes();                              // re-pinta desde el estado local
     } catch (err) {
         btn.disabled = false; btn.textContent = 'Guardar';
@@ -222,6 +318,7 @@ async function borrarCliente(id) {
     const c = clientes.find(x => x.id === id);
     if (!confirm(`¿Eliminar a ${c ? c.nombre : 'este cliente'}? No se puede deshacer.`)) return;
     clientes = clientes.filter(x => x.id !== id);       // sacarlo en el acto
+    actualizarContadores();
     filtrarClientes();
     try { await crm({ action: 'delete', tab: 'Clientes', id }); }
     catch (e) { alert('No se pudo eliminar en el servidor. Recargá para verificar.'); }
@@ -314,6 +411,230 @@ async function guardarProducto(i, campo, valor) {
     } catch (e) {
         alert('No se pudo guardar "' + p.nombre + '". Reintentá.');
     }
+}
+
+// ─── HELPERS PEDIDOS / SEGUIMIENTOS ─────────────────────────────
+function val(id){ const e=document.getElementById(id); return e?e.value.trim():''; }
+async function ensureClientes(){
+    if (clientes.length) return;
+    try { const r = await crm({ action:'list', tab:'Clientes' }); clientes = (r&&r.ok&&r.rows)||[]; } catch(e){}
+}
+function clientesDatalist(){
+    return `<datalist id="dlClientes">${clientes.map(c=>`<option value="${esc(c.nombre)}"></option>`).join('')}</datalist>`;
+}
+function telDeCliente(nombre){ const n=norm(nombre); const c=clientes.find(x=>norm(x.nombre)===n); return c?c.telefono:''; }
+function autoTel(pref){
+    const tel = telDeCliente(document.getElementById(pref+'Cliente').value);
+    const campo = document.getElementById(pref+'Tel');
+    if (tel && campo && !campo.value) campo.value = tel;
+}
+function waLink(tel, texto){
+    const t = soloDigitos(tel); if(!t) return '';
+    return `https://wa.me/${t.length<=11?'549'+t:t}?text=${encodeURIComponent(texto)}`;
+}
+function badgeEstado(e){
+    const cls = {'Pendiente':'est-pend','Entregado':'est-entr','Cobrado':'est-cobr','Hecho':'est-hecho'}[e]||'est-pend';
+    return `<span class="est ${cls}">${esc(e||'Pendiente')}</span>`;
+}
+function montoTxt(v){ const n=String(v==null?'':v).replace(/[^\d]/g,''); return n?'$'+parseInt(n,10).toLocaleString('es-AR'):''; }
+
+async function cambiarEstadoRegistro(tab, id, valor){
+    const arr = tab==='Pedidos'?pedidos:seguimientos;
+    const r = arr.find(x=>x.id===id); if(!r) return;
+    r.estado = valor;
+    if (tab==='Pedidos') pintarPedidos(pedidos); else pintarSeguimientos(seguimientos);
+    try { await crm({ action:'update', tab, id, estado:valor }); } catch(e){ alert('No se pudo actualizar el estado.'); }
+}
+async function borrarRegistro(tab, id){
+    if(!confirm('¿Eliminar este registro? No se puede deshacer.')) return;
+    const arr = tab==='Pedidos'?pedidos:seguimientos;
+    const idx = arr.findIndex(x=>x.id===id); if(idx>=0) arr.splice(idx,1);
+    if (tab==='Pedidos') pintarPedidos(pedidos); else pintarSeguimientos(seguimientos);
+    try { await crm({ action:'delete', tab, id }); } catch(e){ alert('No se pudo eliminar en el servidor.'); }
+}
+
+// ─── PEDIDOS ────────────────────────────────────────────────────
+let pedidos = [];
+const PEDIDO_ESTADOS = ['Pendiente','Entregado','Cobrado'];
+
+async function renderPedidos(){
+    const v = document.getElementById('vista');
+    v.innerHTML = `
+        <div class="panel-sec-head">
+            <div class="panel-buscar"><i class="fas fa-search"></i>
+                <input type="text" id="buscarPed" placeholder="Buscar por cliente, detalle…" oninput="filtrarPedidos()"></div>
+            <button class="panel-btn-add" onclick="abrirFormPedido()"><i class="fas fa-plus"></i> Nuevo pedido</button>
+        </div>
+        <div class="panel-lista" id="listaPed"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
+    try {
+        const r = await crm({ action:'list', tab:'Pedidos' });
+        pedidos = (r&&r.ok&&r.rows)||[];
+        pintarPedidos(pedidos);
+    } catch(e){ document.getElementById('listaPed').innerHTML = `<div class="panel-error">No se pudieron cargar los pedidos.</div>`; }
+}
+function filtrarPedidos(){
+    const q=(document.getElementById('buscarPed').value||'').toLowerCase().trim();
+    pintarPedidos(!q?pedidos:pedidos.filter(p=>(p.cliente+' '+p.detalle+' '+p.telefono+' '+p.estado).toLowerCase().includes(q)));
+}
+function pintarPedidos(lista){
+    const cont=document.getElementById('listaPed'); if(!cont) return;
+    if(!lista.length){ cont.innerHTML=`<div class="panel-vacio-chico">No hay pedidos todavía.</div>`; return; }
+    cont.innerHTML = lista.map(p=>{
+        const wa = waLink(p.telefono, `¡Hola ${p.cliente||''}! Te escribo de San Ou 🔧 por tu pedido.`);
+        return `<div class="rec-card">
+            <div class="rec-top">
+                <span class="rec-nombre">${esc(p.cliente)||'(sin cliente)'}</span>
+                ${badgeEstado(p.estado)}
+            </div>
+            ${p.detalle?`<div class="rec-detalle">${esc(p.detalle)}</div>`:''}
+            <div class="rec-meta">
+                ${montoTxt(p.monto)?`<span class="rec-monto">${montoTxt(p.monto)}</span>`:''}
+                ${p.telefono?`<span><i class="fas fa-phone"></i> ${esc(p.telefono)}</span>`:''}
+            </div>
+            <div class="rec-acciones">
+                <select class="rec-estado" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
+                    ${PEDIDO_ESTADOS.map(e=>`<option ${e===(p.estado||'Pendiente')?'selected':''}>${e}</option>`).join('')}
+                </select>
+                ${wa?`<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>`:''}
+                <button class="cli-btn" onclick="abrirFormPedido('${p.id}')"><i class="fas fa-pen"></i></button>
+                <button class="cli-btn cli-del" onclick="borrarRegistro('Pedidos','${p.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>`;
+    }).join('');
+}
+function abrirFormPedido(id){
+    ensureClientes().then(()=>{
+        const p = id?pedidos.find(x=>x.id===id):{};
+        document.getElementById('modalTitulo').textContent = id?'Editar pedido':'Nuevo pedido';
+        document.getElementById('modalBody').innerHTML = `
+            <form class="panel-form" onsubmit="guardarPedido(event,'${id||''}')">
+                <label>Cliente</label>
+                <input type="text" id="pdCliente" list="dlClientes" value="${esc(p.cliente)}" onchange="autoTel('pd')" autocomplete="off">
+                ${clientesDatalist()}
+                <label>Teléfono</label>
+                <input type="tel" id="pdTel" value="${esc(p.telefono)}">
+                <label>Detalle del pedido</label>
+                <textarea id="pdDetalle" rows="2" placeholder="Qué productos, cantidades…">${esc(p.detalle)}</textarea>
+                <div class="panel-form-2">
+                    <div><label>Monto</label><input type="text" id="pdMonto" inputmode="numeric" value="${esc(p.monto)}"></div>
+                    <div><label>Estado</label><select id="pdEstado">${PEDIDO_ESTADOS.map(e=>`<option ${e===(p.estado||'Pendiente')?'selected':''}>${e}</option>`).join('')}</select></div>
+                </div>
+                <label>Notas</label>
+                <textarea id="pdNotas" rows="2">${esc(p.notas)}</textarea>
+                <button type="submit" class="panel-form-submit" id="btnGuardarPed">Guardar</button>
+            </form>`;
+        abrirModal();
+        setTimeout(()=>document.getElementById('pdCliente').focus(),100);
+    });
+}
+async function guardarPedido(e,id){
+    e.preventDefault();
+    const btn=document.getElementById('btnGuardarPed'); btn.disabled=true; btn.textContent='Guardando…';
+    const datos={ cliente:val('pdCliente'), telefono:val('pdTel'), detalle:val('pdDetalle'), monto:val('pdMonto'), estado:val('pdEstado'), notas:val('pdNotas') };
+    try {
+        if(id){ await crm({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
+        else { const r=await crm({action:'add',tab:'Pedidos',...datos}); pedidos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
+        cerrarModal(); filtrarPedidos();
+    } catch(err){ btn.disabled=false; btn.textContent='Guardar'; alert('No se pudo guardar. Reintentá.'); }
+}
+
+// ─── SEGUIMIENTOS ───────────────────────────────────────────────
+let seguimientos = [];
+const SEG_ESTADOS = ['Pendiente','Hecho'];
+
+async function renderSeguimientos(){
+    const v = document.getElementById('vista');
+    v.innerHTML = `
+        <div class="panel-sec-head">
+            <div class="panel-buscar"><i class="fas fa-search"></i>
+                <input type="text" id="buscarSeg" placeholder="Buscar seguimiento…" oninput="filtrarSeguimientos()"></div>
+            <button class="panel-btn-add" onclick="abrirFormSeguimiento()"><i class="fas fa-plus"></i> Nuevo seguimiento</button>
+        </div>
+        <div class="panel-lista" id="listaSeg"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
+    try {
+        const r = await crm({ action:'list', tab:'Seguimientos' });
+        seguimientos = (r&&r.ok&&r.rows)||[];
+        // ordenar por fecha objetivo (los sin fecha al final)
+        seguimientos.sort((a,b)=>(a.objetivo||'9999').localeCompare(b.objetivo||'9999'));
+        pintarSeguimientos(seguimientos);
+    } catch(e){ document.getElementById('listaSeg').innerHTML = `<div class="panel-error">No se pudieron cargar los seguimientos.</div>`; }
+}
+function filtrarSeguimientos(){
+    const q=(document.getElementById('buscarSeg').value||'').toLowerCase().trim();
+    pintarSeguimientos(!q?seguimientos:seguimientos.filter(s=>(s.cliente+' '+s.motivo+' '+s.telefono+' '+s.estado).toLowerCase().includes(q)));
+}
+function fechaTxt(iso){
+    if(!iso) return '';
+    const p = String(iso).slice(0,10).split('-');
+    return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+}
+function esVencido(s){
+    if(!s.objetivo || s.estado==='Hecho') return false;
+    return String(s.objetivo).slice(0,10) < new Date().toISOString().slice(0,10);
+}
+function pintarSeguimientos(lista){
+    const cont=document.getElementById('listaSeg'); if(!cont) return;
+    if(!lista.length){ cont.innerHTML=`<div class="panel-vacio-chico">No hay seguimientos. Agregá un recordatorio.</div>`; return; }
+    cont.innerHTML = lista.map(s=>{
+        const wa = waLink(s.telefono, `¡Hola ${s.cliente||''}! Te escribo de San Ou 🔧.`);
+        const venc = esVencido(s);
+        return `<div class="rec-card${venc?' rec-card-venc':''}">
+            <div class="rec-top">
+                <span class="rec-nombre">${esc(s.cliente)||'(sin cliente)'}</span>
+                ${badgeEstado(s.estado)}
+            </div>
+            ${s.motivo?`<div class="rec-detalle">${esc(s.motivo)}</div>`:''}
+            <div class="rec-meta">
+                ${s.objetivo?`<span class="rec-fecha${venc?' venc':''}"><i class="fas fa-calendar-day"></i> ${fechaTxt(s.objetivo)}${venc?' · vencido':''}</span>`:''}
+                ${s.telefono?`<span><i class="fas fa-phone"></i> ${esc(s.telefono)}</span>`:''}
+            </div>
+            <div class="rec-acciones">
+                <select class="rec-estado" onchange="cambiarEstadoRegistro('Seguimientos','${s.id}',this.value)">
+                    ${SEG_ESTADOS.map(e=>`<option ${e===(s.estado||'Pendiente')?'selected':''}>${e}</option>`).join('')}
+                </select>
+                ${wa?`<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>`:''}
+                <button class="cli-btn" onclick="abrirFormSeguimiento('${s.id}')"><i class="fas fa-pen"></i></button>
+                <button class="cli-btn cli-del" onclick="borrarRegistro('Seguimientos','${s.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>`;
+    }).join('');
+}
+function abrirFormSeguimiento(id){
+    ensureClientes().then(()=>{
+        const s = id?seguimientos.find(x=>x.id===id):{};
+        document.getElementById('modalTitulo').textContent = id?'Editar seguimiento':'Nuevo seguimiento';
+        document.getElementById('modalBody').innerHTML = `
+            <form class="panel-form" onsubmit="guardarSeguimiento(event,'${id||''}')">
+                <label>Cliente</label>
+                <input type="text" id="sgCliente" list="dlClientes" value="${esc(s.cliente)}" onchange="autoTel('sg')" autocomplete="off">
+                ${clientesDatalist()}
+                <label>Teléfono</label>
+                <input type="tel" id="sgTel" value="${esc(s.telefono)}">
+                <label>Motivo</label>
+                <textarea id="sgMotivo" rows="2" placeholder="Ej: llamar por presupuesto, avisar que llegó stock…">${esc(s.motivo)}</textarea>
+                <div class="panel-form-2">
+                    <div><label>Fecha objetivo</label><input type="date" id="sgObjetivo" value="${esc(String(s.objetivo||'').slice(0,10))}"></div>
+                    <div><label>Estado</label><select id="sgEstado">${SEG_ESTADOS.map(e=>`<option ${e===(s.estado||'Pendiente')?'selected':''}>${e}</option>`).join('')}</select></div>
+                </div>
+                <label>Notas</label>
+                <textarea id="sgNotas" rows="2">${esc(s.notas)}</textarea>
+                <button type="submit" class="panel-form-submit" id="btnGuardarSeg">Guardar</button>
+            </form>`;
+        abrirModal();
+        setTimeout(()=>document.getElementById('sgCliente').focus(),100);
+    });
+}
+async function guardarSeguimiento(e,id){
+    e.preventDefault();
+    const btn=document.getElementById('btnGuardarSeg'); btn.disabled=true; btn.textContent='Guardando…';
+    const datos={ cliente:val('sgCliente'), telefono:val('sgTel'), motivo:val('sgMotivo'), objetivo:val('sgObjetivo'), estado:val('sgEstado'), notas:val('sgNotas') };
+    try {
+        if(id){ await crm({action:'update',tab:'Seguimientos',id,...datos}); const c=seguimientos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
+        else { const r=await crm({action:'add',tab:'Seguimientos',...datos}); seguimientos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
+        cerrarModal();
+        seguimientos.sort((a,b)=>(a.objetivo||'9999').localeCompare(b.objetivo||'9999'));
+        filtrarSeguimientos();
+    } catch(err){ btn.disabled=false; btn.textContent='Guardar'; alert('No se pudo guardar. Reintentá.'); }
 }
 
 // ─── MODAL ──────────────────────────────────────────────────────

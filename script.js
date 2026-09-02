@@ -22,7 +22,8 @@ function guardarClienteEnSheet(datos) {
             telefono: datos.telefono || '',
             empresa:  datos.empresa  || '',
             ciudad:   datos.ciudad   || '',
-            notas:    datos.origen   || 'web'
+            origen:   'web',
+            notas:    datos.origen   || 'registro web'
         });
         fetch(CLIENTES_URL + '?' + params.toString(), { mode: 'no-cors' });
     } catch (e) { /* silencioso: no frenar al cliente si falla la red */ }

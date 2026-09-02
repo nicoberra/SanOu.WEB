@@ -59,6 +59,35 @@ body:not(.bloqueado) .panel-lock{display:none}
     font-weight:700;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .panel-btn-add:hover{filter:brightness(1.06)}
 
+/* ── Toggle Mis clientes / Clientes web ── */
+.cli-tabs{display:flex;gap:8px;margin-bottom:14px}
+.cli-tab{flex:1;background:var(--neg2);border:1px solid var(--linea);color:var(--gris2);border-radius:10px;
+    padding:11px;font-size:.85rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
+.cli-tab span{opacity:.7;font-weight:600}
+.cli-tab.active{background:var(--am);color:var(--neg);border-color:var(--am)}
+.cli-ped-badge{display:inline-flex;align-items:center;gap:4px;margin-left:8px;background:rgba(255,212,0,.15);
+    color:var(--am);border:1px solid rgba(255,212,0,.35);border-radius:20px;padding:1px 8px;font-size:.68rem;font-weight:700;vertical-align:middle}
+.cli-card{cursor:pointer}
+.cli-card:hover{border-color:rgba(255,212,0,.28)}
+
+/* ── Ficha del cliente + historial ── */
+.ficha-datos{display:flex;flex-direction:column;gap:1px;margin-bottom:14px}
+.ficha-fila{display:flex;justify-content:space-between;gap:12px;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.06);font-size:.86rem}
+.ficha-fila span{color:var(--gris)}
+.ficha-fila b{color:#fff;text-align:right}
+.ficha-origen{margin-top:10px;color:var(--gris2);font-size:.8rem}
+.ficha-acc{display:flex;gap:8px;align-items:center;margin-bottom:18px}
+.ficha-acc .panel-btn-add{flex:1;justify-content:center}
+.ficha-tit{color:#fff;font-size:.95rem;margin-bottom:10px}
+.ficha-hist{display:flex;flex-direction:column;gap:8px}
+.hist-item{display:flex;align-items:center;gap:11px;background:var(--neg3);border:1px solid var(--linea);border-radius:10px;padding:11px 13px}
+.hist-tipo{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem}
+.hist-ped{background:rgba(255,212,0,.15);color:var(--am)}
+.hist-seg{background:rgba(56,132,255,.15);color:#5b9dff}
+.hist-item>div{flex:1;min-width:0}
+.hist-det{color:#fff;font-size:.86rem;font-weight:600}
+.hist-sub{color:var(--gris);font-size:.76rem;margin-top:1px}
+
 /* ── Lista de clientes ── */
 .panel-lista{display:flex;flex-direction:column;gap:10px}
 .panel-cargando,.panel-error,.panel-vacio-chico{text-align:center;color:var(--gris);padding:40px 20px;font-size:.9rem}
@@ -82,6 +111,33 @@ body:not(.bloqueado) .panel-lock{display:none}
 .cli-wa{background:rgba(37,211,102,.15);color:#25D366;border-color:rgba(37,211,102,.35)}
 .cli-wa:hover{background:rgba(37,211,102,.25);color:#25D366}
 .cli-del:hover{color:#ff6b6b;border-color:rgba(255,80,80,.4)}
+
+/* ── Pedidos / Seguimientos ── */
+.rec-card{background:var(--neg2);border:1px solid var(--linea);border-radius:14px;padding:14px 15px;margin-bottom:10px;display:flex;flex-direction:column;gap:9px}
+.rec-card-venc{border-color:rgba(255,140,0,.4)}
+.rec-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rec-nombre{font-weight:700;font-size:.98rem;color:#fff}
+.rec-detalle{color:var(--gris2);font-size:.86rem;line-height:1.45}
+.rec-meta{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}
+.rec-meta span{color:var(--gris2);font-size:.82rem;display:flex;align-items:center;gap:6px}
+.rec-meta i{color:var(--gris);font-size:.75rem}
+.rec-monto{color:var(--am)!important;font-weight:700;font-size:.92rem!important}
+.rec-fecha.venc{color:#ff9d2e!important}
+.rec-fecha.venc i{color:#ff9d2e}
+.rec-acciones{display:flex;gap:6px;align-items:center;margin-top:2px}
+.rec-estado{flex:1;min-width:0;background:var(--neg3);border:1px solid var(--linea);border-radius:9px;color:#fff;
+    padding:9px 10px;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none}
+.rec-estado:focus{outline:none;border-color:var(--am)}
+
+/* Badges de estado */
+.est{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:50px;white-space:nowrap}
+.est-pend{background:rgba(255,140,0,.15);color:#ff9d2e;border:1px solid rgba(255,140,0,.35)}
+.est-entr{background:rgba(56,132,255,.15);color:#5b9dff;border:1px solid rgba(56,132,255,.35)}
+.est-cobr,.est-hecho{background:rgba(37,211,102,.15);color:#25D366;border:1px solid rgba(37,211,102,.35)}
+
+.panel-form select{background:var(--neg3);border:1px solid var(--linea);border-radius:9px;padding:11px 12px;color:#fff;
+    font-family:inherit;font-size:.92rem;-webkit-appearance:none;appearance:none}
+.panel-form select:focus{outline:none;border-color:var(--am)}
 
 /* ── Cotizador embebido ── */
 .panel-iframe{

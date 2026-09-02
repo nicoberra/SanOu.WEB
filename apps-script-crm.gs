@@ -29,7 +29,8 @@ var TABS = {
     { k: 'notas',     h: 'Notas' },
     { k: 'razon',     h: 'Razón social' },
     { k: 'cuit',      h: 'CUIT' },
-    { k: 'direccion', h: 'Dirección' }
+    { k: 'direccion', h: 'Dirección' },
+    { k: 'origen',    h: 'Origen' }
   ],
   'Cotizaciones': [
     { k: 'id',       h: 'id' },
