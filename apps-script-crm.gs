@@ -13,6 +13,9 @@
 
 var CRM_ID = '12RjmHKOV3LvvN6kA04b9bf92k-dkvXS5C8qenNGHHKw';
 
+// Planilla de precios de la web (Nombre | Precios | Stock | Precio ML | DESTACADO)
+var PRECIOS_ID = '1Jzs6_Rp0h4yHm7u786mcqqHPWLpwjMcnj6gZRxuJ67w';
+
 // Cada columna: k = clave para la API, h = título que se ve en la planilla.
 var TABS = {
   'Clientes': [
@@ -75,6 +78,8 @@ function manejar(e) {
     else if (accion === 'add')    out = { ok: true, id: agregar(tab, p) };
     else if (accion === 'update') out = { ok: true, updated: actualizar(tab, p) };
     else if (accion === 'delete') out = { ok: true, deleted: borrar(tab, p.id) };
+    else if (accion === 'productos_list') out = { ok: true, rows: productosListar() };
+    else if (accion === 'productos_save') out = { ok: true, saved: productosGuardar(p) };
     else throw 'Acción desconocida: ' + accion;
   } catch (err) {
     out = { ok: false, error: String(err) };
@@ -171,4 +176,62 @@ function borrar(tab, id) {
     }
   }
   return false;
+}
+
+// ══════════ PRODUCTOS (planilla de precios de la web) ══════════
+// Busca la pestaña cuyo encabezado empieza con "Nombre".
+function hojaProductos() {
+  var ss = SpreadsheetApp.openById(PRECIOS_ID);
+  var hojas = ss.getSheets();
+  for (var i = 0; i < hojas.length; i++) {
+    if (String(hojas[i].getRange(1, 1).getValue()).trim().toLowerCase() === 'nombre') return hojas[i];
+  }
+  return hojas[0];
+}
+
+function esVerdadero(v) {
+  return v === true || String(v).trim().toUpperCase() === 'TRUE' || String(v).trim().toLowerCase() === 'si';
+}
+
+// Devuelve todos los productos: nombre, precio, stock, ml, destacado
+function productosListar() {
+  var sh = hojaProductos();
+  var datos = sh.getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < datos.length; i++) {
+    var nombre = String(datos[i][0]).trim();
+    if (!nombre) continue;
+    out.push({
+      nombre:    nombre,
+      precio:    datos[i][1],
+      stock:     esVerdadero(datos[i][2]),
+      ml:        datos[i][3],
+      destacado: esVerdadero(datos[i][4])
+    });
+  }
+  return out;
+}
+
+// Guarda los campos enviados de un producto (lo busca por nombre exacto).
+function productosGuardar(p) {
+  var sh = hojaProductos();
+  var datos = sh.getDataRange().getValues();
+  for (var i = 1; i < datos.length; i++) {
+    if (String(datos[i][0]).trim() === String(p.nombre).trim()) {
+      if (p.precio    !== undefined) sh.getRange(i + 1, 2).setValue(formatearPrecio(p.precio));
+      if (p.stock     !== undefined) sh.getRange(i + 1, 3).setValue(esVerdadero(p.stock));
+      if (p.ml        !== undefined) sh.getRange(i + 1, 4).setValue(formatearPrecio(p.ml));
+      if (p.destacado !== undefined) sh.getRange(i + 1, 5).setValue(esVerdadero(p.destacado));
+      return true;
+    }
+  }
+  return false;
+}
+
+// Formatea a "$72.500" (con signo y puntos de miles). Vacío queda vacío.
+function formatearPrecio(v) {
+  var s = String(v).replace(/[^\d]/g, '');
+  if (!s) return '';
+  s = s.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return '$' + s;
 }

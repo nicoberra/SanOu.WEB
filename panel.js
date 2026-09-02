@@ -70,6 +70,7 @@ function navegar(sec) {
     document.querySelectorAll('.panel-nav-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.sec === sec));
     if (sec === 'clientes') renderClientes();
+    else if (sec === 'productos') renderProductos();
     else if (sec === 'cotizaciones') renderCotizador();
     else enConstruccion(sec);
 }
@@ -224,6 +225,95 @@ async function borrarCliente(id) {
     filtrarClientes();
     try { await crm({ action: 'delete', tab: 'Clientes', id }); }
     catch (e) { alert('No se pudo eliminar en el servidor. Recargá para verificar.'); }
+}
+
+// ─── PRODUCTOS ──────────────────────────────────────────────────
+let productos = [];
+
+async function renderProductos() {
+    const v = document.getElementById('vista');
+    v.innerHTML = `
+        <div class="panel-sec-head">
+            <div class="panel-buscar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="buscarProd" placeholder="Buscar producto…" oninput="filtrarProductos()">
+            </div>
+        </div>
+        <p class="prod-ayuda">Cambiá precio, stock y destacado. Se guarda al instante en tu planilla. En la web se ve en unos minutos.</p>
+        <div class="panel-lista" id="listaProd"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando productos…</div></div>`;
+    try {
+        const r = await crm({ action: 'productos_list', tab: 'Clientes' });
+        productos = (r && r.ok && r.rows) ? r.rows : [];
+        pintarProductos(productos);
+    } catch (e) {
+        document.getElementById('listaProd').innerHTML = `<div class="panel-error">No se pudieron cargar los productos.</div>`;
+    }
+}
+
+function filtrarProductos() {
+    const q = (document.getElementById('buscarProd').value || '').toLowerCase().trim();
+    const lista = !q ? productos : productos.filter(p => p.nombre.toLowerCase().includes(q));
+    pintarProductos(lista, q);
+}
+
+function precioTxt(v) {
+    const n = String(v == null ? '' : v).replace(/[^\d]/g, '');
+    return n ? '$' + parseInt(n, 10).toLocaleString('es-AR') : '';
+}
+
+function pintarProductos(lista, q) {
+    const cont = document.getElementById('listaProd');
+    if (!cont) return;
+    if (!lista.length) {
+        cont.innerHTML = `<div class="panel-vacio-chico">${q ? 'Sin resultados.' : 'No hay productos en la planilla.'}</div>`;
+        return;
+    }
+    cont.innerHTML = lista.map(p => {
+        const i = productos.indexOf(p);
+        return `
+        <div class="prod-card" id="prod-${i}">
+            <div class="prod-top">
+                <span class="prod-nombre">${esc(p.nombre)}</span>
+                <span class="prod-ok" id="prodok-${i}"><i class="fas fa-check"></i> Guardado</span>
+            </div>
+            <div class="prod-campos">
+                <label class="prod-num">Precio
+                    <input type="text" inputmode="numeric" value="${esc(precioTxt(p.precio))}"
+                        onchange="guardarProducto(${i},'precio',this.value)">
+                </label>
+                <label class="prod-num">Precio ML
+                    <input type="text" inputmode="numeric" value="${esc(precioTxt(p.ml))}"
+                        onchange="guardarProducto(${i},'ml',this.value)">
+                </label>
+                <label class="prod-sw">
+                    <input type="checkbox" ${p.stock ? 'checked' : ''} onchange="guardarProducto(${i},'stock',this.checked)">
+                    <span class="prod-sw-track"></span> En stock
+                </label>
+                <label class="prod-sw prod-sw-star">
+                    <input type="checkbox" ${p.destacado ? 'checked' : ''} onchange="guardarProducto(${i},'destacado',this.checked)">
+                    <span class="prod-sw-track"></span> Destacado
+                </label>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+let _prodTimers = {};
+async function guardarProducto(i, campo, valor) {
+    const p = productos[i];
+    if (!p) return;
+    p[campo] = valor;
+    try {
+        await crm({ action: 'productos_save', tab: 'Clientes', nombre: p.nombre, [campo]: valor });
+        const ok = document.getElementById('prodok-' + i);
+        if (ok) {
+            ok.classList.add('on');
+            clearTimeout(_prodTimers[i]);
+            _prodTimers[i] = setTimeout(() => ok.classList.remove('on'), 1800);
+        }
+    } catch (e) {
+        alert('No se pudo guardar "' + p.nombre + '". Reintentá.');
+    }
 }
 
 // ─── MODAL ──────────────────────────────────────────────────────
