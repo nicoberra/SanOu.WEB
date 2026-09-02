@@ -224,6 +224,29 @@ body:not(.bloqueado) .panel-lock{display:none}
     display:block;
 }
 
+/* ── Barra del dólar ── */
+.dol-bar{display:flex;align-items:center;gap:10px;background:var(--neg2);border:1px solid rgba(255,212,0,.2);
+    border-radius:12px;padding:9px 12px;margin-bottom:14px;flex-wrap:wrap}
+.dol-tipo{display:flex;gap:4px;background:var(--neg3);border-radius:8px;padding:3px}
+.dol-tipo button{background:transparent;border:none;color:var(--gris2);padding:6px 12px;border-radius:6px;
+    font-size:.78rem;font-weight:700;font-family:inherit;cursor:pointer}
+.dol-tipo button.active{background:var(--am);color:var(--neg)}
+.dol-val{flex:1;color:var(--gris2);font-size:.85rem}
+.dol-val b{color:#fff;font-size:1rem}
+.dol-val span{color:var(--gris);font-size:.75rem}
+.dol-refresh{background:var(--neg3);border:1px solid var(--linea);color:var(--gris2);width:34px;height:34px;
+    border-radius:8px;cursor:pointer}
+.dol-refresh:hover{color:var(--am)}
+.dol-off{color:var(--gris);font-size:.82rem}
+
+/* ── Costo del producto ── */
+.prod-costo{display:flex;gap:14px;align-items:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)}
+.prod-costo .prod-num{flex-shrink:0;width:120px}
+.prod-costo-info{flex:1;text-align:right;font-size:.82rem}
+.prod-costo-pesos{color:#fff;font-weight:600}
+.prod-margen{color:#4ade80;font-size:.76rem;margin-top:2px}
+.prod-margen.neg{color:#ff6b6b}
+
 /* ── Productos ── */
 .prod-ayuda{color:var(--gris);font-size:.8rem;margin:-6px 0 14px;line-height:1.5}
 .prod-card{background:var(--neg2);border:1px solid var(--linea);border-radius:14px;padding:14px 15px;margin-bottom:10px}

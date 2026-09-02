@@ -207,10 +207,13 @@ function borrar(tab, id) {
 function hojaProductos() {
   var ss = SpreadsheetApp.openById(PRECIOS_ID);
   var hojas = ss.getSheets();
+  var sh = hojas[0];
   for (var i = 0; i < hojas.length; i++) {
-    if (String(hojas[i].getRange(1, 1).getValue()).trim().toLowerCase() === 'nombre') return hojas[i];
+    if (String(hojas[i].getRange(1, 1).getValue()).trim().toLowerCase() === 'nombre') { sh = hojas[i]; break; }
   }
-  return hojas[0];
+  // Asegurar el encabezado de la columna F (Costo USD) sin tocar los datos.
+  if (!sh.getRange(1, 6).getValue()) sh.getRange(1, 6).setValue('Costo USD');
+  return sh;
 }
 
 function esVerdadero(v) {
@@ -230,7 +233,8 @@ function productosListar() {
       precio:    datos[i][1],
       stock:     esVerdadero(datos[i][2]),
       ml:        datos[i][3],
-      destacado: esVerdadero(datos[i][4])
+      destacado: esVerdadero(datos[i][4]),
+      costousd:  datos[i][5]
     });
   }
   return out;
@@ -246,6 +250,7 @@ function productosGuardar(p) {
       if (p.stock     !== undefined) sh.getRange(i + 1, 3).setValue(esVerdadero(p.stock));
       if (p.ml        !== undefined) sh.getRange(i + 1, 4).setValue(formatearPrecio(p.ml));
       if (p.destacado !== undefined) sh.getRange(i + 1, 5).setValue(esVerdadero(p.destacado));
+      if (p.costousd  !== undefined) sh.getRange(i + 1, 6).setValue(numeroUsd(p.costousd));
       return true;
     }
   }
@@ -258,4 +263,10 @@ function formatearPrecio(v) {
   if (!s) return '';
   s = s.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   return '$' + s;
+}
+
+// Número en USD (permite decimales). Vacío queda vacío.
+function numeroUsd(v) {
+  var s = String(v).replace(/[^\d.]/g, '');
+  return s ? parseFloat(s) : '';
 }

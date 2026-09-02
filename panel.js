@@ -457,18 +457,47 @@ async function borrarCliente(id) {
 
 // ─── PRODUCTOS ──────────────────────────────────────────────────
 let productos = [];
+let dolar = { blue: 0, oficial: 0, tipo: 'blue', hora: '' };
+
+async function ensureDolar(force){
+    if (dolar.blue && !force) return;
+    try {
+        const [b, o] = await Promise.all([
+            fetch('https://dolarapi.com/v1/dolares/blue').then(r=>r.json()),
+            fetch('https://dolarapi.com/v1/dolares/oficial').then(r=>r.json())
+        ]);
+        dolar.blue = b.venta || 0; dolar.oficial = o.venta || 0;
+        dolar.hora = new Date().toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+    } catch(e){}
+}
+function dolarValor(){ return dolar[dolar.tipo] || 0; }
+function pintarBarraDolar(){
+    const el = document.getElementById('barraDolar'); if(!el) return;
+    el.innerHTML = dolarValor() ? `
+        <div class="dol-tipo">
+            <button class="${dolar.tipo==='blue'?'active':''}" onclick="cambiarDolarTipo('blue')">Blue</button>
+            <button class="${dolar.tipo==='oficial'?'active':''}" onclick="cambiarDolarTipo('oficial')">Oficial</button>
+        </div>
+        <div class="dol-val">US$1 = <b>${fmtMoney(dolarValor())}</b>${dolar.hora?` <span>· ${dolar.hora}</span>`:''}</div>
+        <button class="dol-refresh" onclick="refrescarDolar()" title="Actualizar"><i class="fas fa-rotate"></i></button>`
+        : `<span class="dol-off">Sin cotización del dólar (revisá tu conexión)</span>`;
+}
+function cambiarDolarTipo(t){ dolar.tipo=t; pintarBarraDolar(); filtrarProductos(); }
+async function refrescarDolar(){ const el=document.getElementById('barraDolar'); if(el)el.innerHTML='<i class="fas fa-rotate fa-spin"></i>'; await ensureDolar(true); pintarBarraDolar(); filtrarProductos(); }
 
 async function renderProductos() {
     const v = document.getElementById('vista');
     v.innerHTML = `
+        <div class="dol-bar" id="barraDolar"></div>
         <div class="panel-sec-head">
             <div class="panel-buscar">
                 <i class="fas fa-search"></i>
                 <input type="text" id="buscarProd" placeholder="Buscar producto…" oninput="filtrarProductos()">
             </div>
         </div>
-        <p class="prod-ayuda">Cambiá precio, stock y destacado. Se guarda al instante en tu planilla. En la web se ve en unos minutos.</p>
+        <p class="prod-ayuda">Precio, stock, destacado y costo en USD. Se guarda al instante. El costo se convierte a pesos al dólar actual.</p>
         <div class="panel-lista" id="listaProd"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando productos…</div></div>`;
+    ensureDolar().then(pintarBarraDolar);
     try {
         const r = await crm({ action: 'productos_list', tab: 'Clientes' });
         productos = (r && r.ok && r.rows) ? r.rows : [];
@@ -523,8 +552,29 @@ function pintarProductos(lista, q) {
                     <span class="prod-sw-track"></span> Destacado
                 </label>
             </div>
+            ${bloqueCosto(p, i)}
         </div>`;
     }).join('');
+}
+
+function bloqueCosto(p, i){
+    const costo = parseFloat(String(p.costousd||'').replace(/[^\d.]/g,'')) || 0;
+    const rate = dolarValor();
+    const costoPesos = Math.round(costo * rate);
+    const precioNum = parseInt(String(p.precio).replace(/[^\d]/g,''), 10) || 0;
+    const ganancia = precioNum - costoPesos;
+    const margen = (precioNum>0 && costoPesos>0) ? Math.round((ganancia/precioNum)*100) : null;
+    return `
+        <div class="prod-costo">
+            <label class="prod-num">Costo (USD)
+                <input type="text" inputmode="decimal" value="${esc(p.costousd||'')}" placeholder="0"
+                    onchange="guardarProducto(${i},'costousd',this.value)">
+            </label>
+            <div class="prod-costo-info">
+                ${costo && rate ? `<div class="prod-costo-pesos">≈ ${fmtMoney(costoPesos)}</div>` : (costo && !rate ? '<div class="prod-costo-pesos">—</div>' : '')}
+                ${(costo && rate && precioNum) ? `<div class="prod-margen ${ganancia<0?'neg':''}">Ganancia ${fmtMoney(ganancia)}${margen!=null?` · ${margen}%`:''}</div>` : ''}
+            </div>
+        </div>`;
 }
 
 let _prodTimers = {};
@@ -532,6 +582,7 @@ async function guardarProducto(i, campo, valor) {
     const p = productos[i];
     if (!p) return;
     p[campo] = valor;
+    if (campo === 'costousd') filtrarProductos();   // actualizar conversión a pesos + ganancia
     try {
         await crm({ action: 'productos_save', tab: 'Clientes', nombre: p.nombre, [campo]: valor });
         const ok = document.getElementById('prodok-' + i);
