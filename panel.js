@@ -164,6 +164,7 @@ function parseFechaCRM(f){
     const d = new Date(String(f).replace(' ', 'T'));
     return isNaN(d) ? null : d;
 }
+function hoyISO(){ const d=new Date(),p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
 function montoVenta(p){
     let m = parseInt(String(p.monto || '').replace(/[^\d]/g, ''), 10) || 0;
     if (p.enviocobrado === 'Sí') m += parseInt(String(p.enviomonto || '').replace(/[^\d]/g, ''), 10) || 0;
@@ -412,8 +413,10 @@ function abrirFormCliente(id) {
     document.getElementById('modalTitulo').textContent = id ? 'Editar cliente' : 'Nuevo cliente';
     document.getElementById('modalBody').innerHTML = `
         <form class="panel-form" onsubmit="guardarCliente(event, '${id || ''}')">
-            <label>Nombre *</label>
-            <input type="text" id="fNombre" value="${esc(c.nombre)}" required>
+            <div class="panel-form-2">
+                <div><label>Nombre *</label><input type="text" id="fNombre" value="${esc(c.nombre)}" required></div>
+                <div><label>Fecha (alta / venta)</label><input type="date" id="fFecha" value="${id && c.fecha ? String(c.fecha).slice(0,10) : hoyISO()}"></div>
+            </div>
             <div class="panel-form-2">
                 <div><label>Razón social</label><input type="text" id="fRazon" value="${esc(c.razon)}"></div>
                 <div><label>CUIT</label><input type="text" id="fCuit" value="${esc(c.cuit)}" inputmode="numeric"></div>
@@ -441,6 +444,7 @@ async function guardarCliente(e, id) {
     const btn = document.getElementById('btnGuardarCli');
     const datos = {
         nombre:    document.getElementById('fNombre').value.trim(),
+        fecha:     document.getElementById('fFecha').value.trim(),
         razon:     document.getElementById('fRazon').value.trim(),
         cuit:      document.getElementById('fCuit').value.trim(),
         telefono:  document.getElementById('fTel').value.trim(),
