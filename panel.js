@@ -548,7 +548,7 @@ async function guardarCliente(e, id) {
 
 async function borrarCliente(id) {
     const c = clientes.find(x => x.id === id);
-    if (!confirm(`¿Eliminar a ${c ? c.nombre : 'este usuario'}? No se puede deshacer.`)) return;
+    if (!(await confirmar(`¿Eliminar a ${c ? c.nombre : 'este usuario'}? No se puede deshacer.`))) return;
     clientes = clientes.filter(x => x.id !== id);       // sacarlo en el acto
     actualizarContadores();
     filtrarClientes();
@@ -742,7 +742,8 @@ async function cambiarEstadoRegistro(tab, id, valor){
     try { await crm({ action:'update', tab, id, estado:valor }); } catch(e){ alert('No se pudo actualizar el estado.'); }
 }
 async function borrarRegistro(tab, id){
-    if(!confirm('¿Eliminar este registro? No se puede deshacer.')) return;
+    const q = tab==='Pedidos' ? '¿Eliminar este pedido? No se puede deshacer.' : '¿Eliminar este seguimiento? No se puede deshacer.';
+    if(!(await confirmar(q))) return;
     const arr = tab==='Pedidos'?pedidos:seguimientos;
     const idx = arr.findIndex(x=>x.id===id); if(idx>=0) arr.splice(idx,1);
     if (tab==='Pedidos') pintarPedidos(pedidos); else pintarSeguimientos(seguimientos);
@@ -1129,6 +1130,38 @@ function cerrarModal() {
     document.getElementById('modalOverlay').classList.remove('active');
     document.getElementById('modalForm').classList.remove('active');
     document.body.style.overflow = '';
+}
+
+// Cartel de confirmación propio (el confirm() nativo no funciona en modo app/pantalla completa).
+function confirmar(mensaje, textoBtn){
+    return new Promise(resolve => {
+        let ov = document.getElementById('confirmOverlay');
+        if (!ov) {
+            ov = document.createElement('div');
+            ov.id = 'confirmOverlay';
+            ov.className = 'confirm-overlay';
+            ov.innerHTML = `<div class="confirm-box">
+                <p id="confirmMsg"></p>
+                <div class="confirm-acc">
+                    <button id="confirmNo" class="confirm-no">Cancelar</button>
+                    <button id="confirmSi" class="confirm-si">Eliminar</button>
+                </div></div>`;
+            document.body.appendChild(ov);
+        }
+        document.getElementById('confirmMsg').textContent = mensaje;
+        document.getElementById('confirmSi').textContent = textoBtn || 'Eliminar';
+        ov.classList.add('active');
+        const cerrar = (val) => {
+            ov.classList.remove('active');
+            document.getElementById('confirmSi').onclick = null;
+            document.getElementById('confirmNo').onclick = null;
+            ov.onclick = null;
+            resolve(val);
+        };
+        document.getElementById('confirmSi').onclick = () => cerrar(true);
+        document.getElementById('confirmNo').onclick = () => cerrar(false);
+        ov.onclick = (e) => { if (e.target === ov) cerrar(false); };
+    });
 }
 
 // ─── ARRANQUE ───────────────────────────────────────────────────

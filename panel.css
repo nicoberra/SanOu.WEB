@@ -247,6 +247,17 @@ body:not(.bloqueado) .panel-lock{display:none}
 .panel-form select:focus{outline:none;border-color:var(--am)}
 .panel-form input[readonly]{opacity:.6;cursor:default;background:var(--neg2)}
 
+/* Cartel de confirmación propio */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:none;align-items:center;justify-content:center;padding:24px}
+.confirm-overlay.active{display:flex}
+.confirm-box{background:var(--neg2,#1e1e1e);border:1px solid var(--linea);border-radius:16px;padding:22px 20px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.confirm-box p{color:#fff;font-size:1rem;line-height:1.45;margin:0 0 18px;text-align:center}
+.confirm-acc{display:flex;gap:10px}
+.confirm-acc button{flex:1;padding:13px;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;border:1px solid transparent}
+.confirm-no{background:var(--neg3,#2a2a2a);border-color:var(--linea)!important;color:#fff}
+.confirm-si{background:#e23b3b;color:#fff}
+.confirm-si:active,.confirm-no:active{transform:scale(.97)}
+
 /* ── Cotizador embebido ── */
 .panel-iframe{
     width:100%;
