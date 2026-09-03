@@ -638,9 +638,9 @@ function pintarProductos(lista, q) {
     cont.innerHTML = lista.map(p => {
         const i = productos.indexOf(p);
         return `
-        <div class="prod-card" id="prod-${i}">
+        <div class="prod-card${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
             <div class="prod-top">
-                <span class="prod-nombre">${esc(p.nombre)}</span>
+                <span class="prod-nombre">${esc(p.nombre)}${p.stock ? '' : ' <span class="prod-badge-sinstock">Sin stock</span>'}</span>
                 <span class="prod-ok" id="prodok-${i}"><i class="fas fa-check"></i> Guardado</span>
             </div>
             <div class="prod-campos">
@@ -691,7 +691,7 @@ async function guardarProducto(i, campo, valor) {
     const p = productos[i];
     if (!p) return;
     p[campo] = valor;
-    if (campo === 'costousd') filtrarProductos();   // actualizar conversión a pesos + ganancia
+    if (campo === 'costousd' || campo === 'stock') filtrarProductos();   // actualizar pesos/ganancia o el cartel "Sin stock"
     try {
         await crm({ action: 'productos_save', tab: 'Clientes', nombre: p.nombre, [campo]: valor });
         const ok = document.getElementById('prodok-' + i);
@@ -819,6 +819,8 @@ async function ensureProductosPrecios(){
 }
 function precioDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p?(parseInt(String(p.precio).replace(/[^\d]/g,''),10)||0):0; }
 function costoUsdDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p?(parseFloat(String(p.costousd||'').replace(/[^\d.]/g,''))||0):0; }
+// Stock de un producto según la planilla: true / false, o null si no está en la planilla (no lo marcamos).
+function stockDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p ? !!p.stock : null; }
 // Ganancia de un pedido: venta − costo (costo USD × dólar × cantidad). medible=false si falta algún costo.
 function gananciaPedido(p){
     const dv = dolarValor();
@@ -875,8 +877,9 @@ function renderPicker(){
     document.getElementById('pickerBody').innerHTML = lista.map(p=>{
         const gi=catProds().indexOf(p), pr=precioDe(p.name);
         const enPed=pedidoItems.find(x=>norm(x.nombre)===norm(p.name));
-        return `<div class="pk-card" onclick="agregarAlPedido(${gi})">
-            <div class="pk-img-wrap">${imgTag(p,'pk-img')}</div>
+        const sinStock = stockDe(p.name) === false;
+        return `<div class="pk-card${sinStock?' pk-card-sinstock':''}" onclick="agregarAlPedido(${gi})">
+            <div class="pk-img-wrap">${imgTag(p,'pk-img')}${sinStock?'<span class="pk-sinstock">Sin stock</span>':''}</div>
             <div class="pk-info"><div class="pk-nombre">${esc(p.name)}</div><div class="pk-precio">${pr?fmtMoney(pr):'consultar'}</div></div>
             ${enPed?`<span class="pk-qty">${enPed.cantidad}</span>`:`<span class="pk-add"><i class="fas fa-plus"></i></span>`}
         </div>`;
