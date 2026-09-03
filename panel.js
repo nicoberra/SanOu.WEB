@@ -667,19 +667,20 @@ function bloqueCosto(p, i){
     const costo = parseFloat(String(p.costousd||'').replace(/[^\d.]/g,'')) || 0;
     const rate = dolarValor();
     const costoPesos = Math.round(costo * rate);
-    const precioNum = parseInt(String(p.precio).replace(/[^\d]/g,''), 10) || 0;
+    const precioNum = (parseInt(String(p.precio).replace(/[^\d]/g,''), 10) || 0) || (parseInt(String(p.ml).replace(/[^\d]/g,''), 10) || 0);
     const ganancia = precioNum - costoPesos;
     const margen = (precioNum>0 && costoPesos>0) ? Math.round((ganancia/precioNum)*100) : null;
+    const hayInfo = costo && rate;
     return `
-        <div class="prod-costo">
+        <div class="prod-costo${hayInfo ? '' : ' prod-costo-solo'}">
             <label class="prod-num">Costo (USD)
                 <input type="text" inputmode="decimal" value="${esc(p.costousd||'')}" placeholder="0"
                     onchange="guardarProducto(${i},'costousd',this.value)">
             </label>
-            <div class="prod-costo-info">
-                ${costo && rate ? `<div class="prod-costo-pesos">≈ ${fmtMoney(costoPesos)}</div>` : (costo && !rate ? '<div class="prod-costo-pesos">—</div>' : '')}
-                ${(costo && rate && precioNum) ? `<div class="prod-margen ${ganancia<0?'neg':''}">Ganancia ${fmtMoney(ganancia)}${margen!=null?` · ${margen}%`:''}</div>` : ''}
-            </div>
+            ${hayInfo ? `<div class="prod-costo-info">
+                <div class="prod-costo-pesos">≈ ${fmtMoney(costoPesos)} <span>en pesos</span></div>
+                ${precioNum ? `<div class="prod-margen ${ganancia<0?'neg':''}">Ganancia ${fmtMoney(ganancia)}${margen!=null?` · ${margen}%`:''}</div>` : ''}
+            </div>` : (costo ? '<div class="prod-costo-info"><div class="prod-costo-pesos">—</div></div>' : '')}
         </div>`;
 }
 
@@ -817,7 +818,8 @@ async function ensureProductosPrecios(){
 // Traduce el nombre del catálogo al nombre exacto de la planilla (sheetName) si difieren.
 function sheetKeyDe(nombre){ const n=norm(nombre); const cat=(window.SANOU_PRODUCTOS||[]).find(p=>norm(p.name)===n); return cat&&cat.sheetName?norm(cat.sheetName):n; }
 function filaProd(nombre){ const k=sheetKeyDe(nombre); return (productos||[]).find(x=>norm(x.nombre)===k); }
-function precioDe(nombre){ const p=filaProd(nombre); return p?(parseInt(String(p.precio).replace(/[^\d]/g,''),10)||0):0; }
+// Precio de venta: usa el Precio normal; si está en 0/vacío, cae al Precio ML.
+function precioDe(nombre){ const p=filaProd(nombre); if(!p) return 0; return (parseInt(String(p.precio).replace(/[^\d]/g,''),10)||0) || (parseInt(String(p.ml).replace(/[^\d]/g,''),10)||0); }
 function costoUsdDe(nombre){ const p=filaProd(nombre); return p?(parseFloat(String(p.costousd||'').replace(/[^\d.]/g,''))||0):0; }
 // Stock de un producto según la planilla: true / false, o null si no está en la planilla (no lo marcamos).
 function stockDe(nombre){ const p=filaProd(nombre); return p ? !!p.stock : null; }

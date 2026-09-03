@@ -265,12 +265,14 @@ body:not(.bloqueado) .panel-lock{display:none}
 .dol-off{color:var(--gris);font-size:.82rem}
 
 /* ── Costo del producto ── */
-.prod-costo{display:flex;gap:14px;align-items:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)}
-.prod-costo .prod-num{flex-shrink:0;width:120px}
-.prod-costo-info{flex:1;text-align:right;font-size:.82rem}
-.prod-costo-pesos{color:#fff;font-weight:600}
-.prod-margen{color:#4ade80;font-size:.76rem;margin-top:2px}
-.prod-margen.neg{color:#ff6b6b}
+.prod-costo{display:flex;gap:12px;align-items:stretch;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)}
+.prod-costo .prod-num{flex-shrink:0;width:130px;justify-content:flex-end}
+.prod-costo-solo .prod-num{width:100%}
+.prod-costo-info{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 12px;min-width:0}
+.prod-costo-pesos{color:#fff;font-weight:700;font-size:.95rem;white-space:nowrap}
+.prod-costo-pesos span{color:var(--gris);font-weight:500;font-size:.72rem}
+.prod-margen{background:rgba(74,222,128,.14);color:#4ade80;font-size:.76rem;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.prod-margen.neg{background:rgba(255,107,107,.14);color:#ff6b6b}
 
 /* ── Productos ── */
 .prod-ayuda{color:var(--gris);font-size:.8rem;margin:-6px 0 14px;line-height:1.5}
