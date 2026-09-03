@@ -172,8 +172,11 @@ body:not(.bloqueado) .panel-lock{display:none}
 .pd-add-prod{width:100%;background:transparent;border:1px dashed rgba(255,212,0,.4);color:var(--am);border-radius:10px;
     padding:11px;font-weight:700;font-size:.86rem;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .pd-add-prod:hover{background:rgba(255,212,0,.08)}
-.pd-monto-row{text-align:right;color:var(--gris2);font-size:.85rem;margin-top:8px}
-.pd-monto-row b{color:var(--am);font-size:1rem;margin-left:6px}
+.pd-monto-row{display:flex;justify-content:space-between;align-items:center;color:var(--gris2);font-size:.85rem;margin-top:8px}
+.pd-monto-row b{color:#fff;font-size:1rem;margin-left:6px}
+.pd-total{display:block;margin-top:10px;color:var(--gris2);font-size:.8rem;font-weight:600}
+.pd-total small{color:var(--gris);font-weight:400}
+.pd-total input{width:100%;margin-top:6px;background:var(--neg2);border:1px solid var(--am);border-radius:10px;padding:11px 12px;color:var(--am);font-size:1.1rem;font-weight:700}
 .pd-envio{background:var(--neg3);border:1px solid var(--linea);border-radius:10px;padding:12px 14px;margin-top:12px}
 .pd-check{display:flex;align-items:center;gap:9px;font-size:.88rem;color:#fff;font-weight:600;cursor:pointer;margin-top:0}
 .pd-envio #pdEnvioDet{margin-top:10px;padding-top:10px;border-top:1px solid var(--linea)}

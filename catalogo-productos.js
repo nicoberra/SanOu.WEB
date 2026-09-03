@@ -675,7 +675,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Presentación', v: 'Maletín plástico rojo' }
       ]
     },
-    { id: 43, name: 'Juego Extractores de Rótulas Extremos Pitman Universal 5 Pz', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '5 piezas', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', catFolder: 'Herramientas para vehículos',
+    { id: 43, name: 'Juego Extractores de Rótulas Extremos Pitman Universal 5 Pz', sheetName: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '5 piezas', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', catFolder: 'Herramientas para vehículos',
       desc: 'Juego extractor de rótulas, extremos y pitman universal. 5 piezas de metal para autos y camionetas. Modelo MK14050.',
       specs: [
         { l: 'Modelo', v: 'MK14050' },

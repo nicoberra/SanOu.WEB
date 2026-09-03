@@ -490,10 +490,8 @@ function abrirFormCliente(id) {
     document.getElementById('modalTitulo').textContent = id ? 'Editar usuario' : 'Nuevo usuario';
     document.getElementById('modalBody').innerHTML = `
         <form class="panel-form" onsubmit="guardarCliente(event, '${id || ''}')">
-            <div class="panel-form-2">
-                <div><label>Nombre *</label><input type="text" id="fNombre" value="${esc(c.nombre)}" required></div>
-                <div><label>Fecha (alta / venta)</label><input type="date" id="fFecha" value="${id && c.fecha ? String(c.fecha).slice(0,10) : hoyISO()}"></div>
-            </div>
+            <label>Nombre *</label>
+            <input type="text" id="fNombre" value="${esc(c.nombre)}" required>
             <div class="panel-form-2">
                 <div><label>Razón social</label><input type="text" id="fRazon" value="${esc(c.razon)}"></div>
                 <div><label>CUIT</label><input type="text" id="fCuit" value="${esc(c.cuit)}" inputmode="numeric"></div>
@@ -521,7 +519,6 @@ async function guardarCliente(e, id) {
     const btn = document.getElementById('btnGuardarCli');
     const datos = {
         nombre:    document.getElementById('fNombre').value.trim(),
-        fecha:     document.getElementById('fFecha').value.trim(),
         razon:     document.getElementById('fRazon').value.trim(),
         cuit:      document.getElementById('fCuit').value.trim(),
         telefono:  document.getElementById('fTel').value.trim(),
@@ -817,10 +814,13 @@ async function ensureProductosPrecios(){
     if(_preciosCargados) return;
     try{ const r=await crm({action:'productos_list',tab:'Clientes'}); productos=(r&&r.ok&&r.rows)||[]; _preciosCargados=true; }catch(e){}
 }
-function precioDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p?(parseInt(String(p.precio).replace(/[^\d]/g,''),10)||0):0; }
-function costoUsdDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p?(parseFloat(String(p.costousd||'').replace(/[^\d.]/g,''))||0):0; }
+// Traduce el nombre del catálogo al nombre exacto de la planilla (sheetName) si difieren.
+function sheetKeyDe(nombre){ const n=norm(nombre); const cat=(window.SANOU_PRODUCTOS||[]).find(p=>norm(p.name)===n); return cat&&cat.sheetName?norm(cat.sheetName):n; }
+function filaProd(nombre){ const k=sheetKeyDe(nombre); return (productos||[]).find(x=>norm(x.nombre)===k); }
+function precioDe(nombre){ const p=filaProd(nombre); return p?(parseInt(String(p.precio).replace(/[^\d]/g,''),10)||0):0; }
+function costoUsdDe(nombre){ const p=filaProd(nombre); return p?(parseFloat(String(p.costousd||'').replace(/[^\d.]/g,''))||0):0; }
 // Stock de un producto según la planilla: true / false, o null si no está en la planilla (no lo marcamos).
-function stockDe(nombre){ const n=norm(nombre); const p=(productos||[]).find(x=>norm(x.nombre)===n); return p ? !!p.stock : null; }
+function stockDe(nombre){ const p=filaProd(nombre); return p ? !!p.stock : null; }
 // Ganancia de un pedido: venta − costo (costo USD × dólar × cantidad). medible=false si falta algún costo.
 function gananciaPedido(p){
     const dv = dolarValor();
@@ -911,6 +911,16 @@ function renderPedidoItems(){
     }).join('');
     const monto = pedidoItems.reduce((s,it)=>s+precioDe(it.nombre)*it.cantidad,0);
     const mEl=document.getElementById('pdMontoTxt'); if(mEl) mEl.textContent = fmtMoney(monto);
+    // Autocompletar el "Total a cobrar" con el subtotal mientras no lo hayan editado a mano.
+    const tot=document.getElementById('pdMontoInput');
+    if(tot && !pedidoMontoManual) tot.value = monto ? montoTxt(monto) : '';
+}
+let pedidoMontoManual = false;
+function montoEditadoManual(){
+    pedidoMontoManual = true;
+    const inp=document.getElementById('pdMontoInput'); if(!inp) return;
+    const dig=inp.value.replace(/[^\d]/g,'');
+    inp.value = dig ? montoTxt(dig) : '';
 }
 function parseDetalle(det){
     if(!det) return [];
@@ -924,6 +934,7 @@ function abrirFormPedido(id, prefill){
         await ensureProductosPrecios();
         const p = id?pedidos.find(x=>x.id===id):(prefill||{});
         pedidoItems = parseDetalle(p.detalle);
+        pedidoMontoManual = !!(id && p.monto);   // al editar, respetar el total guardado (puede tener descuento)
         const conEnvio=(p.envio==='Sí'), envCobr=(p.enviocobrado==='Sí');
         document.getElementById('modalTitulo').textContent = id?'Editar pedido':'Nuevo pedido';
         document.getElementById('modalBody').innerHTML = `
@@ -931,12 +942,17 @@ function abrirFormPedido(id, prefill){
                 <label>Usuario</label>
                 <input type="text" id="pdCliente" list="dlClientes" value="${esc(p.cliente)}" onchange="autoTel('pd')" autocomplete="off">
                 ${clientesDatalist()}
-                <label>Teléfono</label>
-                <input type="tel" id="pdTel" value="${esc(p.telefono)}">
+                <div class="panel-form-2">
+                    <div><label>Teléfono</label><input type="tel" id="pdTel" value="${esc(p.telefono)}"></div>
+                    <div><label>Fecha de la venta</label><input type="date" id="pdFecha" value="${id&&p.fecha?String(p.fecha).slice(0,10):hoyISO()}"></div>
+                </div>
                 <label>Productos</label>
                 <div class="pd-items" id="pdItems"></div>
                 <button type="button" class="pd-add-prod" onclick="abrirPicker()"><i class="fas fa-plus"></i> Agregar productos</button>
-                <div class="pd-monto-row">Total productos: <b id="pdMontoTxt">$0</b></div>
+                <div class="pd-monto-row"><span>Subtotal productos</span><b id="pdMontoTxt">$0</b></div>
+                <label class="pd-total">Total a cobrar <small>(editá si hacés un descuento)</small>
+                    <input type="text" id="pdMontoInput" inputmode="numeric" placeholder="$0" oninput="montoEditadoManual()" value="${id&&p.monto?montoTxt(p.monto):''}">
+                </label>
                 <div class="pd-envio">
                     <label class="pd-check"><input type="checkbox" id="pdEnvio" ${conEnvio?'checked':''} onchange="toggleEnvio()"> Con envío</label>
                     <div id="pdEnvioDet" style="display:${conEnvio?'block':'none'}">
@@ -961,11 +977,14 @@ async function guardarPedido(e,id){
     e.preventDefault();
     const btn=document.getElementById('btnGuardarPed'); btn.disabled=true; btn.textContent='Guardando…';
     const detalle = pedidoItems.map(it=>it.cantidad+'x '+it.nombre).join(', ');
-    const monto = pedidoItems.reduce((s,it)=>s+precioDe(it.nombre)*it.cantidad,0);
+    const subtotal = pedidoItems.reduce((s,it)=>s+precioDe(it.nombre)*it.cantidad,0);
+    const montoInput = document.getElementById('pdMontoInput');
+    const montoManual = montoInput ? (parseInt(montoInput.value.replace(/[^\d]/g,''),10)||0) : 0;
+    const monto = montoManual || subtotal;   // usar el total editado si lo pusieron; si no, el subtotal
     const envio = document.getElementById('pdEnvio').checked?'Sí':'No';
     const envCobr = (envio==='Sí' && document.getElementById('pdEnvioCobr').checked)?'Sí':'No';
     const envMonto = envCobr==='Sí' ? String(val('pdEnvioMonto').replace(/[^\d]/g,'')) : '';
-    const datos={ cliente:val('pdCliente'), telefono:val('pdTel'), detalle, monto:String(monto), estado:val('pdEstado'), notas:val('pdNotas'), envio, enviocobrado:envCobr, enviomonto:envMonto };
+    const datos={ cliente:val('pdCliente'), fecha:val('pdFecha'), telefono:val('pdTel'), detalle, monto:String(monto), estado:val('pdEstado'), notas:val('pdNotas'), envio, enviocobrado:envCobr, enviomonto:envMonto };
     try {
         if(id){ await crm({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
         else { const r=await crm({action:'add',tab:'Pedidos',...datos}); pedidos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
