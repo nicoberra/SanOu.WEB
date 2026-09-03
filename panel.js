@@ -75,7 +75,6 @@ function navegar(sec) {
     else if (sec === 'productos') renderProductos();
     else if (sec === 'cotizaciones') renderCotizador();
     else if (sec === 'pedidos') renderPedidos();
-    else if (sec === 'seguimientos') renderSeguimientos();
     else if (sec === 'marketing') renderMarketing();
     else enConstruccion(sec);
 }
@@ -534,15 +533,14 @@ async function verCliente(id) {
         <div id="fichaHist" class="ficha-hist"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
     abrirModal();
     await ensurePedidos();
-    await ensureSeguimientos();
     await ensureCotizaciones();
     const n = norm(c.nombre);
-    const peds = pedidosDeCliente(c.nombre), segs = segsDeCliente(c.nombre);
+    const peds = pedidosDeCliente(c.nombre);
     const cots = cotizaciones.filter(x => norm(x.cliente) === n);
     const hist = document.getElementById('fichaHist');
     if (!hist) return;
-    if (!peds.length && !segs.length && !cots.length) {
-        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos, cotizaciones ni seguimientos de este usuario.</div>`;
+    if (!peds.length && !cots.length) {
+        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos ni cotizaciones de este usuario.</div>`;
         return;
     }
     hist.innerHTML =
@@ -551,10 +549,7 @@ async function verCliente(id) {
             ${badgeEstado(x.estado || 'Abierta')}</div>`).join('') +
         peds.map(p => `<div class="hist-item"><span class="hist-tipo hist-ped"><i class="fas fa-box"></i></span>
             <div><div class="hist-det">${esc(p.detalle) || 'Pedido'}</div><div class="hist-sub">${montoTxt(p.monto)}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''}</div></div>
-            ${badgeEstado(estPed(p.estado))}</div>`).join('') +
-        segs.map(s => `<div class="hist-item"><span class="hist-tipo hist-seg"><i class="fas fa-bell"></i></span>
-            <div><div class="hist-det">${esc(s.motivo) || 'Seguimiento'}</div><div class="hist-sub">${s.objetivo ? fechaTxt(s.objetivo) : ''}</div></div>
-            ${badgeEstado(s.estado)}</div>`).join('');
+            ${badgeEstado(estPed(p.estado))}</div>`).join('');
 }
 
 // Abrir el form de pedido con el cliente precargado (desde la ficha).
