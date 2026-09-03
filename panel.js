@@ -605,7 +605,7 @@ async function renderProductos() {
         _preciosCargados = true;
         pintarProductos(productos);
     } catch (e) {
-        document.getElementById('listaProd').innerHTML = `<div class="panel-error">No se pudieron cargar los productos.</div>`;
+        document.getElementById('listaProd').innerHTML = `<div class="panel-error">No se pudieron cargar los productos.<br><button class="panel-reintentar" onclick="renderProductos()"><i class="fas fa-rotate"></i> Reintentar</button></div>`;
     }
 }
 
