@@ -110,8 +110,11 @@ function pintarDashboard(){
     if (!v || seccionActual !== 'panel') return;
 
     const ahora = new Date();
-    const iniSemana = lunesDe(ahora), iniMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const iniSemana = lunesDe(ahora), iniMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1), iniAnio = new Date(ahora.getFullYear(), 0, 1);
     const ventas = pedidos.map(p => ({ fecha: parseFechaCRM(p.fecha), monto: montoVenta(p) })).filter(x => x.fecha);
+    const nVentasSemana = ventas.filter(x => x.fecha >= iniSemana).length;
+    const nVentasMes    = ventas.filter(x => x.fecha >= iniMes).length;
+    const nVentasAnio   = ventas.filter(x => x.fecha >= iniAnio).length;
     const factSemana = ventas.filter(x => x.fecha >= iniSemana).reduce((s, x) => s + x.monto, 0);
     const factMes    = ventas.filter(x => x.fecha >= iniMes).reduce((s, x) => s + x.monto, 0);
 
@@ -169,8 +172,9 @@ function pintarDashboard(){
 
         <h4 class="dash-sec">📦 Ventas</h4>
         <div class="dash-cards">
-            ${card('Por cobrar', fmtMoney(sumaMontos(porCobrar)), porCobrar.length + ' pedidos', 'fa-hand-holding-dollar', 'pedidos', true)}
-            ${card('Cobrado', fmtMoney(sumaMontos(cobrados)), cobrados.length + ' pedidos', 'fa-circle-check', 'pedidos', true)}
+            ${card('Esta semana', nVentasSemana, nVentasSemana === 1 ? 'venta' : 'ventas', 'fa-calendar-week', 'pedidos')}
+            ${card('Este mes', nVentasMes, nVentasMes === 1 ? 'venta' : 'ventas', 'fa-calendar-days', 'pedidos')}
+            ${card('Este año', nVentasAnio, nVentasAnio === 1 ? 'venta' : 'ventas', 'fa-calendar', 'pedidos')}
         </div>
 
         <h4 class="dash-sec">👥 Usuarios</h4>
