@@ -177,6 +177,14 @@ body:not(.bloqueado) .panel-lock{display:none}
 .pd-total{display:block;margin-top:10px;color:var(--gris2);font-size:.8rem;font-weight:600}
 .pd-total small{color:var(--gris);font-weight:400}
 .pd-total input{width:100%;margin-top:6px;background:var(--neg2);border:1px solid var(--am);border-radius:10px;padding:11px 12px;color:var(--am);font-size:1.1rem;font-weight:700}
+.pd-desc:not(:empty){margin-top:10px;background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.28);border-radius:10px;padding:10px 12px}
+.pd-desc-top{color:#ff9d2e;font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:7px}
+.pd-desc-top b{color:#ff9d2e}
+.pd-desc-top span{color:var(--gris2);font-weight:600}
+.pd-desc-list{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.pd-desc-fila{display:flex;justify-content:space-between;gap:10px;font-size:.8rem;color:var(--gris2)}
+.pd-desc-fila span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-desc-fila b{color:#ff9d2e;flex-shrink:0}
 .pd-envio{background:var(--neg3);border:1px solid var(--linea);border-radius:10px;padding:12px 14px;margin-top:12px}
 .pd-check{display:flex;align-items:center;gap:9px;font-size:.88rem;color:#fff;font-weight:600;cursor:pointer;margin-top:0}
 .pd-envio #pdEnvioDet{margin-top:10px;padding-top:10px;border-top:1px solid var(--linea)}

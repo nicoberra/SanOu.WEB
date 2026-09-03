@@ -98,8 +98,8 @@ async function renderDashboard(){
     const factMes    = ventas.filter(x => x.fecha >= iniMes).reduce((s, x) => s + x.monto, 0);
 
     const pend      = pedidos.filter(p => p.estado === 'Pendiente');
-    const porCobrar = pedidos.filter(p => p.estado !== 'Cobrado');
-    const cobrados  = pedidos.filter(p => p.estado === 'Cobrado');
+    const porCobrar = pedidos.filter(p => estPed(p.estado) !== 'Entregado');
+    const cobrados  = pedidos.filter(p => estPed(p.estado) === 'Entregado');
     const segPend   = seguimientos.filter(s => s.estado !== 'Hecho');
     const segVenc   = seguimientos.filter(esVencido);
     const cotAbiertas = cotizaciones.filter(c => !c.estado || c.estado === 'Abierta');
@@ -468,7 +468,7 @@ async function verCliente(id) {
             ${badgeEstado(x.estado || 'Abierta')}</div>`).join('') +
         peds.map(p => `<div class="hist-item"><span class="hist-tipo hist-ped"><i class="fas fa-box"></i></span>
             <div><div class="hist-det">${esc(p.detalle) || 'Pedido'}</div><div class="hist-sub">${montoTxt(p.monto)}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''}</div></div>
-            ${badgeEstado(p.estado)}</div>`).join('') +
+            ${badgeEstado(estPed(p.estado))}</div>`).join('') +
         segs.map(s => `<div class="hist-item"><span class="hist-tipo hist-seg"><i class="fas fa-bell"></i></span>
             <div><div class="hist-det">${esc(s.motivo) || 'Seguimiento'}</div><div class="hist-sub">${s.objetivo ? fechaTxt(s.objetivo) : ''}</div></div>
             ${badgeEstado(s.estado)}</div>`).join('');
@@ -728,7 +728,7 @@ function waLink(tel, texto){
     return `https://wa.me/${t.length<=11?'549'+t:t}?text=${encodeURIComponent(texto)}`;
 }
 function badgeEstado(e){
-    const cls = {'Pendiente':'est-pend','Entregado':'est-entr','Cobrado':'est-cobr','Hecho':'est-hecho',
+    const cls = {'Pendiente':'est-pend','Entregado':'est-cobr','Cobrado':'est-cobr','Hecho':'est-hecho',
                  'Abierta':'est-abierta','Ganada':'est-cobr','Perdida':'est-perd'}[e]||'est-pend';
     return `<span class="est ${cls}">${esc(e||'Pendiente')}</span>`;
 }
@@ -751,7 +751,9 @@ async function borrarRegistro(tab, id){
 
 // ─── PEDIDOS ────────────────────────────────────────────────────
 let pedidos = [];
-const PEDIDO_ESTADOS = ['Pendiente','Entregado','Cobrado'];
+const PEDIDO_ESTADOS = ['Pendiente','Entregado'];
+// Entregado = entregado y cobrado. Los pedidos viejos con "Cobrado" se muestran como "Entregado".
+function estPed(e){ return e === 'Cobrado' ? 'Entregado' : (e || 'Pendiente'); }
 
 async function renderPedidos(){
     const v = document.getElementById('vista');
@@ -773,9 +775,7 @@ async function renderPedidos(){
 // Mensaje de WhatsApp según el estado del pedido.
 function msgPedido(p){
     const nom = p.cliente ? ' ' + String(p.cliente).split(' ')[0] : '';
-    if (p.estado === 'Entregado' && montoTxt(p.monto))
-        return `¡Hola${nom}! Te escribo de San Ou 🔧. Te paso que quedó pendiente el pago de tu pedido${montoTxt(p.monto)?' por '+montoTxt(p.monto):''}. ¡Gracias!`;
-    if (p.estado === 'Cobrado')
+    if (estPed(p.estado) === 'Entregado')
         return `¡Hola${nom}! Gracias por tu compra en San Ou 🔧. Cualquier cosa que necesites, quedo a disposición.`;
     return `¡Hola${nom}! Te escribo de San Ou 🔧 por tu pedido${p.detalle?': '+p.detalle:''}. ¡Ya lo estamos preparando!`;
 }
@@ -792,7 +792,7 @@ function pintarPedidos(lista){
         return `<div class="rec-card">
             <div class="rec-top">
                 <span class="rec-nombre">${esc(p.cliente)||'(sin usuario)'}</span>
-                ${badgeEstado(p.estado)}
+                ${badgeEstado(estPed(p.estado))}
             </div>
             ${p.detalle?`<div class="rec-detalle">${esc(p.detalle)}</div>`:''}
             <div class="rec-meta">
@@ -803,7 +803,7 @@ function pintarPedidos(lista){
             </div>
             <div class="rec-acciones">
                 <select class="rec-estado" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
-                    ${PEDIDO_ESTADOS.map(e=>`<option ${e===(p.estado||'Pendiente')?'selected':''}>${e}</option>`).join('')}
+                    ${PEDIDO_ESTADOS.map(e=>`<option ${e===estPed(p.estado)?'selected':''}>${e}</option>`).join('')}
                 </select>
                 ${wa?`<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>`:''}
                 <button class="cli-btn" onclick="abrirFormPedido('${p.id}')"><i class="fas fa-pen"></i></button>
@@ -921,6 +921,7 @@ function renderPedidoItems(){
     // Autocompletar el "Total a cobrar" con el subtotal mientras no lo hayan editado a mano.
     const tot=document.getElementById('pdMontoInput');
     if(tot && !pedidoMontoManual) tot.value = monto ? montoTxt(monto) : '';
+    actualizarDescuento();
 }
 let pedidoMontoManual = false;
 function montoEditadoManual(){
@@ -928,6 +929,26 @@ function montoEditadoManual(){
     const inp=document.getElementById('pdMontoInput'); if(!inp) return;
     const dig=inp.value.replace(/[^\d]/g,'');
     inp.value = dig ? montoTxt(dig) : '';
+    actualizarDescuento();
+}
+// Muestra el descuento total ($ y %) y cuánto menos por producto (proporcional).
+function actualizarDescuento(){
+    const cont=document.getElementById('pdDescuento'); if(!cont) return;
+    const subtotal = pedidoItems.reduce((s,it)=>s+precioDe(it.nombre)*it.cantidad,0);
+    const inp=document.getElementById('pdMontoInput');
+    const total = inp ? (parseInt(inp.value.replace(/[^\d]/g,''),10)||0) : 0;
+    if(!subtotal || !total || total>=subtotal){ cont.innerHTML=''; return; }
+    const desc = subtotal - total;
+    const factor = desc/subtotal;
+    const pct = (factor*100).toFixed(1).replace('.',',');
+    const filas = pedidoItems.filter(it=>precioDe(it.nombre)).map(it=>{
+        const line = precioDe(it.nombre)*it.cantidad;
+        const d = Math.round(line*factor);
+        return `<div class="pd-desc-fila"><span>${esc(it.nombre)}</span><b>−${fmtMoney(d)}</b></div>`;
+    }).join('');
+    cont.innerHTML = `
+        <div class="pd-desc-top"><i class="fas fa-tag"></i> Descuento <b>−${fmtMoney(desc)}</b> <span>· ${pct}%</span></div>
+        <div class="pd-desc-list">${filas}</div>`;
 }
 function parseDetalle(det){
     if(!det) return [];
@@ -959,6 +980,7 @@ function abrirFormPedido(id, prefill){
                 <label class="pd-total">Total a cobrar <small>(editá si hacés un descuento)</small>
                     <input type="text" id="pdMontoInput" inputmode="numeric" placeholder="$0" oninput="montoEditadoManual()" value="${id&&p.monto?montoTxt(p.monto):''}">
                 </label>
+                <div id="pdDescuento" class="pd-desc"></div>
                 <div class="pd-envio">
                     <label class="pd-check"><input type="checkbox" id="pdEnvio" ${conEnvio?'checked':''} onchange="toggleEnvio()"> Con envío</label>
                     <div id="pdEnvioDet" style="display:${conEnvio?'block':'none'}">
@@ -970,7 +992,7 @@ function abrirFormPedido(id, prefill){
                     </div>
                 </div>
                 <label>Estado</label>
-                <select id="pdEstado">${PEDIDO_ESTADOS.map(e=>`<option ${e===(p.estado||'Pendiente')?'selected':''}>${e}</option>`).join('')}</select>
+                <select id="pdEstado">${PEDIDO_ESTADOS.map(e=>`<option ${e===estPed(p.estado)?'selected':''}>${e}</option>`).join('')}</select>
                 <label>Notas</label>
                 <textarea id="pdNotas" rows="2">${esc(p.notas)}</textarea>
                 <button type="submit" class="panel-form-submit" id="btnGuardarPed">Guardar</button>
