@@ -1,0 +1,65 @@
+{
+  "actualizado": "2026-09-03",
+  "resumen": "Tus competidores ganan con VIDEO: reels cortos mostrando la herramienta en acción (cortando/prensando en segundos) y testimonios de clientes. Exapol apunta a industria pesada (gama alta); vos podés ganarles en el segmento profesional/PyME con mejor precio, envíos rápidos y contenido más dinámico.",
+  "competidores": [
+    {
+      "nombre": "Exapol Herramientas",
+      "handle": "@Exapolherramientas",
+      "instagram": "https://www.instagram.com/Exapolherramientas/",
+      "youtube": "https://www.youtube.com/channel/UCpFZp2bZU7cVE_xfVH2IPag",
+      "web": "https://exapol.com.ar/",
+      "tipo": "Gama alta industrial (+30 años)",
+      "estrategia": "Se posicionan como 'potencia y precisión' para industria exigente. Usan su representación oficial de Enerpac y Alkitronic como prueba de autoridad. Comunican servicio técnico de por vida y asesoramiento. Tienen canal de YouTube con demostraciones.",
+      "productosEstrella": ["Multiplicadores de torque (Alkitronic)", "Cilindros hidráulicos (líneas THI/TPB)", "Bombas manuales y eléctricas", "Extractores monobloc", "Separadores de bridas"],
+      "aprender": "Copiá la idea de 'autoridad y confianza': mostrá garantía, respaldo y casos reales. NO compitas de frente en torque industrial pesado; ellos son caros. Tu ventaja: precio, stock inmediato y trato directo."
+    },
+    {
+      "nombre": "CUTMAC",
+      "handle": "@cutmac.cutmac",
+      "instagram": "https://www.instagram.com/cutmac.cutmac/",
+      "tipo": "Máquinas y herramientas industriales (nacional)",
+      "estrategia": "Muy fuertes en REELS de máquinas funcionando (sierras, tornos, fresadoras). Usan carruseles de catálogo, highlights organizados por categoría, testimonios de clientes y un Linktree para contacto directo. Venta B2B a talleres y empresas.",
+      "productosEstrella": ["Sierras sin fin", "Tornos", "Fresadoras", "Amoladoras", "Taladros de banco"],
+      "aprender": "Su fórmula ganadora: video corto de la herramienta EN ACCIÓN. Replicá eso con tus crimpadoras y cortacables. Copiá los highlights por categoría y los testimonios de clientes (ya tenés reseñas de Google)."
+    }
+  ],
+  "otrosParaVigilar": [
+    { "nombre": "INGCO Importadora Central", "web": "https://elferretero.com.ar/empresa/12476/ingco-herramientas-importadora-central/" },
+    { "nombre": "Crimaral (importador/distribuidor)", "web": "https://www.crimaral.com/" },
+    { "nombre": "Argentec Herramientas", "web": "https://argentecherramientas.com.ar/" },
+    { "nombre": "La Industrial (ferretería/bulonería)", "instagram": "https://www.instagram.com/laindustrial.sa/" }
+  ],
+  "replicar": [
+    {
+      "idea": "Reel de fuerza: crimpado/corte en segundos",
+      "formato": "Reel 10-15s",
+      "guion": "Primer plano de la herramienta prensando un cable grueso o cortando un cortacable de un tiro. Texto en pantalla: 'Sin esfuerzo. En segundos.' Cerrar con logo + precio.",
+      "referencia": "Mirá los reels de acción de @cutmac.cutmac: https://www.instagram.com/cutmac.cutmac/"
+    },
+    {
+      "idea": "Antes y después del crimpado",
+      "formato": "Reel o carrusel",
+      "guion": "Foto 1: cable pelado. Foto 2: crimpado prolijo y firme. Texto: 'Terminación profesional con la HHY-70A'. Llamado a la acción a WhatsApp.",
+      "referencia": ""
+    },
+    {
+      "idea": "Manual vs hidráulico (comparación)",
+      "formato": "Reel 15s split-screen",
+      "guion": "Izquierda: alguien sufriendo con pinza manual. Derecha: la crimpadora hidráulica en un movimiento. Texto: 'Dejá de sufrir'. ",
+      "referencia": ""
+    },
+    {
+      "idea": "'¿Qué herramienta necesito?' (educativo)",
+      "formato": "Carrusel",
+      "guion": "3-5 slides: por tipo de trabajo (electricista, tablerista, industria) qué modelo conviene. Posiciona a San Ou como experto que asesora (como hace Exapol).",
+      "referencia": "Estrategia de autoridad de https://exapol.com.ar/"
+    }
+  ],
+  "acciones": [
+    { "texto": "Subir 1 reel de la herramienta EN ACCIÓN esta semana (es lo que más engancha en el rubro)", "prioridad": "alta" },
+    { "texto": "Crear highlights por categoría en Instagram (Crimpadoras, Cortacables, Cilindros, etc.)", "prioridad": "alta" },
+    { "texto": "Publicar 2-3 testimonios/reseñas de clientes como historia (ya tenés reseñas de Google)", "prioridad": "media" },
+    { "texto": "Armar un Linktree con catálogo + WhatsApp + web (como CUTMAC)", "prioridad": "media" },
+    { "texto": "Destacar 'stock inmediato y envíos a todo el país' como diferencial frente a Exapol", "prioridad": "media" }
+  ]
+}

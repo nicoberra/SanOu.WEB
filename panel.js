@@ -76,6 +76,7 @@ function navegar(sec) {
     else if (sec === 'cotizaciones') renderCotizador();
     else if (sec === 'pedidos') renderPedidos();
     else if (sec === 'seguimientos') renderSeguimientos();
+    else if (sec === 'marketing') renderMarketing();
     else enConstruccion(sec);
 }
 
@@ -203,6 +204,68 @@ function pintarDashboard(){
 function renderCotizador() {
     document.getElementById('vista').innerHTML =
         `<iframe class="panel-iframe" src="cotizar.html" title="Cotizador"></iframe>`;
+}
+
+// ─── MARKETING ──────────────────────────────────────────────────
+let _marketingData = null;
+async function renderMarketing(){
+    const v = document.getElementById('vista');
+    const cache = _marketingData || cacheGet('marketing');
+    if (cache) pintarMarketing(cache);
+    else v.innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>`;
+    try {
+        const r = await fetch('marketing.json?_=' + Date.now());
+        const data = await r.json();
+        _marketingData = data; cacheSet('marketing', data);
+        if (seccionActual === 'marketing') pintarMarketing(data);
+    } catch(e){
+        if (!cache) v.innerHTML = `<div class="panel-error">No se pudo cargar el resumen de marketing.<br><button class="panel-reintentar" onclick="renderMarketing()"><i class="fas fa-rotate"></i> Reintentar</button></div>`;
+    }
+}
+function accionKey(i){ return 'mkt_accion_' + i; }
+function toggleAccion(i, el){ try{ localStorage.setItem(accionKey(i), el.checked?'1':''); }catch(e){} el.closest('.mkt-accion').classList.toggle('hecha', el.checked); }
+function pintarMarketing(d){
+    const v = document.getElementById('vista'); if(!v || seccionActual!=='marketing') return;
+    const comp = (d.competidores||[]).map(c => `
+        <div class="mkt-card">
+            <div class="mkt-nombre">${esc(c.nombre)}</div>
+            <div class="mkt-handle">${esc(c.handle||'')}${c.tipo?' · '+esc(c.tipo):''}</div>
+            <div class="mkt-links">
+                ${c.instagram?`<a href="${esc(c.instagram)}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Instagram</a>`:''}
+                ${c.youtube?`<a href="${esc(c.youtube)}" target="_blank" rel="noopener"><i class="fab fa-youtube"></i> YouTube</a>`:''}
+                ${c.web?`<a href="${esc(c.web)}" target="_blank" rel="noopener"><i class="fas fa-globe"></i> Web</a>`:''}
+            </div>
+            <div class="mkt-bloque"><b>Estrategia:</b> ${esc(c.estrategia||'')}</div>
+            ${c.productosEstrella&&c.productosEstrella.length?`<div class="mkt-bloque"><b>Productos estrella:</b> ${c.productosEstrella.map(esc).join(' · ')}</div>`:''}
+            ${c.aprender?`<div class="mkt-aprender"><i class="fas fa-lightbulb"></i> ${esc(c.aprender)}</div>`:''}
+        </div>`).join('');
+    const otros = (d.otrosParaVigilar||[]).map(o=>`<a class="mkt-otro" href="${esc(o.web||o.instagram||'#')}" target="_blank" rel="noopener">${esc(o.nombre)}</a>`).join('');
+    const replicar = (d.replicar||[]).map(r=>`
+        <div class="mkt-idea">
+            <div class="mkt-idea-tit"><i class="fas fa-film"></i> ${esc(r.idea)}${r.formato?` <span>${esc(r.formato)}</span>`:''}</div>
+            <div class="mkt-idea-guion">${esc(r.guion||'')}</div>
+            ${r.referencia?`<div class="mkt-idea-ref"><i class="fas fa-link"></i> ${esc(r.referencia)}</div>`:''}
+        </div>`).join('');
+    const acciones = (d.acciones||[]).map((a,i)=>{
+        let done=false; try{ done = localStorage.getItem(accionKey(i))==='1'; }catch(e){}
+        return `<label class="mkt-accion${done?' hecha':''}">
+            <input type="checkbox" ${done?'checked':''} onchange="toggleAccion(${i},this)">
+            <span class="mkt-accion-txt">${esc(a.texto)}</span>
+            ${a.prioridad?`<span class="mkt-prio mkt-prio-${esc(a.prioridad)}">${esc(a.prioridad)}</span>`:''}
+        </label>`;
+    }).join('');
+    v.innerHTML = `
+        <div class="mkt-head">
+            <div class="mkt-fecha"><i class="fas fa-bullhorn"></i> Competencia · <b>${esc(d.actualizado||'')}</b></div>
+            ${d.resumen?`<div class="mkt-resumen">${esc(d.resumen)}</div>`:''}
+        </div>
+        <h4 class="dash-sec">🎯 Competidores</h4>
+        ${comp}
+        ${otros?`<div class="mkt-otros"><span>También seguí:</span> ${otros}</div>`:''}
+        <h4 class="dash-sec">🎬 Contenido para replicar</h4>
+        ${replicar}
+        <h4 class="dash-sec">✅ Acciones de marketing</h4>
+        <div class="mkt-acciones">${acciones}</div>`;
 }
 
 // ─── FACTURACIÓN ─────────────────────────────────────────────────
