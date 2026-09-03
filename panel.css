@@ -97,6 +97,13 @@ body:not(.bloqueado) .panel-lock{display:none}
 .fact-fila>span:first-child{color:var(--gris2);flex:1}
 .fact-n{color:var(--gris);font-size:.76rem}
 .fact-fila b{color:var(--am);min-width:80px;text-align:right}
+.fact-cifras{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.fact-cifras b{color:var(--am);font-size:.9rem}
+.fact-ben{color:#4ade80;font-size:.74rem;font-weight:700}
+.dash-lista h4 small{color:var(--gris);font-size:.68rem;font-weight:500;margin-left:6px}
+.dash-sec small{color:var(--gris);font-weight:500;font-size:.72rem}
+.fact-card-ben .dash-val-sm{color:#4ade80}
+.fact-card-ben .dash-ic{color:#4ade80}
 
 /* ── Toggle Mis clientes / Clientes web ── */
 .cli-tabs{display:flex;gap:8px;margin-bottom:14px}

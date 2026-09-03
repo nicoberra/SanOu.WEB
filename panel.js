@@ -158,9 +158,9 @@ async function renderDashboard(){
             ${card('Cobrado', fmtMoney(sumaMontos(cobrados)), cobrados.length + ' pedidos', 'fa-circle-check', 'pedidos', true)}
         </div>
 
-        <h4 class="dash-sec">👥 Clientes</h4>
+        <h4 class="dash-sec">👥 Usuarios</h4>
         <div class="dash-cards">
-            ${card('Clientes', clientes.length, web + ' de la web', 'fa-users', 'clientes')}
+            ${card('Usuarios', clientes.length, web + ' de la web', 'fa-users', 'clientes')}
             ${card('Compraron', nComp, 'hicieron pedidos', 'fa-cart-shopping', 'clientes')}
             ${card('No compraron', noComp, 'todavía', 'fa-user-clock', 'clientes')}
         </div>
@@ -171,8 +171,8 @@ async function renderDashboard(){
             ${card('Seguimientos', segPend.length, segVenc.length + ' vencidos', 'fa-bell', 'seguimientos')}
         </div>
 
-        ${listaMini('⚠️ Seguimientos vencidos', segVenc.slice(0, 5).map(s => `${s.cliente || '(sin cliente)'} — ${s.motivo || ''}`), 'seguimientos')}
-        ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin cliente)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}`;
+        ${listaMini('⚠️ Seguimientos vencidos', segVenc.slice(0, 5).map(s => `${s.cliente || '(sin usuario)'} — ${s.motivo || ''}`), 'seguimientos')}
+        ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin usuario)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}`;
 
     // Ganancia del mes (necesita costos USD + dólar): se calcula aparte para no demorar el panel.
     Promise.all([ensureProductosPrecios(), ensureDolar()]).then(() => {
@@ -211,19 +211,33 @@ async function renderFacturacion(){
     const v = document.getElementById('vista');
     v.innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando facturación…</div>`;
     await ensurePedidos();
+    await Promise.all([ensureProductosPrecios(), ensureDolar()]);   // costos + dólar para el beneficio
     if (seccionActual !== 'facturacion') return;
 
-    const ventas = pedidos.map(p => ({ fecha: parseFechaCRM(p.fecha), monto: montoVenta(p) })).filter(x => x.fecha);
+    // Cada venta: monto (facturación) + ganancia (facturación − costo). medible = tiene todos los costos cargados.
+    const ventas = pedidos.map(p => {
+        const g = gananciaPedido(p);
+        return { fecha: parseFechaCRM(p.fecha), monto: montoVenta(p), ganancia: g.ganancia, medible: g.medible };
+    }).filter(x => x.fecha);
     if (!ventas.length) {
-        v.innerHTML = `<div class="panel-vacio"><i class="fas fa-coins"></i><h3>Sin ventas todavía</h3><p>Cargá pedidos y acá vas a ver la facturación por semana y por mes.</p></div>`;
+        v.innerHTML = `<div class="panel-vacio"><i class="fas fa-coins"></i><h3>Sin ventas todavía</h3><p>Cargá pedidos y acá vas a ver la facturación y el beneficio por semana, mes y año.</p></div>`;
         return;
     }
 
     const ahora = new Date();
     const iniSemana = lunesDe(ahora);
-    const iniMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const iniMes  = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const iniAnio = new Date(ahora.getFullYear(), 0, 1);
     const enSemana = ventas.filter(x => x.fecha >= iniSemana);
     const enMes    = ventas.filter(x => x.fecha >= iniMes);
+    const enAnio   = ventas.filter(x => x.fecha >= iniAnio);
+
+    // Suma de facturación y de beneficio de un conjunto de ventas.
+    const fact = arr => arr.reduce((s,x)=>s+x.monto, 0);
+    const benef = arr => { let g=0, m=0; arr.forEach(x=>{ if(x.medible){ g+=x.ganancia; m++; } }); return { g, m, total: arr.length }; };
+    const benSem = benef(enSemana), benMes = benef(enMes), benAnio = benef(enAnio);
+    // Subtítulo de una tarjeta de beneficio: avisa si faltan costos.
+    const benSub = b => b.total === 0 ? 'sin ventas' : (b.m === b.total ? 'facturación − costo' : `${b.m} de ${b.total} con costo`);
 
     // Promedios (sobre el tiempo transcurrido desde la primera venta)
     const primera = ventas.map(x => x.fecha).sort((a,b)=>a-b)[0];
@@ -233,27 +247,51 @@ async function renderFacturacion(){
     const avgVSem = (ventas.length / semanasSpan), avgVMes = (ventas.length / mesesSpan);
     const avgMSem = (totalMonto / semanasSpan),    avgMMes = (totalMonto / mesesSpan);
 
-    // Agrupar por mes y por semana
-    const porMes = {}, porSem = {};
+    // Agrupar por año, por mes y por semana (con beneficio)
+    const porAnio = {}, porMes = {}, porSem = {};
     ventas.forEach(x => {
+        const ak = x.fecha.getFullYear();
+        (porAnio[ak] = porAnio[ak] || {monto:0, ben:0, mb:0, n:0, d:new Date(ak,0,1)}); porAnio[ak].monto += x.monto; porAnio[ak].n++; if(x.medible){porAnio[ak].ben+=x.ganancia;porAnio[ak].mb++;}
         const mk = x.fecha.getFullYear()+'-'+x.fecha.getMonth();
-        (porMes[mk] = porMes[mk] || {monto:0, n:0, d:x.fecha}); porMes[mk].monto += x.monto; porMes[mk].n++;
+        (porMes[mk] = porMes[mk] || {monto:0, ben:0, mb:0, n:0, d:x.fecha}); porMes[mk].monto += x.monto; porMes[mk].n++; if(x.medible){porMes[mk].ben+=x.ganancia;porMes[mk].mb++;}
         const lk = lunesDe(x.fecha); const sk = lk.getTime();
-        (porSem[sk] = porSem[sk] || {monto:0, n:0, d:lk}); porSem[sk].monto += x.monto; porSem[sk].n++;
+        (porSem[sk] = porSem[sk] || {monto:0, ben:0, mb:0, n:0, d:lk}); porSem[sk].monto += x.monto; porSem[sk].n++; if(x.medible){porSem[sk].ben+=x.ganancia;porSem[sk].mb++;}
     });
+    const anios = Object.values(porAnio).sort((a,b)=>b.d-a.d);
     const meses = Object.values(porMes).sort((a,b)=>b.d-a.d).slice(0,6);
     const sems  = Object.values(porSem).sort((a,b)=>b.d-a.d).slice(0,6);
+    const etAnio = d => String(d.getFullYear());
     const etMes = d => MESES[d.getMonth()]+' '+d.getFullYear();
     const etSem = d => { const f=new Date(d); f.setDate(f.getDate()+6); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} – ${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}`; };
+    // Fila de la lista: facturación + beneficio (si hay costos cargados en ese período).
+    const filaBen = (o, et) => `<div class="fact-fila"><span>${et(o.d)}</span>
+        <span class="fact-cifras"><b>${fmtMoney(o.monto)}</b>${o.mb ? `<span class="fact-ben">↑ ${fmtMoney(o.ben)}</span>` : ''}</span></div>`;
 
     v.innerHTML = `
+        <h4 class="dash-sec">💰 Facturación</h4>
         <div class="dash-cards">
             <div class="dash-card"><div class="dash-ic"><i class="fas fa-calendar-week"></i></div>
-                <div class="dash-val dash-val-sm">${fmtMoney(enSemana.reduce((s,x)=>s+x.monto,0))}</div>
+                <div class="dash-val dash-val-sm">${fmtMoney(fact(enSemana))}</div>
                 <div class="dash-tit">Esta semana</div><div class="dash-sub">${enSemana.length} venta${enSemana.length!==1?'s':''}</div></div>
             <div class="dash-card"><div class="dash-ic"><i class="fas fa-calendar-days"></i></div>
-                <div class="dash-val dash-val-sm">${fmtMoney(enMes.reduce((s,x)=>s+x.monto,0))}</div>
+                <div class="dash-val dash-val-sm">${fmtMoney(fact(enMes))}</div>
                 <div class="dash-tit">Este mes</div><div class="dash-sub">${enMes.length} venta${enMes.length!==1?'s':''}</div></div>
+            <div class="dash-card"><div class="dash-ic"><i class="fas fa-calendar"></i></div>
+                <div class="dash-val dash-val-sm">${fmtMoney(fact(enAnio))}</div>
+                <div class="dash-tit">Este año</div><div class="dash-sub">${enAnio.length} venta${enAnio.length!==1?'s':''}</div></div>
+        </div>
+
+        <h4 class="dash-sec">📈 Beneficio <small>(facturación − costo)</small></h4>
+        <div class="dash-cards">
+            <div class="dash-card fact-card-ben"><div class="dash-ic"><i class="fas fa-arrow-trend-up"></i></div>
+                <div class="dash-val dash-val-sm">${fmtMoney(benSem.g)}</div>
+                <div class="dash-tit">Esta semana</div><div class="dash-sub">${benSub(benSem)}</div></div>
+            <div class="dash-card fact-card-ben"><div class="dash-ic"><i class="fas fa-arrow-trend-up"></i></div>
+                <div class="dash-val dash-val-sm">${fmtMoney(benMes.g)}</div>
+                <div class="dash-tit">Este mes</div><div class="dash-sub">${benSub(benMes)}</div></div>
+            <div class="dash-card fact-card-ben"><div class="dash-ic"><i class="fas fa-arrow-trend-up"></i></div>
+                <div class="dash-val dash-val-sm">${fmtMoney(benAnio.g)}</div>
+                <div class="dash-tit">Este año</div><div class="dash-sub">${benSub(benAnio)}</div></div>
         </div>
 
         <div class="fact-prom">
@@ -267,12 +305,16 @@ async function renderFacturacion(){
         </div>
 
         <div class="dash-lista">
-            <h4>📅 Por mes</h4>
-            ${meses.map(m => `<div class="fact-fila"><span>${etMes(m.d)}</span><span class="fact-n">${m.n} venta${m.n!==1?'s':''}</span><b>${fmtMoney(m.monto)}</b></div>`).join('')}
+            <h4>📆 Por año <small>facturación · beneficio</small></h4>
+            ${anios.map(a => filaBen(a, etAnio)).join('')}
         </div>
         <div class="dash-lista">
-            <h4>🗓️ Por semana</h4>
-            ${sems.map(s => `<div class="fact-fila"><span>${etSem(s.d)}</span><span class="fact-n">${s.n} venta${s.n!==1?'s':''}</span><b>${fmtMoney(s.monto)}</b></div>`).join('')}
+            <h4>📅 Por mes <small>facturación · beneficio</small></h4>
+            ${meses.map(m => filaBen(m, etMes)).join('')}
+        </div>
+        <div class="dash-lista">
+            <h4>🗓️ Por semana <small>facturación · beneficio</small></h4>
+            ${sems.map(s => filaBen(s, etSem)).join('')}
         </div>`;
 }
 
@@ -308,15 +350,15 @@ async function renderClientes() {
     const v = document.getElementById('vista');
     v.innerHTML = `
         <div class="cli-tabs">
-            <button class="cli-tab active" data-v="mis" onclick="cambiarVistaClientes('mis')">Mis clientes <span id="cntMis"></span></button>
-            <button class="cli-tab" data-v="web" onclick="cambiarVistaClientes('web')">Clientes web <span id="cntWeb"></span></button>
+            <button class="cli-tab active" data-v="mis" onclick="cambiarVistaClientes('mis')">Mis usuarios <span id="cntMis"></span></button>
+            <button class="cli-tab" data-v="web" onclick="cambiarVistaClientes('web')">Usuarios web <span id="cntWeb"></span></button>
         </div>
         <div class="panel-sec-head">
             <div class="panel-buscar">
                 <i class="fas fa-search"></i>
                 <input type="text" id="buscarCli" placeholder="Buscar por nombre, empresa, teléfono…" oninput="filtrarClientes()">
             </div>
-            <button class="panel-btn-add" onclick="abrirFormCliente()"><i class="fas fa-plus"></i> Nuevo cliente</button>
+            <button class="panel-btn-add" onclick="abrirFormCliente()"><i class="fas fa-plus"></i> Nuevo usuario</button>
         </div>
         <div class="panel-lista" id="listaClientes"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
     document.querySelectorAll('.cli-tab').forEach(b => b.classList.toggle('active', b.dataset.v === vistaClientes));
@@ -328,7 +370,7 @@ async function renderClientes() {
         ensurePedidos().then(() => { if (seccionActual === 'clientes') filtrarClientes(); }); // sumar contador de pedidos
     } catch (e) {
         document.getElementById('listaClientes').innerHTML =
-            `<div class="panel-error">No se pudieron cargar los clientes. Revisá tu conexión.</div>`;
+            `<div class="panel-error">No se pudieron cargar los usuarios. Revisá tu conexión.</div>`;
     }
 }
 
@@ -359,7 +401,7 @@ function pintarClientes(lista) {
     if (!lista.length) {
         cont.innerHTML = `<div class="panel-vacio-chico">${vistaClientes === 'web'
             ? 'Todavía no se registró nadie desde la web.'
-            : 'No hay clientes cargados. Agregá el primero con "Nuevo cliente".'}</div>`;
+            : 'No hay usuarios cargados. Agregá el primero con "Nuevo usuario".'}</div>`;
         return;
     }
     cont.innerHTML = lista.map(c => {
@@ -391,7 +433,7 @@ function pintarClientes(lista) {
 async function verCliente(id) {
     const c = clientes.find(x => x.id === id);
     if (!c) return;
-    document.getElementById('modalTitulo').textContent = c.nombre || 'Cliente';
+    document.getElementById('modalTitulo').textContent = c.nombre || 'Usuario';
     document.getElementById('modalBody').innerHTML = `
         <div class="ficha-datos">
             ${c.razon ? `<div class="ficha-fila"><span>Razón social</span><b>${esc(c.razon)}</b></div>` : ''}
@@ -408,7 +450,7 @@ async function verCliente(id) {
             <button class="panel-btn-add" onclick="abrirFormPedidoDesde('${esc(c.nombre)}','${esc(c.telefono)}')"><i class="fas fa-plus"></i> Nuevo pedido</button>
             ${waLink(c.telefono, `¡Hola ${(c.nombre||'').split(' ')[0]}! Te escribo de San Ou 🔧.`) ? `<a class="cli-btn cli-wa" href="${waLink(c.telefono, `¡Hola ${(c.nombre||'').split(' ')[0]}! Te escribo de San Ou 🔧.`)}" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
             <button class="cli-btn" onclick="abrirFormCliente('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
-            <button class="cli-btn cli-del" onclick="cerrarModal(); borrarCliente('${c.id}')" title="Eliminar cliente"><i class="fas fa-trash"></i></button>
+            <button class="cli-btn cli-del" onclick="cerrarModal(); borrarCliente('${c.id}')" title="Eliminar usuario"><i class="fas fa-trash"></i></button>
         </div>
         <h4 class="ficha-tit">Historial</h4>
         <div id="fichaHist" class="ficha-hist"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
@@ -422,7 +464,7 @@ async function verCliente(id) {
     const hist = document.getElementById('fichaHist');
     if (!hist) return;
     if (!peds.length && !segs.length && !cots.length) {
-        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos, cotizaciones ni seguimientos de este cliente.</div>`;
+        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos, cotizaciones ni seguimientos de este usuario.</div>`;
         return;
     }
     hist.innerHTML =
@@ -445,7 +487,7 @@ function abrirFormPedidoDesde(nombre, tel) {
 
 function abrirFormCliente(id) {
     const c = id ? clientes.find(x => x.id === id) : {};
-    document.getElementById('modalTitulo').textContent = id ? 'Editar cliente' : 'Nuevo cliente';
+    document.getElementById('modalTitulo').textContent = id ? 'Editar usuario' : 'Nuevo usuario';
     document.getElementById('modalBody').innerHTML = `
         <form class="panel-form" onsubmit="guardarCliente(event, '${id || ''}')">
             <div class="panel-form-2">
@@ -514,7 +556,7 @@ async function guardarCliente(e, id) {
 
 async function borrarCliente(id) {
     const c = clientes.find(x => x.id === id);
-    if (!confirm(`¿Eliminar a ${c ? c.nombre : 'este cliente'}? No se puede deshacer.`)) return;
+    if (!confirm(`¿Eliminar a ${c ? c.nombre : 'este usuario'}? No se puede deshacer.`)) return;
     clientes = clientes.filter(x => x.id !== id);       // sacarlo en el acto
     actualizarContadores();
     filtrarClientes();
@@ -713,7 +755,7 @@ async function renderPedidos(){
     v.innerHTML = `
         <div class="panel-sec-head">
             <div class="panel-buscar"><i class="fas fa-search"></i>
-                <input type="text" id="buscarPed" placeholder="Buscar por cliente, detalle…" oninput="filtrarPedidos()"></div>
+                <input type="text" id="buscarPed" placeholder="Buscar por usuario, detalle…" oninput="filtrarPedidos()"></div>
             <button class="panel-btn-add" onclick="abrirFormPedido()"><i class="fas fa-plus"></i> Nuevo pedido</button>
         </div>
         <div class="panel-lista" id="listaPed"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
@@ -746,7 +788,7 @@ function pintarPedidos(lista){
         const g = gananciaPedido(p);
         return `<div class="rec-card">
             <div class="rec-top">
-                <span class="rec-nombre">${esc(p.cliente)||'(sin cliente)'}</span>
+                <span class="rec-nombre">${esc(p.cliente)||'(sin usuario)'}</span>
                 ${badgeEstado(p.estado)}
             </div>
             ${p.detalle?`<div class="rec-detalle">${esc(p.detalle)}</div>`:''}
@@ -883,7 +925,7 @@ function abrirFormPedido(id, prefill){
         document.getElementById('modalTitulo').textContent = id?'Editar pedido':'Nuevo pedido';
         document.getElementById('modalBody').innerHTML = `
             <form class="panel-form" onsubmit="guardarPedido(event,'${id||''}')">
-                <label>Cliente</label>
+                <label>Usuario</label>
                 <input type="text" id="pdCliente" list="dlClientes" value="${esc(p.cliente)}" onchange="autoTel('pd')" autocomplete="off">
                 ${clientesDatalist()}
                 <label>Teléfono</label>
@@ -970,7 +1012,7 @@ function pintarSeguimientos(lista){
         const venc = esVencido(s);
         return `<div class="rec-card${venc?' rec-card-venc':''}">
             <div class="rec-top">
-                <span class="rec-nombre">${esc(s.cliente)||'(sin cliente)'}</span>
+                <span class="rec-nombre">${esc(s.cliente)||'(sin usuario)'}</span>
                 ${badgeEstado(s.estado)}
             </div>
             ${s.motivo?`<div class="rec-detalle">${esc(s.motivo)}</div>`:''}
@@ -995,7 +1037,7 @@ function abrirFormSeguimiento(id){
         document.getElementById('modalTitulo').textContent = id?'Editar seguimiento':'Nuevo seguimiento';
         document.getElementById('modalBody').innerHTML = `
             <form class="panel-form" onsubmit="guardarSeguimiento(event,'${id||''}')">
-                <label>Cliente</label>
+                <label>Usuario</label>
                 <input type="text" id="sgCliente" list="dlClientes" value="${esc(s.cliente)}" onchange="autoTel('sg')" autocomplete="off">
                 ${clientesDatalist()}
                 <label>Teléfono</label>
