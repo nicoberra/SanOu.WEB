@@ -237,6 +237,7 @@ body:not(.bloqueado) .panel-lock{display:none}
 .panel-form select{background:var(--neg3);border:1px solid var(--linea);border-radius:9px;padding:11px 12px;color:#fff;
     font-family:inherit;font-size:.92rem;-webkit-appearance:none;appearance:none}
 .panel-form select:focus{outline:none;border-color:var(--am)}
+.panel-form input[readonly]{opacity:.6;cursor:default;background:var(--neg2)}
 
 /* ── Cotizador embebido ── */
 .panel-iframe{

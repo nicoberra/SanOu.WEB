@@ -111,9 +111,7 @@ async function renderDashboard(){
 
     // Agenda del día: lo que necesita acción hoy.
     const agenda = [];
-    if (segVenc.length)     agenda.push({ t: `${segVenc.length} seguimiento${segVenc.length>1?'s':''} vencido${segVenc.length>1?'s':''}`, ic: 'fa-bell', sec: 'seguimientos' });
     if (porCobrar.length)   agenda.push({ t: `${porCobrar.length} pedido${porCobrar.length>1?'s':''} por cobrar`, ic: 'fa-hand-holding-dollar', sec: 'pedidos' });
-    if (pend.length)        agenda.push({ t: `${pend.length} pedido${pend.length>1?'s':''} por entregar`, ic: 'fa-box', sec: 'pedidos' });
     if (cotAbiertas.length) agenda.push({ t: `${cotAbiertas.length} cotización${cotAbiertas.length>1?'es':''} sin respuesta`, ic: 'fa-file-invoice-dollar', sec: 'cotizaciones' });
     const agendaHTML = `
         <div class="dash-agenda">
@@ -153,7 +151,6 @@ async function renderDashboard(){
 
         <h4 class="dash-sec">📦 Ventas</h4>
         <div class="dash-cards">
-            ${card('Pedidos pendientes', pend.length, 'sin entregar', 'fa-hourglass-half', 'pedidos')}
             ${card('Por cobrar', fmtMoney(sumaMontos(porCobrar)), porCobrar.length + ' pedidos', 'fa-hand-holding-dollar', 'pedidos', true)}
             ${card('Cobrado', fmtMoney(sumaMontos(cobrados)), cobrados.length + ' pedidos', 'fa-circle-check', 'pedidos', true)}
         </div>
@@ -168,10 +165,8 @@ async function renderDashboard(){
         <h4 class="dash-sec">⏰ Pendientes</h4>
         <div class="dash-cards">
             ${card('Cotizaciones abiertas', cotAbiertas.length, '', 'fa-file-invoice-dollar', 'cotizaciones')}
-            ${card('Seguimientos', segPend.length, segVenc.length + ' vencidos', 'fa-bell', 'seguimientos')}
         </div>
 
-        ${listaMini('⚠️ Seguimientos vencidos', segVenc.slice(0, 5).map(s => `${s.cliente || '(sin usuario)'} — ${s.motivo || ''}`), 'seguimientos')}
         ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin usuario)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}`;
 
     // Ganancia del mes (necesita costos USD + dólar): se calcula aparte para no demorar el panel.
@@ -712,11 +707,21 @@ async function ensureClientes(){
 function clientesDatalist(){
     return `<datalist id="dlClientes">${clientes.map(c=>`<option value="${esc(c.nombre)}"></option>`).join('')}</datalist>`;
 }
+// Lista desplegable de usuarios (para el pedido: se elige, no se escribe).
+function clientesSelect(selected){
+    const sel = selected || '';
+    let opts = clientes.map(c=>`<option value="${esc(c.nombre)}" ${norm(c.nombre)===norm(sel)?'selected':''}>${esc(c.nombre)}</option>`).join('');
+    if (sel && !clientes.some(c=>norm(c.nombre)===norm(sel)))
+        opts = `<option value="${esc(sel)}" selected>${esc(sel)}</option>` + opts;
+    return `<select id="pdCliente" onchange="autoTel('pd')"><option value="">— Elegí un usuario —</option>${opts}</select>`;
+}
 function telDeCliente(nombre){ const n=norm(nombre); const c=clientes.find(x=>norm(x.nombre)===n); return c?c.telefono:''; }
 function autoTel(pref){
     const tel = telDeCliente(document.getElementById(pref+'Cliente').value);
     const campo = document.getElementById(pref+'Tel');
-    if (tel && campo && !campo.value) campo.value = tel;
+    if (!campo) return;
+    if (campo.readOnly) campo.value = tel || '';        // pedido: refleja el del usuario, no se edita
+    else if (tel && !campo.value) campo.value = tel;    // seguimiento: completa si está vacío
 }
 function waLink(tel, texto){
     const t = soloDigitos(tel); if(!t) return '';
@@ -942,10 +947,9 @@ function abrirFormPedido(id, prefill){
         document.getElementById('modalBody').innerHTML = `
             <form class="panel-form" onsubmit="guardarPedido(event,'${id||''}')">
                 <label>Usuario</label>
-                <input type="text" id="pdCliente" list="dlClientes" value="${esc(p.cliente)}" onchange="autoTel('pd')" autocomplete="off">
-                ${clientesDatalist()}
+                ${clientesSelect(p.cliente)}
                 <div class="panel-form-2">
-                    <div><label>Teléfono</label><input type="tel" id="pdTel" value="${esc(p.telefono)}"></div>
+                    <div><label>Teléfono</label><input type="tel" id="pdTel" value="${esc(p.telefono)}" readonly></div>
                     <div><label>Fecha de la venta</label><input type="date" id="pdFecha" value="${id&&p.fecha?String(p.fecha).slice(0,10):hoyISO()}"></div>
                 </div>
                 <label>Productos</label>
