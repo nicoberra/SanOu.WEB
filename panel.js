@@ -587,6 +587,7 @@ function cambiarDolarTipo(t){ dolar.tipo=t; pintarBarraDolar(); filtrarProductos
 async function refrescarDolar(){ const el=document.getElementById('barraDolar'); if(el)el.innerHTML='<i class="fas fa-rotate fa-spin"></i>'; await ensureDolar(true); pintarBarraDolar(); filtrarProductos(); }
 
 async function renderProductos() {
+    prodCat = 'all';
     const v = document.getElementById('vista');
     v.innerHTML = `
         <div class="dol-bar" id="barraDolar"></div>
@@ -597,21 +598,46 @@ async function renderProductos() {
             </div>
         </div>
         <p class="prod-ayuda">Precio, stock, destacado y costo en USD. Se guarda al instante. El costo se convierte a pesos al dólar actual.</p>
+        <div class="prod-cats" id="prodCats"></div>
         <div class="panel-lista" id="listaProd"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando productos…</div></div>`;
     ensureDolar().then(pintarBarraDolar);
     try {
         const r = await crm({ action: 'productos_list', tab: 'Clientes' });
         productos = (r && r.ok && r.rows) ? r.rows : [];
         _preciosCargados = true;
-        pintarProductos(productos);
+        renderProdCats();
+        filtrarProductos();
     } catch (e) {
         document.getElementById('listaProd').innerHTML = `<div class="panel-error">No se pudieron cargar los productos.<br><button class="panel-reintentar" onclick="renderProductos()"><i class="fas fa-rotate"></i> Reintentar</button></div>`;
     }
 }
 
+// Categoría de un producto de la planilla (según el catálogo, por nombre o sheetName).
+function catDeProducto(nombre){
+    const n = norm(nombre);
+    const cat = (window.SANOU_PRODUCTOS||[]).find(p => norm(p.name)===n || (p.sheetName && norm(p.sheetName)===n));
+    return cat ? cat.category : 'otros';   // los que no están en el catálogo van a "Otros"
+}
+let prodCat = 'all';
+function renderProdCats(){
+    const cont = document.getElementById('prodCats'); if(!cont) return;
+    const nombres = catNombres();
+    const conProd = {};
+    productos.forEach(p => { conProd[catDeProducto(p.nombre)] = true; });
+    // categorías conocidas con productos + cualquier otra suelta que aparezca
+    const orden = Object.keys(nombres).filter(k => conProd[k]);
+    Object.keys(conProd).forEach(k => { if(!orden.includes(k)) orden.push(k); });
+    const claves = ['all', ...orden];
+    cont.innerHTML = claves.map(k =>
+        `<button class="prod-cat${k===prodCat?' active':''}" onclick="prodCategoria('${k}')">${k==='all'?'Todas':esc(nombres[k]||k)}</button>`).join('');
+}
+function prodCategoria(k){ prodCat = k; renderProdCats(); filtrarProductos(); }
+
 function filtrarProductos() {
     const q = (document.getElementById('buscarProd').value || '').toLowerCase().trim();
-    const lista = !q ? productos : productos.filter(p => p.nombre.toLowerCase().includes(q));
+    let lista = productos;
+    if (prodCat !== 'all') lista = lista.filter(p => catDeProducto(p.nombre) === prodCat);
+    if (q) lista = lista.filter(p => p.nombre.toLowerCase().includes(q));
     pintarProductos(lista, q);
 }
 
@@ -1178,3 +1204,63 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => input.focus(), 100);
     }
 });
+
+// ─── TIRAR PARA RECARGAR (pull-to-refresh) ──────────────────────
+(function pullToRefresh(){
+    const TH = 75;               // cuánto hay que tirar para que recargue
+    let startY = 0, dist = 0, tirando = false, ind = null;
+    function scrollTop(){ return window.scrollY || document.documentElement.scrollTop || 0; }
+    function hayOverlay(){
+        if (document.body.classList.contains('bloqueado')) return true;
+        return ['modalForm','pickerModal','confirmOverlay','modalOverlay','pickerOverlay']
+            .some(id => { const e = document.getElementById(id); return e && e.classList.contains('active'); });
+    }
+    function crearInd(){
+        if (ind) return ind;
+        ind = document.createElement('div');
+        ind.className = 'ptr';
+        ind.innerHTML = '<i class="fas fa-arrow-down"></i>';
+        document.body.appendChild(ind);
+        return ind;
+    }
+    function ocultar(){
+        if (!ind) return;
+        ind.style.transition = 'transform .25s ease, opacity .2s';
+        ind.style.transform = 'translateX(-50%) translateY(0)';
+        ind.style.opacity = '0';
+        ind.classList.remove('ptr-ready');
+    }
+    window.addEventListener('touchstart', e => {
+        if (hayOverlay() || scrollTop() > 0 || e.touches.length !== 1) { tirando = false; return; }
+        startY = e.touches[0].clientY; dist = 0; tirando = true;
+    }, { passive: true });
+    window.addEventListener('touchmove', e => {
+        if (!tirando) return;
+        dist = e.touches[0].clientY - startY;
+        if (dist <= 0 || scrollTop() > 0) { tirando = false; ocultar(); return; }
+        e.preventDefault();
+        const pull = Math.min(dist * 0.5, 110);
+        const i = crearInd();
+        i.style.transition = 'none';
+        i.style.transform = `translateX(-50%) translateY(${pull}px)`;
+        i.style.opacity = Math.min(pull / TH, 1);
+        const listo = pull >= TH;
+        i.classList.toggle('ptr-ready', listo);
+        i.querySelector('i').style.transform = `rotate(${listo ? 180 : 0}deg)`;
+    }, { passive: false });
+    window.addEventListener('touchend', () => {
+        if (!tirando) return;
+        tirando = false;
+        const pull = Math.min(dist * 0.5, 110);
+        if (pull >= TH) {
+            const i = crearInd();
+            i.querySelector('i').className = 'fas fa-spinner fa-spin';
+            i.style.transition = 'transform .2s ease';
+            i.style.transform = 'translateX(-50%) translateY(70px)';
+            i.style.opacity = '1';
+            setTimeout(() => location.reload(), 300);
+        } else {
+            ocultar();
+        }
+    });
+})();
