@@ -201,7 +201,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '73 × 32 × 20 cm' }
       ]
     },
-    { id: 50, name: 'Dobladora de Caños Manual HHW-2', category: 'dobladoras', price: 0, icon: 'fa-arrows-turn-right', badge: '1/2"–2"', imgs: 5, folder: 'HHW-2', ext: 'webp', catFolder: 'Dobladoras',
+    { id: 50, name: 'Dobladora de Caños Manual HHW-2', sheetName: 'Dobladora de Caños HHW-2', category: 'dobladoras', price: 0, icon: 'fa-arrows-turn-right', badge: '1/2"–2"', imgs: 5, folder: 'HHW-2', ext: 'webp', catFolder: 'Dobladoras',
       desc: 'Dobladora hidráulica manual de caños con base rodante. Doblado en frío, no requiere precalentamiento. Incluye 6 zapatas (de 1/2" a 2").',
       specs: [
         { l: 'Rango de doblado', v: '1/2" – 2"' },
@@ -838,3 +838,9 @@ window.SANOU_CAT_NAMES = {
     motores:      'Herramientas para vehículos',
     otros:        'Otros',
 };
+
+// Marcar todas las dobladoras como "últimas unidades" (chip ¡Pocas unidades!).
+// Aplica también a las que se agreguen a futuro en esta categoría.
+try {
+    window.SANOU_PRODUCTOS.forEach(function (p) { if (p.category === 'dobladoras') p.lowStock = true; });
+} catch (e) {}
