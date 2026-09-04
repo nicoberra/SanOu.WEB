@@ -43,7 +43,8 @@ var TABS = {
     { k: 'razon',     h: 'Razón social' },
     { k: 'cuit',      h: 'CUIT' },
     { k: 'direccion', h: 'Dirección' },
-    { k: 'origen',    h: 'Origen' }
+    { k: 'origen',    h: 'Origen' },
+    { k: 'clave',     h: 'Clave' }
   ],
   'Cotizaciones': [
     { k: 'id',       h: 'id' },
@@ -97,6 +98,9 @@ function manejar(e) {
     else if (accion === 'delete') out = { ok: true, deleted: borrar(tab, p.id) };
     else if (accion === 'productos_list') out = { ok: true, rows: productosListar() };
     else if (accion === 'productos_save') out = { ok: true, saved: productosGuardar(p) };
+    else if (accion === 'registrar') out = registrar(p);
+    else if (accion === 'login')     out = login(p);
+    else if (accion === 'version') out = { ok: true, version: 'v3-telegram' };
     else throw 'Acción desconocida: ' + accion;
   } catch (err) {
     out = { ok: false, error: String(err) };
@@ -143,6 +147,7 @@ function listar(tab) {
     if (!datos[i][0] && !datos[i][2]) continue;
     var o = {};
     for (var c = 0; c < cols.length; c++) {
+      if (cols[c].k === 'clave') continue;   // nunca exponer el hash de la contraseña
       var v = datos[i][c];
       o[cols[c].k] = (v instanceof Date)
         ? Utilities.formatDate(v, 'GMT-3', 'yyyy-MM-dd HH:mm')
@@ -209,6 +214,71 @@ function agregar(tab, p) {
   } catch (e) { /* silencioso */ }
 
   return id;
+}
+
+// ── Cuentas de clientes (login desde la web, misma cuenta en todos lados) ──
+function idxClientes() {
+  var cols = TABS['Clientes']; var idx = {};
+  for (var c = 0; c < cols.length; c++) idx[cols[c].k] = c;
+  return idx;
+}
+function buscarPorEmail(datos, idx, email) {
+  var e = String(email || '').trim().toLowerCase();
+  if (!e) return -1;
+  for (var i = 1; i < datos.length; i++) {
+    if (String(datos[i][idx.email]).trim().toLowerCase() === e) return i;
+  }
+  return -1;
+}
+function clienteDeFila(datos, idx, i) {
+  return {
+    id:       datos[i][idx.id],
+    nombre:   datos[i][idx.nombre],
+    email:    datos[i][idx.email],
+    telefono: datos[i][idx.telefono],
+    empresa:  datos[i][idx.empresa],
+    ciudad:   datos[i][idx.ciudad]
+  };
+}
+
+// Crea la cuenta (o la reclama si el email ya existía sin contraseña).
+function registrar(p) {
+  var sh = hoja('Clientes');
+  var idx = idxClientes();
+  var datos = sh.getDataRange().getValues();
+  if (!p.email || !p.clave) return { ok: false, error: 'Faltan datos.' };
+  var m = buscarPorEmail(datos, idx, p.email);
+  if (m >= 0) {
+    if (datos[m][idx.clave]) return { ok: false, error: 'Ya existe una cuenta con ese email. Iniciá sesión.' };
+    sh.getRange(m + 1, idx.clave + 1).setValue(p.clave);
+    ['nombre', 'telefono', 'empresa', 'ciudad'].forEach(function (k) { if (p[k]) sh.getRange(m + 1, idx[k] + 1).setValue(p[k]); });
+    if (!datos[m][idx.origen]) sh.getRange(m + 1, idx.origen + 1).setValue('web');
+    var datos2 = sh.getDataRange().getValues();
+    return { ok: true, cliente: clienteDeFila(datos2, idx, m) };
+  }
+  var id = 'r' + Date.now() + Math.floor(Math.random() * 1000);
+  var cols = TABS['Clientes'];
+  var fila = cols.map(function (col) {
+    if (col.k === 'id')     return id;
+    if (col.k === 'fecha')  return new Date();
+    if (col.k === 'origen') return 'web';
+    if (col.k === 'notas')  return 'cuenta web';
+    return p[col.k] || '';
+  });
+  sh.appendRow(fila);
+  return { ok: true, cliente: { id: id, nombre: p.nombre || '', email: p.email || '', telefono: p.telefono || '', empresa: p.empresa || '', ciudad: p.ciudad || '' } };
+}
+
+// Verifica email + contraseña (hash) y devuelve los datos del cliente.
+function login(p) {
+  var sh = hoja('Clientes');
+  var idx = idxClientes();
+  var datos = sh.getDataRange().getValues();
+  var m = buscarPorEmail(datos, idx, p.email);
+  if (m < 0) return { ok: false, error: 'No encontramos una cuenta con ese email.' };
+  if (!datos[m][idx.clave]) return { ok: false, error: 'Esa cuenta todavía no tiene contraseña. Creá tu cuenta.' };
+  if (String(datos[m][idx.clave]) !== String(p.clave)) return { ok: false, error: 'Contraseña incorrecta.' };
+  return { ok: true, cliente: clienteDeFila(datos, idx, m) };
 }
 
 function actualizar(tab, p) {

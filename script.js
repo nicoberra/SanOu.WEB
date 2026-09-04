@@ -29,6 +29,103 @@ function guardarClienteEnSheet(datos) {
     } catch (e) { /* silencioso: no frenar al cliente si falla la red */ }
 }
 
+// ─── CUENTAS: login / registro (misma cuenta en todos los dispositivos) ──
+// JSONP: necesitamos LEER la respuesta del servidor (no-cors no deja).
+function crmJsonp(params) {
+    return new Promise((resolve, reject) => {
+        const cb = 'cb_' + Date.now() + Math.floor(Math.random() * 100000);
+        const s = document.createElement('script');
+        const to = setTimeout(() => { limpiar(); reject(new Error('timeout')); }, 15000);
+        function limpiar() { clearTimeout(to); try { delete window[cb]; } catch (e) { window[cb] = undefined; } if (s.parentNode) s.parentNode.removeChild(s); }
+        window[cb] = (data) => { limpiar(); resolve(data); };
+        const usp = new URLSearchParams(Object.assign({}, params, { callback: cb, _: Date.now() }));
+        s.src = CLIENTES_URL + '?' + usp.toString();
+        s.onerror = () => { limpiar(); reject(new Error('network')); };
+        document.body.appendChild(s);
+    });
+}
+// Encripta la contraseña (PBKDF2). El texto plano NUNCA sale del dispositivo.
+async function hashClave(email, pass) {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt: enc.encode('sanou::cuenta::' + String(email).trim().toLowerCase()), iterations: 150000, hash: 'SHA-256' },
+        key, 256);
+    return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function guardarSesionCliente(c) {
+    localStorage.setItem('kl_email', c.email || '');
+    localStorage.setItem('kl_name', c.nombre || '');
+    localStorage.setItem('kl_phone', c.telefono || '');
+    if (c.empresa) localStorage.setItem('kl_empresa', c.empresa);
+    if (c.ciudad) localStorage.setItem('kl_ciudad', c.ciudad);
+    klUserEmail = c.email || null; klUserName = c.nombre || null;
+    if (typeof actualizarSeccionRegistro === 'function') actualizarSeccionRegistro();
+    if (typeof actualizarBotonCuenta === 'function') actualizarBotonCuenta();
+    renderCuenta();
+}
+function formAccesoHTML(modo) {
+    if (modo === 'registro') {
+        return `
+        <p class="cuenta-intro">Creá tu cuenta para guardar tus datos y ver tus presupuestos desde cualquier dispositivo.</p>
+        <form class="cuenta-form" onsubmit="hacerRegistro(event)">
+            <input type="text"  id="acNombre"  placeholder="Nombre y apellido *" required autocomplete="name">
+            <input type="email" id="acEmail"   placeholder="Email *" required autocomplete="email">
+            <input type="tel"   id="acTel"     placeholder="Teléfono / WhatsApp *" required autocomplete="tel">
+            <input type="text"  id="acEmpresa" placeholder="Empresa / Rubro (opcional)" autocomplete="organization">
+            <input type="password" id="acPass" placeholder="Contraseña (mín. 6) *" required minlength="6" autocomplete="new-password">
+            <div class="cuenta-err" id="acErr"></div>
+            <button type="submit" class="cuenta-submit" id="acBtn">Crear mi cuenta</button>
+            <span class="cuenta-legal">¿Ya tenés cuenta? <a href="#" onclick="mostrarLogin(event)">Entrá acá</a></span>
+        </form>`;
+    }
+    return `
+        <p class="cuenta-intro">Entrá a tu cuenta para ver tus datos y presupuestos en cualquier celu o compu.</p>
+        <form class="cuenta-form" onsubmit="hacerLogin(event)">
+            <input type="email"    id="acEmail" placeholder="Email *" required autocomplete="email">
+            <input type="password" id="acPass"  placeholder="Contraseña *" required autocomplete="current-password">
+            <div class="cuenta-err" id="acErr"></div>
+            <button type="submit" class="cuenta-submit" id="acBtn">Entrar</button>
+            <span class="cuenta-legal">¿No tenés cuenta? <a href="#" onclick="mostrarRegistro(event)">Creala acá</a></span>
+        </form>`;
+}
+function mostrarLogin(e)    { if (e) e.preventDefault(); document.getElementById('cuentaBody').innerHTML = formAccesoHTML('login'); }
+function mostrarRegistro(e) { if (e) e.preventDefault(); document.getElementById('cuentaBody').innerHTML = formAccesoHTML('registro'); }
+
+async function hacerLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('acBtn'), err = document.getElementById('acErr');
+    const email = document.getElementById('acEmail').value.trim();
+    const pass  = document.getElementById('acPass').value;
+    if (!email || !pass) return;
+    err.textContent = ''; btn.disabled = true; btn.textContent = 'Entrando…';
+    try {
+        const clave = await hashClave(email, pass);
+        const r = await crmJsonp({ action: 'login', tab: 'Clientes', email, clave });
+        if (r && r.ok) { guardarSesionCliente(r.cliente); }
+        else { err.textContent = (r && r.error) || 'No se pudo entrar.'; btn.disabled = false; btn.textContent = 'Entrar'; }
+    } catch (x) { err.textContent = 'Error de conexión. Reintentá.'; btn.disabled = false; btn.textContent = 'Entrar'; }
+}
+async function hacerRegistro(e) {
+    e.preventDefault();
+    const btn = document.getElementById('acBtn'), err = document.getElementById('acErr');
+    const nombre  = document.getElementById('acNombre').value.trim();
+    const email   = document.getElementById('acEmail').value.trim();
+    const tel     = document.getElementById('acTel').value.trim();
+    const empresa = document.getElementById('acEmpresa').value.trim();
+    const pass    = document.getElementById('acPass').value;
+    if (!nombre || !email || !tel || pass.length < 6) { err.textContent = 'Completá los datos (contraseña de 6+).'; return; }
+    err.textContent = ''; btn.disabled = true; btn.textContent = 'Creando…';
+    try {
+        const clave = await hashClave(email, pass);
+        const r = await crmJsonp({ action: 'registrar', tab: 'Clientes', nombre, email, telefono: tel, empresa, clave });
+        if (r && r.ok) {
+            klPush(['identify', { '$email': email, '$first_name': nombre, '$phone_number': tel }]);
+            guardarSesionCliente(r.cliente);
+        } else { err.textContent = (r && r.error) || 'No se pudo crear la cuenta.'; btn.disabled = false; btn.textContent = 'Crear mi cuenta'; }
+    } catch (x) { err.textContent = 'Error de conexión. Reintentá.'; btn.disabled = false; btn.textContent = 'Crear mi cuenta'; }
+}
+
 // ─── MI CUENTA ───────────────────────────────────────────────────
 function clienteRegistrado() { return !!localStorage.getItem('kl_email'); }
 
@@ -69,7 +166,7 @@ function renderCuenta() {
     const body = document.getElementById('cuentaBody');
     if (!body) return;
     const email = localStorage.getItem('kl_email');
-    if (!email) { body.innerHTML = formularioCuentaHTML(); return; }
+    if (!email) { body.innerHTML = formAccesoHTML('login'); return; }
 
     const nombre   = localStorage.getItem('kl_name')    || '';
     const telefono = localStorage.getItem('kl_phone')   || '';

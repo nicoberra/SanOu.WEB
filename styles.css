@@ -4594,6 +4594,10 @@ h1.hero-slogan-block { margin-top: 0; }
 }
 .cuenta-submit:hover { filter: brightness(1.07); }
 .cuenta-legal { color: var(--gray); font-size: 0.75rem; text-align: center; line-height: 1.5; }
+.cuenta-legal a { color: var(--yellow); text-decoration: none; font-weight: 700; }
+.cuenta-legal a:hover { text-decoration: underline; }
+.cuenta-err { color: #ff6b6b; font-size: 0.82rem; text-align: center; min-height: 1em; margin: -2px 0 2px; }
+.cuenta-err:empty { display: none; }
 
 /* Vista de perfil */
 .cuenta-saludo { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
