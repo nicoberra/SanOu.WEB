@@ -204,9 +204,67 @@ function pintarDashboard(){
     });
 }
 
-function renderCotizador() {
-    document.getElementById('vista').innerHTML =
-        `<iframe class="panel-iframe" src="cotizar.html" title="Cotizador"></iframe>`;
+async function renderCotizador() {
+    const v = document.getElementById('vista');
+    v.innerHTML = `
+        <div class="panel-sec-head">
+            <div class="panel-buscar"><i class="fas fa-search"></i>
+                <input type="text" id="buscarCot" placeholder="Buscar presupuesto…" oninput="filtrarCotizaciones()"></div>
+            <button class="panel-btn-add" onclick="window.open('cotizar.html','_blank')"><i class="fas fa-plus"></i> Nuevo presupuesto</button>
+        </div>
+        <div class="panel-lista" id="listaCot">${cotizaciones.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
+    if (cotizaciones.length) pintarCotizaciones(cotizaciones);
+    try {
+        const r = await crm({ action: 'list', tab: 'Cotizaciones' });
+        if (r && r.ok && r.rows) { cotizaciones = r.rows; cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
+        if (seccionActual === 'cotizaciones') pintarCotizaciones(cotizaciones);
+    } catch (e) { if (!cotizaciones.length) document.getElementById('listaCot').innerHTML = `<div class="panel-error">No se pudieron cargar los presupuestos.</div>`; }
+}
+function filtrarCotizaciones() {
+    const q = (document.getElementById('buscarCot').value || '').toLowerCase().trim();
+    pintarCotizaciones(!q ? cotizaciones : cotizaciones.filter(c => (c.cliente + ' ' + c.detalle + ' ' + c.telefono).toLowerCase().includes(q)));
+}
+function esCotWeb(c) { return String(c.notas || '').startsWith('web|'); }
+function pintarCotizaciones(lista) {
+    const cont = document.getElementById('listaCot'); if (!cont) return;
+    lista = [...lista].sort((a, b) => (parseFechaCRM(b.fecha) || 0) - (parseFechaCRM(a.fecha) || 0));  // nuevas arriba
+    if (!lista.length) { cont.innerHTML = `<div class="panel-vacio-chico">Todavía no hay presupuestos.</div>`; return; }
+    cont.innerHTML = lista.map(c => {
+        const web = esCotWeb(c);
+        const wa = waLink(c.telefono, `¡Hola ${(c.cliente || '').split(' ')[0]}! Te escribo de San Ou 🔧 por tu presupuesto.`);
+        return `<div class="rec-card">
+            <div class="rec-top">
+                <span class="rec-nombre">${esc(c.cliente) || '(sin nombre)'}</span>
+                ${web ? '<span class="est est-abierta">🌐 Web</span>' : badgeEstado(c.estado || 'Abierta')}
+            </div>
+            ${c.detalle ? `<div class="rec-detalle">${esc(c.detalle)}</div>` : ''}
+            <div class="rec-meta">
+                ${montoTxt(c.monto) ? `<span class="rec-monto">${montoTxt(c.monto)}</span>` : ''}
+                ${c.fecha ? `<span><i class="fas fa-calendar"></i> ${fechaTxt(c.fecha)}</span>` : ''}
+                ${c.telefono ? `<span><i class="fas fa-phone"></i> ${esc(c.telefono)}</span>` : ''}
+            </div>
+            <div class="rec-acciones">
+                ${web ? `<button class="cli-btn cli-verpdf" onclick="verPresupuestoWeb('${c.id}')"><i class="fas fa-file-arrow-down"></i> Ver PDF</button>` : ''}
+                ${wa ? `<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>` : ''}
+                <button class="cli-btn cli-del" onclick="borrarCotizacion('${c.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>`;
+    }).join('');
+}
+function verPresupuestoWeb(id) {
+    const c = cotizaciones.find(x => x.id === id); if (!c) return;
+    try {
+        const datos = JSON.parse(String(c.notas).slice(4)); // saca el prefijo 'web|'
+        localStorage.setItem('sanou_presupuesto', JSON.stringify(datos));
+        window.open('presupuesto.html', '_blank');
+    } catch (e) { alert('No se pudo abrir el presupuesto (datos incompletos).'); }
+}
+async function borrarCotizacion(id) {
+    if (!(await confirmar('¿Eliminar este presupuesto? No se puede deshacer.'))) return;
+    cotizaciones = cotizaciones.filter(x => x.id !== id);
+    cacheSet('cotizaciones', cotizaciones);
+    pintarCotizaciones(cotizaciones);
+    try { await crm({ action: 'delete', tab: 'Cotizaciones', id }); } catch (e) {}
 }
 
 // ─── MARKETING ──────────────────────────────────────────────────

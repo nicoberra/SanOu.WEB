@@ -16,6 +16,19 @@ var CRM_ID = '12RjmHKOV3LvvN6kA04b9bf92k-dkvXS5C8qenNGHHKw';
 // Planilla de precios de la web (Nombre | Precios | Stock | Precio ML | DESTACADO)
 var PRECIOS_ID = '1Jzs6_Rp0h4yHm7u786mcqqHPWLpwjMcnj6gZRxuJ67w';
 
+// ── Notificaciones a Telegram (avisos al celular) ──
+var TG_TOKEN = '8628210339:AAEfgQKWjvIf3xnDEBCRMN2432YDX1qidJQ';
+var TG_CHAT  = '5980182397';
+function avisarTelegram(texto) {
+  try {
+    UrlFetchApp.fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
+      method: 'post',
+      payload: { chat_id: TG_CHAT, text: texto, disable_web_page_preview: 'true' },
+      muteHttpExceptions: true
+    });
+  } catch (e) { /* no frenar por un aviso */ }
+}
+
 // Cada columna: k = clave para la API, h = título que se ve en la planilla.
 var TABS = {
   'Clientes': [
@@ -176,6 +189,25 @@ function agregar(tab, p) {
     return p[c.k] || '';
   });
   sh.appendRow(fila);
+
+  // Aviso a Telegram para eventos que vienen de la web
+  try {
+    if (tab === 'Cotizaciones' && String(p.notas || '').indexOf('web|') === 0) {
+      avisarTelegram(
+        '🧾 Nuevo presupuesto en la web\n' +
+        '👤 ' + (p.cliente || '—') + '\n' +
+        '📱 ' + (p.telefono || '—') + '\n' +
+        '🛠 ' + (p.detalle || '—') + '\n' +
+        '💰 Total: $' + (p.monto || '0'));
+    } else if (tab === 'Clientes' && String(p.notas || '') === 'registro web') {
+      avisarTelegram(
+        '👤 Nuevo cliente en la web\n' +
+        (p.nombre || '—') + '\n' +
+        '📱 ' + (p.telefono || '—') + '\n' +
+        '✉️ ' + (p.email || '—'));
+    }
+  } catch (e) { /* silencioso */ }
+
   return id;
 }
 

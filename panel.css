@@ -194,6 +194,8 @@ body:not(.bloqueado) .panel-lock{display:none}
 .cli-btn:hover{color:#fff;border-color:rgba(255,255,255,.25)}
 .cli-wa{background:rgba(37,211,102,.15);color:#25D366;border-color:rgba(37,211,102,.35)}
 .cli-wa:hover{background:rgba(37,211,102,.25);color:#25D366}
+.cli-verpdf{width:auto;padding:0 12px;gap:6px;background:var(--am);color:var(--neg);border-color:var(--am);font-weight:800;font-size:.82rem}
+.cli-verpdf:hover{filter:brightness(1.05)}
 .cli-del:hover{color:#ff6b6b;border-color:rgba(255,80,80,.4)}
 
 /* ── Ítems del pedido (form) ── */
