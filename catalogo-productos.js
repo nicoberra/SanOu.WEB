@@ -201,6 +201,23 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '73 × 32 × 20 cm' }
       ]
     },
+    { id: 50, name: 'Dobladora de Caños Manual HHW-2', category: 'dobladoras', price: 0, icon: 'fa-arrows-turn-right', badge: '1/2"–2"', imgs: 5, folder: 'HHW-2', ext: 'webp', catFolder: 'Dobladoras',
+      desc: 'Dobladora hidráulica manual de caños con base rodante. Doblado en frío, no requiere precalentamiento. Incluye 6 zapatas (de 1/2" a 2").',
+      specs: [
+        { l: 'Rango de doblado', v: '1/2" – 2"' },
+        { l: 'Fuerza hidráulica', v: '13 Ton' },
+        { l: 'Zapatas incluidas', v: '6 piezas' }
+      ],
+      allSpecs: [
+        { l: 'Modelo', v: 'HHW-2' },
+        { l: 'Ángulo de doblado', v: '0° a 90°' },
+        { l: 'Método', v: 'Doblado en frío (no requiere precalentamiento)' },
+        { l: 'Rango (Diám. exterior)', v: 'Ø21,3 a Ø60 mm' },
+        { l: 'Fuerza hidráulica', v: '13 Ton' },
+        { l: 'Zapatas incluidas', v: '1/2" / 3/4" / 1" / 1 1/4" / 1 1/2" / 2"' },
+        { l: 'Tipo', v: 'Manual, con base rodante' }
+      ]
+    },
     { id: 5, name: 'Dobladora de Caños HHW-3J', category: 'dobladoras', price: 100000, icon: 'fa-arrows-turn-right', badge: '1/2"–3"', imgs: 3, folder: 'HHW-3J', ext: 'webp', catFolder: 'Dobladoras',
       desc: 'Dobladora hidráulica de caños para paredes gruesas con trípode. Doblado en frío hasta 3". Incluye 8 zapatas.',
       specs: [
