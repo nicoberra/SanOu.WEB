@@ -139,7 +139,7 @@
         <div class="cart-header">
             <div class="cart-header-text">
                 <h2>Tu carrito</h2>
-                <p>Armá el pedido y enviá la compra por WhatsApp.</p>
+                <p>Armá el pedido y descargá tu presupuesto al instante.</p>
             </div>
             <button class="cart-close" onclick="closeCart()">Cerrar</button>
         </div>
@@ -160,10 +160,32 @@
             </div>
             <div class="cart-footer-btns">
                 <button class="btn-vaciar" onclick="clearCart()">Vaciar</button>
-                <button class="btn-enviar-compra" onclick="checkoutWhatsApp()">Enviar compra</button>
+                <button class="btn-enviar-compra" onclick="pedirPresupuesto()">Pedir presupuesto</button>
             </div>
+            <button class="btn-wa-secundario" onclick="checkoutWhatsApp()"><i class="fab fa-whatsapp"></i> Consultar por WhatsApp</button>
         </div>
     </aside>
+
+    <!-- Modal: pedir presupuesto (datos del cliente) -->
+    <div class="pp-overlay" id="ppOverlay" onclick="cerrarPresupuesto()"></div>
+    <div class="pp-modal" id="ppModal">
+        <div class="pp-head">
+            <h3>Tus datos para el presupuesto</h3>
+            <button class="pp-close" onclick="cerrarPresupuesto()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pp-body" id="ppBody">
+            <p class="pp-intro">Completá tus datos y descargá tu presupuesto al instante. Te contactamos para coordinar.</p>
+            <form onsubmit="generarPresupuestoWeb(event)">
+                <input type="text"  id="ppNombre"   placeholder="Nombre y apellido *" required autocomplete="name">
+                <input type="tel"   id="ppTelefono" placeholder="Teléfono / WhatsApp *" required autocomplete="tel" inputmode="tel">
+                <input type="email" id="ppEmail"    placeholder="Email *" required autocomplete="email">
+                <input type="text"  id="ppEmpresa"  placeholder="Empresa / Rubro (opcional)" autocomplete="organization">
+                <input type="text"  id="ppCuit"     placeholder="CUIT (opcional)" inputmode="numeric">
+                <button type="submit" class="pp-submit" id="ppSubmit"><i class="fas fa-file-arrow-down"></i> Descargar presupuesto</button>
+                <span class="pp-legal">Tus datos son solo para contactarte. No los compartimos.</span>
+            </form>
+        </div>
+    </div>
 
     <!-- Header -->
     <header class="header" id="header">

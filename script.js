@@ -983,6 +983,88 @@ function closeCart() {
 }
 
 // ─── WHATSAPP: CARRITO COMPLETO ──────────────────────────────────
+// ─── PEDIR PRESUPUESTO (web → PDF + CRM) ─────────────────────────
+function pedirPresupuesto() {
+    if (cart.length === 0) { alert('Agregá al menos un producto al carrito.'); return; }
+    const set = (id, v) => { const e = document.getElementById(id); if (e && v) e.value = v; };
+    set('ppNombre',   localStorage.getItem('kl_name'));
+    set('ppEmail',    localStorage.getItem('kl_email'));
+    set('ppTelefono', localStorage.getItem('kl_phone'));
+    set('ppEmpresa',  localStorage.getItem('kl_empresa'));
+    document.getElementById('ppOverlay').classList.add('active');
+    document.getElementById('ppModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => { const n = document.getElementById('ppNombre'); if (n && !n.value) n.focus(); }, 120);
+}
+function cerrarPresupuesto() {
+    document.getElementById('ppOverlay').classList.remove('active');
+    document.getElementById('ppModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+function _ddmmaaaa(f) { return String(f.getDate()).padStart(2,'0') + '/' + String(f.getMonth()+1).padStart(2,'0') + '/' + f.getFullYear(); }
+
+function generarPresupuestoWeb(e) {
+    e.preventDefault();
+    if (cart.length === 0) return;
+    const nombre   = document.getElementById('ppNombre').value.trim();
+    const telefono = document.getElementById('ppTelefono').value.trim();
+    const email    = document.getElementById('ppEmail').value.trim();
+    const empresa  = document.getElementById('ppEmpresa').value.trim();
+    const cuit     = document.getElementById('ppCuit').value.trim();
+    if (!nombre || !telefono || !email) return;
+
+    // Ítems con precio FINAL c/IVA (mismo criterio que el cotizador del CRM)
+    const items = cart.map(p => ({ nombre: p.name, cantidad: p.qty, precioFinal: p.price || 0 }));
+    const total = items.reduce((s, i) => s + i.precioFinal * i.cantidad, 0);
+    const numero = 'P-' + String(Date.now()).slice(-6);
+    const hoy = new Date(); const vence = new Date(hoy); vence.setDate(vence.getDate() + 7);
+    const contacto = [telefono, email].filter(Boolean).join(' / ');
+
+    // Mismo formato que presupuesto.html / cotizador del CRM
+    const datos = {
+        numero,
+        fechaEmision: _ddmmaaaa(hoy),
+        fechaVence: _ddmmaaaa(vence),
+        cliente: { razon: empresa ? (nombre + ' — ' + empresa) : nombre, cuit, condIva: 'Consumidor Final', contacto, dom: '' },
+        items, envio: 0, obs: ''
+    };
+
+    // recordar identidad para "Mi cuenta"
+    localStorage.setItem('kl_email', email); localStorage.setItem('kl_name', nombre); localStorage.setItem('kl_phone', telefono);
+    if (empresa) localStorage.setItem('kl_empresa', empresa);
+    if (typeof actualizarBotonCuenta === 'function') actualizarBotonCuenta();
+
+    // guardar el presupuesto para la pestaña que lo va a mostrar/imprimir
+    try { localStorage.setItem('sanou_presupuesto', JSON.stringify(datos)); } catch (err) {}
+
+    // guardar lead + presupuesto en el CRM (con los datos para regenerarlo igual)
+    guardarClienteEnSheet({ nombre, email, telefono, empresa, origen: 'presupuesto web' });
+    guardarCotizacionWeb({ datos, total });
+
+    if (typeof gtag !== 'undefined') gtag('event', 'presupuesto_web', { value: total, currency: 'ARS' });
+    if (typeof saveOrder === 'function') saveOrder(cart, total);
+    cerrarPresupuesto();
+
+    // abrir el presupuesto (misma plantilla que el CRM) → se descarga/imprime como PDF
+    window.open('presupuesto.html', '_blank');
+}
+function guardarCotizacionWeb(d) {
+    if (!CLIENTES_URL) return;
+    try {
+        const detalle = (d.datos.items || []).map(i => `${i.cantidad}x ${i.nombre}`).join(', ');
+        const params = new URLSearchParams({
+            action: 'add', tab: 'Cotizaciones',
+            cliente:  (d.datos.cliente.razon || '').split(' — ')[0],
+            telefono: (d.datos.cliente.contacto || '').replace(/[^\d]/g, ''),
+            detalle:  detalle,
+            monto:    String(Math.round(d.total)),
+            estado:   'Abierta',
+            notas:    'web|' + JSON.stringify(d.datos)   // datos completos para reabrir el mismo PDF desde el CRM
+        });
+        fetch(CLIENTES_URL + '?' + params.toString(), { mode: 'no-cors' });
+    } catch (e) { /* silencioso */ }
+}
+
 function checkoutWhatsApp() {
     if (cart.length === 0) return;
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);

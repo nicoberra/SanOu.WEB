@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Presupuesto — San Ou</title>
+    <link rel="icon" type="image/png" href="tuerca-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="cotizador.css">
+    <style>
+        /* Barra superior (no sale en el PDF) */
+        .pp-bar{position:sticky;top:0;z-index:10;display:flex;gap:10px;justify-content:center;align-items:center;
+            padding:12px;background:#141414;border-bottom:1px solid rgba(255,255,255,.1)}
+        .pp-bar button{background:#FFC800;color:#111;border:none;border-radius:10px;padding:11px 18px;font-weight:800;font-size:.95rem;cursor:pointer;font-family:inherit}
+        .pp-bar .pp-bar-2{background:#2a2a2a;color:#fff}
+        .pp-vacio{max-width:500px;margin:60px auto;text-align:center;color:#888;font-family:Inter,sans-serif;padding:20px}
+    </style>
+</head>
+<body>
+
+    <div class="pp-bar no-print" id="ppBar">
+        <button onclick="window.print()"><i></i>⬇ Descargar / Imprimir PDF</button>
+        <button class="pp-bar-2" onclick="volver()">Volver</button>
+    </div>
+
+    <div class="cot-hoja" id="hoja" style="display:none">
+        <header class="cot-head">
+            <img src="sticker.png" alt="San Ou" class="cot-logo">
+            <div class="cot-titulo">PRESUPUESTO</div>
+            <div class="cot-fechas">
+                <span><b>Fecha:</b> <span id="fEmision"></span></span>
+                <span class="cot-sep">·</span>
+                <span><b>Válido hasta:</b> <span id="fVence"></span></span>
+            </div>
+        </header>
+
+        <section class="cot-cliente">
+            <h2>Cliente</h2>
+            <div class="cot-cliente-grid">
+                <div><b>Nombre / Razón social:</b> <span id="cRazon"></span></div>
+                <div><b>CUIT:</b> <span id="cCuit"></span></div>
+                <div><b>Condición IVA:</b> <span id="cCondIva"></span></div>
+                <div><b>Contacto:</b> <span id="cContacto"></span></div>
+                <div class="span-2"><b>Dirección:</b> <span id="cDom"></span></div>
+            </div>
+        </section>
+
+        <table class="cot-tabla">
+            <thead>
+                <tr>
+                    <th class="col-n">#</th>
+                    <th class="col-desc">Descripción</th>
+                    <th class="col-cant">Cant.</th>
+                    <th class="col-precio no-print">P. final c/IVA</th>
+                    <th class="col-unit">P. unitario</th>
+                    <th class="col-sub">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+        </table>
+
+        <section class="cot-totales">
+            <div class="cot-tot-fila"><span>Subtotal (neto)</span><span id="totSubtotal">$0,00</span></div>
+            <div class="cot-tot-fila"><span>IVA 10,5%</span><span id="totIva">$0,00</span></div>
+            <div class="cot-tot-fila" id="filaEnvio" style="display:none"><span>Envío</span><span id="totEnvio">$0,00</span></div>
+            <div class="cot-tot-fila cot-tot-final"><span>TOTAL</span><span id="totFinal">$0,00</span></div>
+        </section>
+
+        <section class="cot-condiciones">
+            <h2>Condiciones</h2>
+            <ul>
+                <li><b>Validez de la oferta:</b> hasta la fecha indicada. Pasado ese plazo, los precios pueden variar.</li>
+                <li><b>Forma de pago:</b> <span id="cPago">Efectivo / Transferencia</span></li>
+                <li><b>Plazo de entrega:</b> <span id="cEntrega">Inmediata, o lo antes posible una vez acreditado el pago</span></li>
+                <li><b>Garantía:</b> todos los productos cuentan con garantía de fábrica, válida únicamente contra defectos de fabricación. No cubre daños ocasionados por uso indebido o falla humana.</li>
+                <li><b>Moneda:</b> pesos argentinos (ARS). Precios sujetos a disponibilidad de stock.</li>
+            </ul>
+            <p class="cot-obs" id="obsWrap" style="display:none"><b>Observaciones:</b> <span id="cObs"></span></p>
+            <p class="cot-legal">Este documento es un presupuesto comercial y no constituye comprobante fiscal.</p>
+        </section>
+
+        <footer class="cot-pie">
+            <strong id="emRazon"></strong>
+            <span id="emDom"></span>
+            <span class="cot-pie-fiscal"><span id="emCuit"></span> · <span id="emIibb"></span></span>
+            <span class="cot-pie-fiscal"><span id="emCondIva"></span> · <span id="emInicio"></span></span>
+            <span class="cot-pie-contacto"><span id="emTel"></span> · <span id="emMail"></span> · <span id="emWeb"></span></span>
+        </footer>
+    </div>
+
+    <div class="pp-vacio" id="vacio" style="display:none">No se encontraron datos del presupuesto. Volvé a generarlo desde el carrito o el CRM.</div>
+
+    <script src="catalogo-productos.js"></script>
+    <script>
+    // ── Mismos datos y cálculo que el cotizador del CRM ──
+    const EMPRESA = {
+        razonSocial: 'BR TRADE SRL', cuit: '30-71077182-7', iibb: '902-631235-0',
+        inicioAct: '30/05/2008', condIva: 'IVA Responsable Inscripto',
+        domicilio: 'Marcelo Gamboa 6306 — Versalles, CABA',
+        telefono: '+54 9 11 3175-1517', email: 'ventas@sanou.com.ar', web: 'sanou.com.ar'
+    };
+    const IVA = 0.105;
+    const money = n => '$' + Number(n||0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const netoDesdeFinal = f => (Number(f)||0) / (1 + IVA);
+    const norm = s => String(s==null?'':s).trim().toLowerCase().normalize('NFC');
+    function specsDe(nombre){
+        const cat = (window.SANOU_PRODUCTOS||[]).find(p => norm(p.name)===norm(nombre) || (p.sheetName && norm(p.sheetName)===norm(nombre)));
+        return cat ? (cat.specs||[]).map(s => s.l + ': ' + s.v).join(' · ') : '';
+    }
+    function volver(){ if (history.length > 1) history.back(); else location.href = 'index.html'; }
+
+    function leerDatos(){
+        // 1) por sessionStorage/localStorage; 2) por parámetro ?d=base64
+        try {
+            const u = new URLSearchParams(location.search);
+            if (u.get('d')) return JSON.parse(decodeURIComponent(escape(atob(u.get('d')))));
+        } catch(e){}
+        try { const s = localStorage.getItem('sanou_presupuesto'); if (s) return JSON.parse(s); } catch(e){}
+        return null;
+    }
+
+    function pintar(d){
+        const set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent = v||'—'; };
+        // Emisor
+        set('emRazon', EMPRESA.razonSocial); set('emCuit', 'CUIT ' + EMPRESA.cuit);
+        set('emIibb', 'IIBB ' + EMPRESA.iibb); set('emInicio', 'Inicio de actividades: ' + EMPRESA.inicioAct);
+        set('emCondIva', EMPRESA.condIva); set('emDom', EMPRESA.domicilio);
+        set('emTel', EMPRESA.telefono); set('emMail', EMPRESA.email); set('emWeb', EMPRESA.web);
+        // Fechas
+        set('fEmision', d.fechaEmision); set('fVence', d.fechaVence);
+        // Cliente
+        const c = d.cliente || {};
+        set('cRazon', c.razon); set('cCuit', c.cuit); set('cCondIva', c.condIva || 'Consumidor Final');
+        set('cContacto', c.contacto); set('cDom', c.dom);
+        if (d.condPago) set('cPago', d.condPago);
+        if (d.condEntrega) set('cEntrega', d.condEntrega);
+        if (d.obs) { document.getElementById('obsWrap').style.display=''; set('cObs', d.obs); }
+        // Items
+        const items = (d.items||[]).filter(i=>i && i.nombre);
+        let subtotalNeto = 0;
+        document.getElementById('itemsBody').innerHTML = items.map((it,i)=>{
+            const cant = Number(it.cantidad)||1;
+            const netoUnit = netoDesdeFinal(it.precioFinal);
+            const sub = netoUnit * cant; subtotalNeto += sub;
+            const specs = specsDe(it.nombre);
+            return `<tr>
+                <td class="col-n">${i+1}</td>
+                <td class="col-desc"><strong>${it.nombre}</strong>${specs?`<span class="cot-item-desc">${specs}</span>`:''}</td>
+                <td class="col-cant" data-label="Cantidad">${cant}</td>
+                <td class="col-precio no-print" data-label="P. final c/IVA">${money(it.precioFinal)}</td>
+                <td class="col-unit" data-label="P. unitario neto">${money(netoUnit)}</td>
+                <td class="col-sub" data-label="Subtotal">${money(sub)}</td>
+            </tr>`;
+        }).join('');
+        const envio = Number(d.envio)||0;
+        const ivaMonto = subtotalNeto * IVA;
+        set('totSubtotal', money(subtotalNeto)); set('totIva', money(ivaMonto));
+        set('totFinal', money(subtotalNeto + ivaMonto + envio));
+        if (envio > 0){ document.getElementById('filaEnvio').style.display=''; set('totEnvio', money(envio)); }
+    }
+
+    (function(){
+        const d = leerDatos();
+        if (!d || !(d.items||[]).length){ document.getElementById('vacio').style.display='block'; document.getElementById('ppBar').style.display='none'; return; }
+        function ir(){ pintar(d); document.getElementById('hoja').style.display=''; setTimeout(()=>{ try{ window.print(); }catch(e){} }, 500); }
+        if (window.SANOU_PRODUCTOS) ir();
+        else { let t=0; const iv=setInterval(()=>{ if(window.SANOU_PRODUCTOS||++t>20){ clearInterval(iv); ir(); } }, 100); }
+    })();
+    </script>
+</body>
+</html>
