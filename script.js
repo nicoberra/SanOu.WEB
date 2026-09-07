@@ -1083,6 +1083,20 @@ function closeCart() {
 // ─── PEDIR PRESUPUESTO (web → PDF + CRM) ─────────────────────────
 function pedirPresupuesto() {
     if (cart.length === 0) { alert('Agregá al menos un producto al carrito.'); return; }
+
+    // Si ya está logueado / tiene sus datos guardados, no le volvemos a pedir nada:
+    // generamos el presupuesto directo.
+    const nombreG   = (localStorage.getItem('kl_name')  || '').trim();
+    const emailG    = (localStorage.getItem('kl_email') || '').trim();
+    const telefonoG = (localStorage.getItem('kl_phone') || '').trim();
+    if (nombreG && emailG && telefonoG) {
+        emitirPresupuesto({
+            nombre: nombreG, email: emailG, telefono: telefonoG,
+            empresa: (localStorage.getItem('kl_empresa') || '').trim(), cuit: ''
+        });
+        return;
+    }
+
     const set = (id, v) => { const e = document.getElementById(id); if (e && v) e.value = v; };
     set('ppNombre',   localStorage.getItem('kl_name'));
     set('ppEmail',    localStorage.getItem('kl_email'));
@@ -1109,6 +1123,13 @@ function generarPresupuestoWeb(e) {
     const empresa  = document.getElementById('ppEmpresa').value.trim();
     const cuit     = document.getElementById('ppCuit').value.trim();
     if (!nombre || !telefono || !email) return;
+    emitirPresupuesto({ nombre, telefono, email, empresa, cuit });
+}
+
+// Genera el presupuesto (PDF + guarda en CRM + vacía carrito) con los datos del cliente,
+// vengan del formulario o de la sesión ya iniciada.
+function emitirPresupuesto({ nombre, telefono, email, empresa, cuit }) {
+    if (cart.length === 0) return;
 
     // Ítems con precio FINAL c/IVA (mismo criterio que el cotizador del CRM)
     const items = cart.map(p => ({ nombre: p.name, cantidad: p.qty, precioFinal: p.price || 0 }));
