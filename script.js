@@ -1142,6 +1142,9 @@ function generarPresupuestoWeb(e) {
     if (typeof saveOrder === 'function') saveOrder(cart, total);
     cerrarPresupuesto();
 
+    // ya pidió el presupuesto → vaciamos el carrito
+    clearCart();
+
     // abrir el presupuesto (misma plantilla que el CRM) → se descarga/imprime como PDF
     window.open('presupuesto.html', '_blank');
 }
@@ -1180,6 +1183,9 @@ function checkoutWhatsApp() {
     saveOrder(cart, total);
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+
+    // ya envió la consulta → vaciamos el carrito
+    clearCart();
 
     // Página de gracias (conversión Google Ads / Analytics)
     setTimeout(() => { window.location.href = 'gracias.html'; }, 500);
@@ -1798,6 +1804,9 @@ window.addEventListener('load', () => {
             }
         }, 2500);
     }
+
+    // Mostrar el carrito que haya quedado guardado de una visita anterior
+    updateCartUI();
 
     // Iniciar módulos nuevos
     initWishlist();
