@@ -4,12 +4,31 @@
     --linea:rgba(255,255,255,.08);
 }
 *{margin:0;padding:0;box-sizing:border-box}
+html{
+    height:100%;
+    /* Trata bien el 100vh en iPhone (sin saltos por la barra) */
+    height:-webkit-fill-available;
+}
 body{
     font-family:'Inter',system-ui,sans-serif;
     background:var(--neg); color:var(--blanco);
-    min-height:100vh; -webkit-text-size-adjust:100%;
+    min-height:100vh; min-height:-webkit-fill-available;
+    -webkit-text-size-adjust:100%; text-size-adjust:100%;
+    /* Comportamiento de aplicación */
+    overscroll-behavior-y:none;                 /* sin "rebote" al llegar arriba/abajo */
+    -webkit-tap-highlight-color:transparent;    /* sin flash gris al tocar */
+    overflow-x:hidden;                          /* nunca scroll horizontal */
+    padding-left:env(safe-area-inset-left);     /* respeta el notch en horizontal */
+    padding-right:env(safe-area-inset-right);
 }
-button{font-family:inherit}
+button{font-family:inherit;touch-action:manipulation}  /* sin retardo de 300ms al tocar */
+a,button,.panel-nav-btn,.cli-btn{-webkit-tap-highlight-color:transparent}
+
+/* iOS agranda la pantalla al enfocar un campo con letra < 16px.
+   Forzamos 16px en móvil para que NO haga zoom (se ve estable, como app). */
+@media (max-width:768px){
+    input,select,textarea{font-size:16px !important}
+}
 
 /* ── Pantalla de acceso ── */
 .panel-lock{position:fixed;inset:0;z-index:100;background:var(--neg);
