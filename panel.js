@@ -87,7 +87,11 @@ function fmtMoney(n){ return '$'+Number(n||0).toLocaleString('es-AR'); }
 
 // ── Caché local (para abrir al instante y refrescar en 2do plano) ──
 function cacheGet(k){ try{ const v=localStorage.getItem('sanou_c_'+k); return v?JSON.parse(v):null; }catch(e){ return null; } }
-function cacheSet(k,d){ try{ localStorage.setItem('sanou_c_'+k, JSON.stringify(d)); }catch(e){} }
+function cacheSet(k,d){ try{ localStorage.setItem('sanou_c_'+k, JSON.stringify(d)); localStorage.setItem('sanou_t_'+k, String(Date.now())); }catch(e){} }
+// ¿Los datos de esta tabla se trajeron hace poco? Evita re-descargar de Google
+// en cada pantalla (esa era la causa principal de las trabas al cambiar de sección).
+function cacheFresco(k, seg){ try{ const t=parseInt(localStorage.getItem('sanou_t_'+k)||'0',10); return (Date.now()-t) < (seg||40)*1000; }catch(e){ return false; } }
+function stale(k){ return !cacheFresco(k); }
 function hidratarCache(){
     clientes     = cacheGet('clientes')     || clientes;
     pedidos      = cacheGet('pedidos')      || pedidos;
@@ -101,7 +105,7 @@ async function renderDashboard(){
     if (hayDatos) pintarDashboard();     // instantáneo con lo que haya en memoria/caché
     else document.getElementById('vista').innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando panel…</div>`;
     // refrescar los 4 en paralelo y repintar
-    await Promise.all([ensureClientes(true), ensurePedidos(true), ensureSeguimientos(true), ensureCotizaciones(true)]);
+    await Promise.all([ensureClientes(stale('clientes')), ensurePedidos(stale('pedidos')), ensureSeguimientos(stale('seguimientos')), ensureCotizaciones(stale('cotizaciones'))]);
     if (seccionActual === 'panel') pintarDashboard();
 }
 
@@ -501,8 +505,12 @@ async function renderClientes() {
     document.querySelectorAll('.cli-tab').forEach(b => b.classList.toggle('active', b.dataset.v === vistaClientes));
     if (clientes.length) { actualizarContadores(); filtrarClientes(); }   // pintar al instante desde caché/memoria
     try {
-        const r = await crm({ action: 'list', tab: 'Clientes' });
-        if (r && r.ok && r.rows) { clientes = r.rows; cacheSet('clientes', clientes); _clientesCargados = true; }
+        // Solo re-descargamos si no está cargado o si pasaron +40s (TTL): evita el
+        // tironeo de pedir la planilla cada vez que entrás a Usuarios.
+        if (!_clientesCargados || stale('clientes')) {
+            const r = await crm({ action: 'list', tab: 'Clientes' });
+            if (r && r.ok && r.rows) { clientes = r.rows; cacheSet('clientes', clientes); _clientesCargados = true; }
+        }
         if (seccionActual !== 'clientes') return;
         actualizarContadores();
         filtrarClientes();
