@@ -956,8 +956,13 @@ function filtrarPedidos(){
 function pintarPedidos(lista){
     const cont=document.getElementById('listaPed'); if(!cont) return;
     if(!lista.length){ cont.innerHTML=`<div class="panel-vacio-chico">No hay pedidos todavía.</div>`; return; }
-    // Los pendientes siempre arriba (orden estable: mantiene el resto como estaba).
-    lista = [...lista].sort((a,b)=>(estPed(a.estado)==='Entregado'?1:0)-(estPed(b.estado)==='Entregado'?1:0));
+    // Pendientes siempre arriba y, dentro de cada grupo, por fecha: el más reciente
+    // primero y el más antiguo al final.
+    lista = [...lista].sort((a,b)=>{
+        const ep = (estPed(a.estado)==='Entregado'?1:0) - (estPed(b.estado)==='Entregado'?1:0);
+        if(ep) return ep;
+        return (parseFechaCRM(b.fecha)?.getTime() || 0) - (parseFechaCRM(a.fecha)?.getTime() || 0);
+    });
     cont.innerHTML = lista.map(p=>{
         const wa = waLink(p.telefono, msgPedido(p));
         const g = gananciaPedido(p);
