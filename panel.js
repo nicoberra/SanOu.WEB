@@ -543,6 +543,8 @@ function pintarClientes(lista) {
             : 'No hay usuarios cargados. Agregá el primero con "Nuevo usuario".'}</div>`;
         return;
     }
+    // Por fecha: el más reciente arriba y el más antiguo al final.
+    lista = [...lista].sort((a,b)=>(parseFechaCRM(b.fecha)?.getTime() || 0) - (parseFechaCRM(a.fecha)?.getTime() || 0));
     cont.innerHTML = lista.map(c => {
         const tel = soloDigitos(c.telefono);
         const wa = tel ? `https://wa.me/${tel.length <= 11 ? '549' + tel : tel}?text=${encodeURIComponent('¡Hola ' + (c.nombre || '') + '! Te escribo de San Ou 🔧')}` : '';
