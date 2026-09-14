@@ -291,6 +291,10 @@ body:not(.bloqueado) .panel-lock{display:none}
 .rec-estado{flex:1;min-width:0;background:var(--neg3);border:1px solid var(--linea);border-radius:9px;color:#fff;
     padding:9px 10px;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;-webkit-appearance:none;appearance:none}
 .rec-estado:focus{outline:none;border-color:var(--am)}
+/* Color del estado del pedido: naranja = pendiente, verde = entregado */
+.rec-estado.est-pendiente{background:rgba(255,140,0,.15);color:#ff9d2e;border-color:rgba(255,140,0,.4);font-weight:700}
+.rec-estado.est-entregado{background:rgba(37,211,102,.15);color:#25D366;border-color:rgba(37,211,102,.4);font-weight:700}
+.rec-estado.est-pendiente option,.rec-estado.est-entregado option{background:var(--neg3);color:#fff}
 
 /* Badges de estado */
 .est{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:50px;white-space:nowrap}

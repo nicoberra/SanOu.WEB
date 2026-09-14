@@ -218,6 +218,8 @@ async function renderCotizador() {
         </div>
         <div class="panel-lista" id="listaCot">${cotizaciones.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
     if (cotizaciones.length) pintarCotizaciones(cotizaciones);
+    // Cargar usuarios (si falta) para poder resolver el WhatsApp por nombre.
+    ensureClientes().then(() => { if (seccionActual === 'cotizaciones') pintarCotizaciones(cotizaciones); });
     try {
         const r = await crm({ action: 'list', tab: 'Cotizaciones' });
         if (r && r.ok && r.rows) { cotizaciones = r.rows; cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
@@ -235,7 +237,9 @@ function pintarCotizaciones(lista) {
     if (!lista.length) { cont.innerHTML = `<div class="panel-vacio-chico">Todavía no hay presupuestos.</div>`; return; }
     cont.innerHTML = lista.map(c => {
         const web = esCotWeb(c);
-        const wa = waLink(c.telefono, `¡Hola ${(c.cliente || '').split(' ')[0]}! Te escribo de San Ou 🔧 por tu presupuesto.`);
+        // Si la cotización no guardó teléfono, lo buscamos en los usuarios por nombre.
+        const tel = c.telefono || telDeCliente(c.cliente);
+        const wa = waLink(tel, `¡Hola ${(c.cliente || '').split(' ')[0]}! Te escribo de San Ou 🔧 por tu presupuesto.`);
         return `<div class="rec-card">
             <div class="rec-top">
                 <span class="rec-nombre">${esc(c.cliente) || '(sin nombre)'}</span>
@@ -245,7 +249,7 @@ function pintarCotizaciones(lista) {
             <div class="rec-meta">
                 ${montoTxt(c.monto) ? `<span class="rec-monto">${montoTxt(c.monto)}</span>` : ''}
                 ${c.fecha ? `<span><i class="fas fa-calendar"></i> ${fechaTxt(c.fecha)}</span>` : ''}
-                ${c.telefono ? `<span><i class="fas fa-phone"></i> ${esc(c.telefono)}</span>` : ''}
+                ${tel ? `<span><i class="fas fa-phone"></i> ${esc(tel)}</span>` : ''}
             </div>
             <div class="rec-acciones">
                 ${web ? `<button class="cli-btn cli-verpdf" onclick="verPresupuestoWeb('${c.id}')"><i class="fas fa-file-arrow-down"></i> Ver PDF</button>` : ''}
@@ -279,8 +283,16 @@ async function renderMarketing(){
     if (cache) pintarMarketing(cache);
     else v.innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>`;
     try {
-        const r = await fetch('marketing.json?_=' + Date.now());
-        const data = await r.json();
+        // Reintenta hasta 3 veces: un bache de 4G ya no rompe la sección.
+        let data = null;
+        for (let i = 0; i < 3 && !data; i++) {
+            try {
+                const r = await fetch('marketing.json?_=' + Date.now(), { cache: 'no-store' });
+                if (r.ok) data = await r.json();
+            } catch(_) {}
+            if (!data && i < 2) await new Promise(res => setTimeout(res, 700));
+        }
+        if (!data) throw new Error('marketing');
         _marketingData = data; cacheSet('marketing', data);
         if (seccionActual === 'marketing') pintarMarketing(data);
     } catch(e){
@@ -989,8 +1001,8 @@ function pintarPedidos(lista){
                 ${p.telefono?`<span><i class="fas fa-phone"></i> ${esc(p.telefono)}</span>`:''}
             </div>
             <div class="rec-acciones">
-                <select class="rec-estado" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
-                    ${PEDIDO_ESTADOS.map(e=>`<option ${e===estPed(p.estado)?'selected':''}>${e}</option>`).join('')}
+                <select class="rec-estado ${estPed(p.estado)==='Entregado'?'est-entregado':'est-pendiente'}" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
+                    ${PEDIDO_ESTADOS.map(e=>`<option value="${e}" ${e===estPed(p.estado)?'selected':''}>${e==='Entregado'?'✓ ':''}${e}</option>`).join('')}
                 </select>
                 ${wa?`<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>`:''}
                 <button class="cli-btn" onclick="abrirFormPedido('${p.id}')"><i class="fas fa-pen"></i></button>
