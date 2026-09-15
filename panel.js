@@ -487,6 +487,17 @@ function esc(s) {
         ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 }
 function soloDigitos(t) { return String(t || '').replace(/\D/g, ''); }
+// Limpia el teléfono al guardar: saca caracteres invisibles que vienen al copiar
+// de WhatsApp (espacios raros, marcas de dirección) y deja solo lo válido de un
+// teléfono. Así podés pegar el número tal cual y no tira error.
+function limpiarTel(raw){
+    return String(raw || '')
+        .replace(/[​-‏‪-‮⁠﻿]/g, '')  // ancho cero / marcas bidi
+        .replace(/[    ]/g, ' ')               // espacios especiales → normal
+        .replace(/[^\d+()\-\s]/g, '')                              // solo dígitos + ( ) - espacios
+        .replace(/\s+/g, ' ')
+        .trim();
+}
 
 let vistaClientes = 'mis';   // 'mis' (cargados por vos) o 'web' (registrados en la web)
 let _pedidosCargados = false, _segCargados = false;
@@ -678,7 +689,7 @@ async function guardarCliente(e, id) {
         nombre:    document.getElementById('fNombre').value.trim(),
         razon:     document.getElementById('fRazon').value.trim(),
         cuit:      document.getElementById('fCuit').value.trim(),
-        telefono:  document.getElementById('fTel').value.trim(),
+        telefono:  limpiarTel(document.getElementById('fTel').value),
         email:     document.getElementById('fEmail').value.trim(),
         empresa:   document.getElementById('fEmpresa').value.trim(),
         ciudad:    document.getElementById('fCiudad').value.trim(),
