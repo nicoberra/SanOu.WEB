@@ -107,7 +107,7 @@ function manejar(e) {
     else if (accion === 'mayorista_save') out = { ok: true, saved: mayoristaGuardar(p) };
     else if (accion === 'registrar') out = registrar(p);
     else if (accion === 'login')     out = login(p);
-    else if (accion === 'version') out = { ok: true, version: 'v3-telegram' };
+    else if (accion === 'version') out = { ok: true, version: 'v5-mayorista' };
     else throw 'Acción desconocida: ' + accion;
   } catch (err) {
     out = { ok: false, error: String(err) };
