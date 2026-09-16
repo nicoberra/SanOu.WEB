@@ -373,6 +373,8 @@ body:not(.bloqueado) .panel-lock{display:none}
 .prod-num{display:flex;flex-direction:column;gap:4px;font-size:.72rem;color:var(--gris2);font-weight:600}
 .prod-num input{background:var(--neg3);border:1px solid var(--linea);border-radius:9px;padding:10px 11px;color:#fff;font-size:.92rem;font-weight:600}
 .prod-num input:focus{outline:none;border-color:var(--am)}
+.prod-mayorista{width:100%;margin-top:12px}
+.prod-mayorista input{width:100%}
 .prod-sw{display:flex;align-items:center;gap:9px;font-size:.82rem;color:var(--gris2);font-weight:600;cursor:pointer;user-select:none}
 .prod-sw input{position:absolute;opacity:0;width:0;height:0}
 .prod-sw-track{position:relative;width:42px;height:24px;border-radius:24px;background:#3a3a3a;flex-shrink:0;transition:background .2s}
