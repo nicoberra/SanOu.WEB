@@ -73,6 +73,7 @@ function navegar(sec) {
     else if (sec === 'facturacion') renderFacturacion();
     else if (sec === 'clientes') renderClientes();
     else if (sec === 'productos') renderProductos();
+    else if (sec === 'mayorista') renderMayorista();
     else if (sec === 'cotizaciones') renderCotizador();
     else if (sec === 'pedidos') renderPedidos();
     else if (sec === 'marketing') renderMarketing();
@@ -896,6 +897,80 @@ async function guardarProducto(i, campo, valor) {
     } catch (e) {
         alert('No se pudo guardar "' + p.nombre + '". Reintentá.');
     }
+}
+
+// ─── MAYORISTA (sheet aparte que se manda a clientes) ───────────
+let mayorista = [], _mayoristaCargado = false;
+async function renderMayorista(){
+    const v = document.getElementById('vista');
+    const cache = mayorista.length ? mayorista : (cacheGet('mayorista') || []);
+    if (cache.length) mayorista = cache;
+    v.innerHTML = `
+        <div class="panel-sec-head">
+            <div class="panel-buscar"><i class="fas fa-search"></i>
+                <input type="text" id="buscarMay" placeholder="Buscar producto…" oninput="filtrarMayorista()"></div>
+        </div>
+        <div class="mkt-nota">Precios mayoristas. Se editan acá y se guardan en tu planilla (la que mandás a clientes).</div>
+        <div class="panel-lista" id="listaMay">${mayorista.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
+    if (mayorista.length) pintarMayorista(mayorista);
+    if (_mayoristaCargado && !stale('mayorista')) return;   // recién traído: no re-descargar
+    try {
+        const r = await crm({ action:'mayorista_list', tab:'Clientes' });
+        if (r && r.ok && r.rows) { mayorista = r.rows; cacheSet('mayorista', mayorista); _mayoristaCargado = true; }
+        if (seccionActual === 'mayorista') pintarMayorista(mayorista);
+    } catch(e){
+        if (!mayorista.length) document.getElementById('listaMay').innerHTML =
+            `<div class="panel-error">No se pudo cargar el mayorista.<br><button class="panel-reintentar" onclick="renderMayorista()"><i class="fas fa-rotate"></i> Reintentar</button></div>`;
+    }
+}
+function filtrarMayorista(){
+    const q = (document.getElementById('buscarMay')?.value || '').toLowerCase().trim();
+    if (!q) return pintarMayorista(mayorista);
+    // Filtra productos por nombre; mantiene visibles solo los que matchean.
+    pintarMayorista(mayorista.filter(m => m.tipo==='prod' && m.producto.toLowerCase().includes(q)), true);
+}
+function pintarMayorista(lista, sinCats){
+    const cont = document.getElementById('listaMay'); if(!cont) return;
+    if(!lista.length){ cont.innerHTML = `<div class="panel-vacio-chico">No hay filas para mostrar.</div>`; return; }
+    cont.innerHTML = lista.map(m => {
+        if (m.tipo === 'cat') return `<div class="may-cat">${esc(m.producto)}</div>`;
+        return `
+        <div class="prod-card" id="may-${m.row}">
+            <div class="prod-top">
+                <span class="prod-nombre">${esc(m.producto)}</span>
+                <span class="prod-ok" id="mayok-${m.row}"><i class="fas fa-check"></i> Guardado</span>
+            </div>
+            <div class="prod-campos">
+                <label class="prod-num">Precio mayorista
+                    <input type="text" inputmode="numeric" value="${esc(m.mayorista)}"
+                        onchange="guardarMayorista(${m.row},'mayorista',this.value)">
+                </label>
+                <label class="prod-num">Precio unitario
+                    <input type="text" inputmode="numeric" value="${esc(m.unitario)}"
+                        onchange="guardarMayorista(${m.row},'unitario',this.value)">
+                </label>
+                <label class="prod-num">Cantidad mínima
+                    <input type="text" value="${esc(m.minimo)}" placeholder="Ej: >6 unidades"
+                        onchange="guardarMayorista(${m.row},'minimo',this.value)">
+                </label>
+                <label class="prod-num">Nota
+                    <input type="text" value="${esc(m.nota)}" placeholder="Ej: sin stock"
+                        onchange="guardarMayorista(${m.row},'nota',this.value)">
+                </label>
+            </div>
+        </div>`;
+    }).join('');
+}
+let _mayTimers = {};
+async function guardarMayorista(row, campo, valor){
+    const m = mayorista.find(x => x.row === row); if(!m) return;
+    m[campo] = valor;
+    try {
+        await crm({ action:'mayorista_save', tab:'Clientes', row, producto: m.producto, [campo]: valor });
+        cacheSet('mayorista', mayorista);
+        const ok = document.getElementById('mayok-' + row);
+        if (ok) { ok.classList.add('on'); clearTimeout(_mayTimers[row]); _mayTimers[row] = setTimeout(()=>ok.classList.remove('on'), 1800); }
+    } catch(e){ alert('No se pudo guardar "' + m.producto + '". Reintentá.'); }
 }
 
 // ─── HELPERS PEDIDOS / SEGUIMIENTOS ─────────────────────────────

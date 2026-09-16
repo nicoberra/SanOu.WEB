@@ -16,6 +16,11 @@ var CRM_ID = '12RjmHKOV3LvvN6kA04b9bf92k-dkvXS5C8qenNGHHKw';
 // Planilla de precios de la web (Nombre | Precios | Stock | Precio ML | DESTACADO)
 var PRECIOS_ID = '1Jzs6_Rp0h4yHm7u786mcqqHPWLpwjMcnj6gZRxuJ67w';
 
+// Planilla de MAYORISTA (la que se manda a clientes)
+// Columnas: A Producto | B Cant. mínima | C Precio mayorista | D Precio unitario | E Nota
+var MAYORISTA_ID  = '1EWmfW7yurmhHUTfGNBEmtSWmF3-2Zou6lp_G_zJiIL0';
+var MAYORISTA_GID = 1121180409;
+
 // ── Notificaciones a Telegram (avisos al celular) ──
 var TG_TOKEN = '8628210339:AAEfgQKWjvIf3xnDEBCRMN2432YDX1qidJQ';
 var TG_CHAT  = '5980182397';
@@ -98,6 +103,8 @@ function manejar(e) {
     else if (accion === 'delete') out = { ok: true, deleted: borrar(tab, p.id) };
     else if (accion === 'productos_list') out = { ok: true, rows: productosListar() };
     else if (accion === 'productos_save') out = { ok: true, saved: productosGuardar(p) };
+    else if (accion === 'mayorista_list') out = { ok: true, rows: mayoristaListar() };
+    else if (accion === 'mayorista_save') out = { ok: true, saved: mayoristaGuardar(p) };
     else if (accion === 'registrar') out = registrar(p);
     else if (accion === 'login')     out = login(p);
     else if (accion === 'version') out = { ok: true, version: 'v3-telegram' };
@@ -363,6 +370,67 @@ function productosGuardar(p) {
     }
   }
   return false;
+}
+
+// ── MAYORISTA (sheet aparte que se manda a clientes) ──
+function hojaMayorista() {
+  var ss = SpreadsheetApp.openById(MAYORISTA_ID);
+  var hojas = ss.getSheets();
+  var sh = hojas[0];
+  for (var i = 0; i < hojas.length; i++) {
+    if (hojas[i].getSheetId() === MAYORISTA_GID) { sh = hojas[i]; break; }
+  }
+  return sh;
+}
+
+// Devuelve cada fila del sheet mayorista. tipo:'cat' = título de categoría, 'prod' = producto.
+function mayoristaListar() {
+  var sh = hojaMayorista();
+  var datos = sh.getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < datos.length; i++) {   // fila 1 = encabezados
+    var producto = String(datos[i][0]).trim();
+    if (!producto) continue;
+    var minimo    = String(datos[i][1] == null ? '' : datos[i][1]).trim();
+    var mayorista = String(datos[i][2] == null ? '' : datos[i][2]).trim();
+    var unitario  = String(datos[i][3] == null ? '' : datos[i][3]).trim();
+    var nota      = String(datos[i][4] == null ? '' : datos[i][4]).trim();
+    // Fila de categoría: solo tiene el nombre (sin precios ni mínimo).
+    var esCat = !minimo && !mayorista && !unitario;
+    out.push({
+      row: i + 1, tipo: esCat ? 'cat' : 'prod',
+      producto: producto, minimo: minimo, mayorista: mayorista, unitario: unitario, nota: nota
+    });
+  }
+  return out;
+}
+
+// Guarda los campos de una fila del mayorista (por número de fila, verificando el producto).
+function mayoristaGuardar(p) {
+  var sh = hojaMayorista();
+  var fila = parseInt(p.row, 10);
+  if (!fila || fila < 2) return false;
+  // Seguridad: si el producto no coincide en esa fila, la buscamos por nombre.
+  var actual = String(sh.getRange(fila, 1).getValue()).trim();
+  if (p.producto && actual !== String(p.producto).trim()) {
+    var datos = sh.getDataRange().getValues();
+    fila = 0;
+    for (var i = 1; i < datos.length; i++) {
+      if (String(datos[i][0]).trim() === String(p.producto).trim()) { fila = i + 1; break; }
+    }
+    if (!fila) return false;
+  }
+  if (p.minimo    !== undefined) sh.getRange(fila, 2).setValue(p.minimo);
+  if (p.mayorista !== undefined) sh.getRange(fila, 3).setValue(precioOTexto(p.mayorista));
+  if (p.unitario  !== undefined) sh.getRange(fila, 4).setValue(precioOTexto(p.unitario));
+  if (p.nota      !== undefined) sh.getRange(fila, 5).setValue(p.nota);
+  return true;
+}
+
+// Si tiene números, lo formatea como precio ("$X.XXX"); si es texto (ej. "consultar"), lo deja igual.
+function precioOTexto(v) {
+  var s = String(v == null ? '' : v);
+  return /\d/.test(s) ? formatearPrecio(s) : s.trim();
 }
 
 // Formatea a "$72.500" (con signo y puntos de miles). Vacío queda vacío.
