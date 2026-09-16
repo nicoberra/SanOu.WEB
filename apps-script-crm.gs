@@ -107,7 +107,7 @@ function manejar(e) {
     else if (accion === 'mayorista_save') out = { ok: true, saved: mayoristaGuardar(p) };
     else if (accion === 'registrar') out = registrar(p);
     else if (accion === 'login')     out = login(p);
-    else if (accion === 'version') out = { ok: true, version: 'v5-mayorista' };
+    else if (accion === 'version') out = { ok: true, version: 'v6-mayorista' };
     else throw 'Acción desconocida: ' + accion;
   } catch (err) {
     out = { ok: false, error: String(err) };
@@ -427,10 +427,13 @@ function mayoristaGuardar(p) {
   return true;
 }
 
-// Si tiene números, lo formatea como precio ("$X.XXX"); si es texto (ej. "consultar"), lo deja igual.
+// Si tiene números, guarda un NÚMERO (así la planilla mantiene su formato de moneda);
+// si es texto (ej. "consultar"), lo deja igual.
 function precioOTexto(v) {
   var s = String(v == null ? '' : v);
-  return /\d/.test(s) ? formatearPrecio(s) : s.trim();
+  if (!/\d/.test(s)) return s.trim();
+  var n = parseInt(s.replace(/[^\d]/g, ''), 10);
+  return isNaN(n) ? s.trim() : n;
 }
 
 // Formatea a "$72.500" (con signo y puntos de miles). Vacío queda vacío.

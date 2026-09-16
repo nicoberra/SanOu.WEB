@@ -942,11 +942,11 @@ function pintarMayorista(lista, sinCats){
             </div>
             <div class="prod-campos">
                 <label class="prod-num">Precio mayorista
-                    <input type="text" inputmode="numeric" value="${esc(m.mayorista)}"
+                    <input type="text" inputmode="numeric" value="${esc(/\d/.test(m.mayorista) ? precioTxt(m.mayorista) : m.mayorista)}"
                         onchange="guardarMayorista(${m.row},'mayorista',this.value)">
                 </label>
                 <label class="prod-num">Precio unitario
-                    <input type="text" inputmode="numeric" value="${esc(m.unitario)}"
+                    <input type="text" inputmode="numeric" value="${esc(/\d/.test(m.unitario) ? precioTxt(m.unitario) : m.unitario)}"
                         onchange="guardarMayorista(${m.row},'unitario',this.value)">
                 </label>
                 <label class="prod-num">Cantidad mínima
