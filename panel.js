@@ -853,10 +853,6 @@ function pintarProductos(lista, q) {
                     <span class="prod-sw-track"></span> Destacado
                 </label>
             </div>
-            <label class="prod-num prod-mayorista">Mayorista
-                <input type="text" value="${esc(p.mayorista||'')}" placeholder="Ej: desde 10u $65.000"
-                    onchange="guardarProducto(${i},'mayorista',this.value)">
-            </label>
             ${bloqueCosto(p, i)}
         </div>`;
     }).join('');

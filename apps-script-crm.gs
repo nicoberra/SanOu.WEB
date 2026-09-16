@@ -319,9 +319,8 @@ function hojaProductos() {
   for (var i = 0; i < hojas.length; i++) {
     if (String(hojas[i].getRange(1, 1).getValue()).trim().toLowerCase() === 'nombre') { sh = hojas[i]; break; }
   }
-  // Asegurar los encabezados de F (Costo USD) y G (Mayorista) sin tocar los datos.
+  // Asegurar el encabezado de la columna F (Costo USD) sin tocar los datos.
   if (!sh.getRange(1, 6).getValue()) sh.getRange(1, 6).setValue('Costo USD');
-  if (!sh.getRange(1, 7).getValue()) sh.getRange(1, 7).setValue('Mayorista');
   return sh;
 }
 
@@ -343,8 +342,7 @@ function productosListar() {
       stock:     esVerdadero(datos[i][2]),
       ml:        datos[i][3],
       destacado: esVerdadero(datos[i][4]),
-      costousd:  datos[i][5],
-      mayorista: datos[i][6]
+      costousd:  datos[i][5]
     });
   }
   return out;
@@ -361,9 +359,7 @@ function productosGuardar(p) {
       if (p.ml        !== undefined) sh.getRange(i + 1, 4).setValue(formatearPrecio(p.ml));
       if (p.destacado !== undefined) sh.getRange(i + 1, 5).setValue(esVerdadero(p.destacado));
       if (p.costousd  !== undefined) sh.getRange(i + 1, 6).setValue(numeroUsd(p.costousd));
-      if (p.mayorista !== undefined) sh.getRange(i + 1, 7).setValue(p.mayorista);
       return true;
-
     }
   }
   return false;
