@@ -757,8 +757,9 @@ function pintarBarraDolar(){
         <button class="dol-refresh" onclick="refrescarDolar()" title="Actualizar"><i class="fas fa-rotate"></i></button>`
         : `<span class="dol-off">Sin cotización del dólar (revisá tu conexión)</span>`;
 }
-function cambiarDolarTipo(t){ dolar.tipo=t; pintarBarraDolar(); filtrarProductos(); }
-async function refrescarDolar(){ const el=document.getElementById('barraDolar'); if(el)el.innerHTML='<i class="fas fa-rotate fa-spin"></i>'; await ensureDolar(true); pintarBarraDolar(); filtrarProductos(); }
+function repintarPreciosSec(){ if(seccionActual==='mayorista') filtrarMayorista(); else if(seccionActual==='productos') filtrarProductos(); }
+function cambiarDolarTipo(t){ dolar.tipo=t; pintarBarraDolar(); repintarPreciosSec(); }
+async function refrescarDolar(){ const el=document.getElementById('barraDolar'); if(el)el.innerHTML='<i class="fas fa-rotate fa-spin"></i>'; await ensureDolar(true); pintarBarraDolar(); repintarPreciosSec(); }
 
 async function renderProductos() {
     prodCat = 'all';
@@ -900,40 +901,65 @@ async function guardarProducto(i, campo, valor) {
 }
 
 // ─── MAYORISTA (sheet aparte que se manda a clientes) ───────────
-let mayorista = [], _mayoristaCargado = false;
+// Mismo sistema que Productos: chips de categoría (Todas / por categoría) + búsqueda.
+let mayorista = [], _mayoristaCargado = false, mayCat = 'all';
+// Asigna a cada producto la categoría (fila amarilla) que tiene arriba y devuelve el orden de categorías.
+function prepararMayorista(){
+    let actual = 'Otros'; const orden = [];
+    mayorista.forEach(m => {
+        if (m.tipo === 'cat') { actual = m.producto; if(!orden.includes(actual)) orden.push(actual); }
+        else m._cat = actual;
+    });
+    return orden;
+}
 async function renderMayorista(){
+    mayCat = 'all';
     const v = document.getElementById('vista');
     const cache = mayorista.length ? mayorista : (cacheGet('mayorista') || []);
     if (cache.length) mayorista = cache;
     v.innerHTML = `
+        <div class="dol-bar" id="barraDolar"></div>
         <div class="panel-sec-head">
             <div class="panel-buscar"><i class="fas fa-search"></i>
                 <input type="text" id="buscarMay" placeholder="Buscar producto…" oninput="filtrarMayorista()"></div>
         </div>
-        <div class="mkt-nota">Precios mayoristas. Se editan acá y se guardan en tu planilla (la que mandás a clientes).</div>
+        <p class="prod-ayuda">Precios mayoristas (se guardan en tu planilla, la que mandás a clientes). El costo sale de Productos, al dólar actual.</p>
+        <div class="prod-cats" id="mayCats"></div>
         <div class="panel-lista" id="listaMay">${mayorista.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
-    if (mayorista.length) pintarMayorista(mayorista);
+    // Dólar + costos (desde Productos) para mostrar costo USD / pesos y ganancia.
+    Promise.all([ensureDolar(), ensureProductosPrecios()]).then(()=>{ if(seccionActual==='mayorista'){ pintarBarraDolar(); filtrarMayorista(); } });
+    if (mayorista.length) { renderMayCats(); filtrarMayorista(); }
     if (_mayoristaCargado && !stale('mayorista')) return;   // recién traído: no re-descargar
     try {
         const r = await crm({ action:'mayorista_list', tab:'Clientes' });
         if (r && r.ok && r.rows) { mayorista = r.rows; cacheSet('mayorista', mayorista); _mayoristaCargado = true; }
-        if (seccionActual === 'mayorista') pintarMayorista(mayorista);
+        if (seccionActual !== 'mayorista') return;
+        renderMayCats(); filtrarMayorista();
     } catch(e){
         if (!mayorista.length) document.getElementById('listaMay').innerHTML =
             `<div class="panel-error">No se pudo cargar el mayorista.<br><button class="panel-reintentar" onclick="renderMayorista()"><i class="fas fa-rotate"></i> Reintentar</button></div>`;
     }
 }
-function filtrarMayorista(){
-    const q = (document.getElementById('buscarMay')?.value || '').toLowerCase().trim();
-    if (!q) return pintarMayorista(mayorista);
-    // Filtra productos por nombre; mantiene visibles solo los que matchean.
-    pintarMayorista(mayorista.filter(m => m.tipo==='prod' && m.producto.toLowerCase().includes(q)), true);
+function renderMayCats(){
+    const cont = document.getElementById('mayCats'); if(!cont) return;
+    const orden = prepararMayorista();
+    const claves = ['all', ...orden];
+    cont.innerHTML = claves.map(k =>
+        `<button class="prod-cat${k===mayCat?' active':''}" onclick="mayCategoria('${esc(k).replace(/'/g,"\\'")}')">${k==='all'?'Todas':esc(k)}</button>`).join('');
 }
-function pintarMayorista(lista, sinCats){
+function mayCategoria(k){ mayCat = k; renderMayCats(); filtrarMayorista(); }
+function filtrarMayorista(){
+    prepararMayorista();
+    const q = (document.getElementById('buscarMay')?.value || '').toLowerCase().trim();
+    let lista = mayorista.filter(m => m.tipo === 'prod');
+    if (mayCat !== 'all') lista = lista.filter(m => m._cat === mayCat);
+    if (q) lista = lista.filter(m => m.producto.toLowerCase().includes(q));
+    pintarMayorista(lista, q);
+}
+function pintarMayorista(lista, q){
     const cont = document.getElementById('listaMay'); if(!cont) return;
-    if(!lista.length){ cont.innerHTML = `<div class="panel-vacio-chico">No hay filas para mostrar.</div>`; return; }
+    if(!lista.length){ cont.innerHTML = `<div class="panel-vacio-chico">${q ? 'Sin resultados.' : 'No hay productos.'}</div>`; return; }
     cont.innerHTML = lista.map(m => {
-        if (m.tipo === 'cat') return `<div class="may-cat">${esc(m.producto)}</div>`;
         return `
         <div class="prod-card" id="may-${m.row}">
             <div class="prod-top">
@@ -958,8 +984,32 @@ function pintarMayorista(lista, sinCats){
                         onchange="guardarMayorista(${m.row},'nota',this.value)">
                 </label>
             </div>
+            ${bloqueCostoMay(m)}
         </div>`;
     }).join('');
+}
+// Costo (USD y pesos) del producto, tomado de la planilla de Productos, + ganancia sobre el precio mayorista.
+function bloqueCostoMay(m){
+    const costo = costoUsdFlex(m.producto);           // USD
+    const rate = dolarValor();
+    if (!costo) return '';
+    const costoPesos = rate ? Math.round(costo * rate) : 0;
+    const may = parseInt(String(m.mayorista).replace(/[^\d]/g,''),10) || 0;
+    const gan = may - costoPesos;
+    const margen = (may>0 && costoPesos>0) ? Math.round((gan/may)*100) : null;
+    return `
+        <div class="may-costo">
+            <span class="may-costo-item">Costo: <b>US$ ${costo.toLocaleString('es-AR')}</b></span>
+            ${costoPesos ? `<span class="may-costo-item">≈ <b>${fmtMoney(costoPesos)}</b></span>` : ''}
+            ${(may && costoPesos) ? `<span class="prod-margen ${gan<0?'neg':''}">Ganancia ${fmtMoney(gan)}${margen!=null?` · ${margen}%`:''}</span>` : ''}
+        </div>`;
+}
+// Busca la fila de Productos para un nombre del mayorista (tolera el sufijo "(6–50 mm²)").
+function baseNombre(n){ return norm(String(n).replace(/\([^)]*\)/g,'').replace(/\s+/g,' ').trim()); }
+function costoUsdFlex(nombre){
+    let p = filaProd(nombre);                          // match exacto (catálogo → sheetName)
+    if (!p) { const b = baseNombre(nombre); p = (productos||[]).find(x => baseNombre(x.nombre) === b); }
+    return p ? (parseFloat(String(p.costousd||'').replace(/[^\d.]/g,'')) || 0) : 0;
 }
 let _mayTimers = {};
 async function guardarMayorista(row, campo, valor){
@@ -970,6 +1020,7 @@ async function guardarMayorista(row, campo, valor){
         cacheSet('mayorista', mayorista);
         const ok = document.getElementById('mayok-' + row);
         if (ok) { ok.classList.add('on'); clearTimeout(_mayTimers[row]); _mayTimers[row] = setTimeout(()=>ok.classList.remove('on'), 1800); }
+        if (campo === 'mayorista') filtrarMayorista();   // refrescar la ganancia
     } catch(e){ alert('No se pudo guardar "' + m.producto + '". Reintentá.'); }
 }
 
