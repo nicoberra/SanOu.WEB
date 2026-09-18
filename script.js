@@ -9,6 +9,59 @@ let klModalMostrado = false;
 // vía el Apps Script del panel. Ya NO usa la planilla publicada.
 const CLIENTES_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
 
+// ─── ESTADÍSTICAS → CRM (eventos de la web) ─────────────────────
+// Registra visitas, clicks en categorías, vistas de producto, carrito,
+// compras y carritos abandonados en la planilla del CRM. Fire-and-forget.
+function _sesionId() {
+    try {
+        let s = localStorage.getItem('sanou_sid');
+        if (!s) { s = 's' + Date.now() + Math.floor(Math.random()*1e5); localStorage.setItem('sanou_sid', s); }
+        return s;
+    } catch (e) { return 's0'; }
+}
+function _fuenteTrafico() {
+    try {
+        const r = (document.referrer || '').toLowerCase();
+        if (!r || r.indexOf(location.host) >= 0) return 'directo';
+        if (/instagram|ig\./.test(r)) return 'instagram';
+        if (/facebook|fb\./.test(r))  return 'facebook';
+        if (/tiktok/.test(r))         return 'tiktok';
+        if (/google/.test(r))         return 'google';
+        if (/whatsapp|wa\.me/.test(r))return 'whatsapp';
+        try { return new URL(document.referrer).hostname.replace(/^www\./,''); } catch(e){ return 'otro'; }
+    } catch (e) { return 'directo'; }
+}
+function sanouTrack(tipo, item, extra) {
+    if (!CLIENTES_URL) return;
+    try {
+        const params = new URLSearchParams({
+            action: 'evento_add', tab: 'Clientes',
+            tipo: tipo, item: item || '', sesion: _sesionId(),
+            fuente: (extra && extra.fuente) || '',
+            contacto: (extra && extra.contacto) || '',
+            monto: (extra && extra.monto != null) ? String(extra.monto) : ''
+        });
+        const url = CLIENTES_URL + '?' + params.toString();
+        // sendBeacon aguanta el cierre de la página (para el carrito abandonado)
+        if (navigator.sendBeacon) navigator.sendBeacon(url);
+        else fetch(url, { mode: 'no-cors', keepalive: true });
+    } catch (e) { /* silencioso */ }
+}
+// Carrito abandonado: si se va con productos y no compró en esta sesión, lo registramos una vez.
+let _compraHecha = false, _abandonoEnviado = false;
+function registrarAbandono() {
+    try {
+        if (_compraHecha || _abandonoEnviado) return;
+        if (!Array.isArray(cart) || cart.length === 0) return;
+        _abandonoEnviado = true;
+        const total = cart.reduce((s, i) => s + (i.price || 0) * i.qty, 0);
+        const detalle = cart.map(i => `${i.qty}x ${i.name}`).join(', ');
+        const contacto = [localStorage.getItem('kl_name'), localStorage.getItem('kl_email'), localStorage.getItem('kl_phone')]
+            .filter(Boolean).join(' · ');
+        sanouTrack('abandono', detalle, { monto: total, contacto: contacto });
+    } catch (e) { /* silencioso */ }
+}
+
 // Guarda/actualiza el cliente en el CRM. Fire-and-forget (no-cors).
 // El backend hace upsert por email (no duplica si ya existe).
 function guardarClienteEnSheet(datos) {
@@ -696,6 +749,7 @@ function mostrarTodosProductos() {
 // ─── MODAL DE DETALLE ────────────────────────────────────────────
 function openModal(id) {
     const p = products.find(x => x.id === id);
+    if (p) sanouTrack('producto', p.name);
     // GA4 — vista de producto
     if (typeof gtag !== 'undefined') {
         gtag('event', 'view_item', {
@@ -739,6 +793,7 @@ function closeModal() {
 
 // ─── FILTRAR ────────────────────────────────────────────────────
 function filterProducts(filter) {
+    if (filter && filter !== 'all') sanouTrack('categoria', CAT_NAMES[filter] || filter);
     // Reflejar la categoría seleccionada en el dropdown de filtro
     const opt = document.querySelector('.filter-option[data-filter="' + filter + '"]');
     const labelEl = document.getElementById('filterDropdownLabel');
@@ -960,6 +1015,7 @@ function searchProducts(query) {
 // ─── CARRITO ─────────────────────────────────────────────────────
 function addToCart(id) {
     const product = products.find(p => p.id === id);
+    if (product) sanouTrack('carrito', product.name);
     // GA4 — agregar al carrito
     if (typeof gtag !== 'undefined') {
         gtag('event', 'add_to_cart', {
@@ -1161,6 +1217,8 @@ function emitirPresupuesto({ nombre, telefono, email, empresa, cuit }) {
 
     if (typeof gtag !== 'undefined') gtag('event', 'presupuesto_web', { value: total, currency: 'ARS' });
     if (typeof saveOrder === 'function') saveOrder(cart, total);
+    _compraHecha = true;   // así no cuenta como carrito abandonado
+    sanouTrack('compra', cart.map(i => `${i.qty}x ${i.name}`).join(', '), { monto: total, contacto: [nombre, email].filter(Boolean).join(' · ') });
     cerrarPresupuesto();
 
     // ya pidió el presupuesto → vaciamos el carrito
@@ -1202,6 +1260,8 @@ function checkoutWhatsApp() {
 
     // Guardar en historial
     saveOrder(cart, total);
+    _compraHecha = true;   // consulta enviada → no es carrito abandonado
+    sanouTrack('compra', cart.map(i => `${i.qty}x ${i.name}`).join(', '), { monto: total });
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 
@@ -1835,6 +1895,11 @@ window.addEventListener('load', () => {
     initStats();
     initScrollReveal();
     injectStructuredData();
+
+    // Estadísticas: registrar la visita (una vez por carga) y preparar el aviso de carrito abandonado.
+    sanouTrack('visita', location.pathname, { fuente: _fuenteTrafico() });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') registrarAbandono(); });
+    window.addEventListener('pagehide', registrarAbandono);
 });
 
 // ─────────────────────────────────────────────────────────────────

@@ -74,6 +74,7 @@ function navegar(sec) {
     else if (sec === 'clientes') renderClientes();
     else if (sec === 'productos') renderProductos();
     else if (sec === 'mayorista') renderMayorista();
+    else if (sec === 'estadisticas') renderEstadisticas();
     else if (sec === 'cotizaciones') renderCotizador();
     else if (sec === 'pedidos') renderPedidos();
     else if (sec === 'marketing') renderMarketing();
@@ -1068,6 +1069,88 @@ async function guardarMayorista(row, campo, valor){
         if (ok) { ok.classList.add('on'); clearTimeout(_mayTimers[row]); _mayTimers[row] = setTimeout(()=>ok.classList.remove('on'), 1800); }
         if (campo === 'mayorista') filtrarMayorista();   // refrescar la ganancia
     } catch(e){ alert('No se pudo guardar "' + m.producto + '". Reintentá.'); }
+}
+
+// ─── ESTADÍSTICAS (eventos de la web) ───────────────────────────
+let _statsData = null, _abandonos = [], _statsCargado = false;
+// Productos más vendidos: sale de los pedidos del CRM (suma de cantidades).
+function masVendidos(){
+    const cont = {};
+    (pedidos||[]).forEach(p => parseDetalle(p.detalle).forEach(it => {
+        const k = it.nombre; if(k) cont[k] = (cont[k]||0) + (it.cantidad||1);
+    }));
+    return Object.keys(cont).map(k=>({nombre:k, n:cont[k]})).sort((a,b)=>b.n-a.n).slice(0,10);
+}
+async function renderEstadisticas(){
+    const v = document.getElementById('vista');
+    const cache = _statsData || cacheGet('stats');
+    if (cache) _statsData = cache;
+    v.innerHTML = `<div id="statsWrap">${_statsData ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando estadísticas…</div>'}</div>`;
+    ensurePedidos().then(()=>{ if(seccionActual==='estadisticas' && _statsData) pintarEstadisticas(); });
+    if (_statsData) pintarEstadisticas();
+    if (_statsCargado && !stale('stats')) return;
+    try {
+        const [s, a] = await Promise.all([
+            crm({ action:'eventos_stats', tab:'Clientes' }),
+            crm({ action:'abandonos_list', tab:'Clientes' })
+        ]);
+        if (s && s.ok) { _statsData = s.stats; cacheSet('stats', s.stats); _statsCargado = true; }
+        if (a && a.ok) _abandonos = a.rows || [];
+        if (seccionActual === 'estadisticas') pintarEstadisticas();
+    } catch(e){
+        if (!_statsData) document.getElementById('statsWrap').innerHTML =
+            `<div class="panel-error">No se pudieron cargar las estadísticas.<br><button class="panel-reintentar" onclick="renderEstadisticas()"><i class="fas fa-rotate"></i> Reintentar</button></div>`;
+    }
+}
+function pintarEstadisticas(){
+    const w = document.getElementById('statsWrap'); if(!w || seccionActual!=='estadisticas') return;
+    const s = _statsData || {};
+    const vis = s.visitas || {hoy:0,semana:0,mes:0,total:0};
+    const vendidos = masVendidos();
+    const rank = (arr, unidad) => (arr && arr.length)
+        ? arr.map(x=>`<div class="st-rank"><span class="st-rank-n">${esc(x.nombre)}</span><b>${x.n}${unidad?' '+unidad:''}</b></div>`).join('')
+        : '<div class="panel-vacio-chico">Todavía sin datos.</div>';
+    // Mini gráfico de visitas (últimos 14 días)
+    const pd = s.porDia || [];
+    const maxD = Math.max(1, ...pd.map(x=>x.n));
+    const barras = pd.map(x=>{
+        const h = Math.round((x.n/maxD)*100);
+        const dd = x.d.slice(8,10)+'/'+x.d.slice(5,7);
+        return `<div class="st-bar" title="${dd}: ${x.n}"><div class="st-bar-fill" style="height:${h}%"></div><span class="st-bar-lbl">${x.d.slice(8,10)}</span></div>`;
+    }).join('');
+    const fuentes = (s.fuentes||[]);
+    const totFuente = fuentes.reduce((a,b)=>a+b.n,0) || 1;
+    const fuentesHTML = fuentes.length ? fuentes.map(f=>{
+        const pct = Math.round(f.n/totFuente*100);
+        return `<div class="st-fuente"><span>${esc(f.nombre)}</span><div class="st-fuente-bar"><div style="width:${pct}%"></div></div><b>${f.n}</b></div>`;
+    }).join('') : '<div class="panel-vacio-chico">Todavía sin datos.</div>';
+    const abLista = (_abandonos||[]).slice(0,20).map(a=>`
+        <div class="rec-card">
+            <div class="rec-top"><span class="rec-nombre">${a.contacto ? esc(a.contacto) : 'Anónimo (sin datos)'}</span>
+                ${a.monto?`<span class="rec-monto">${montoTxt(a.monto)}</span>`:''}</div>
+            <div class="rec-detalle">${esc(a.item)||'-'}</div>
+            <div class="rec-meta"><span><i class="fas fa-clock"></i> ${esc(a.fecha)}</span></div>
+        </div>`).join('') || '<div class="panel-vacio-chico">Sin carritos abandonados. 🎉</div>';
+
+    w.innerHTML = `
+        <div class="st-cards">
+            <div class="st-card"><span class="st-num">${vis.hoy}</span><span class="st-lbl">visitas hoy</span></div>
+            <div class="st-card"><span class="st-num">${vis.semana}</span><span class="st-lbl">esta semana</span></div>
+            <div class="st-card"><span class="st-num">${vis.mes}</span><span class="st-lbl">este mes</span></div>
+            <div class="st-card"><span class="st-num">${vis.total}</span><span class="st-lbl">total</span></div>
+        </div>
+        <h4 class="dash-sec">📈 Visitas (últimos 14 días)</h4>
+        <div class="st-chart">${barras || '<div class="panel-vacio-chico">Todavía sin datos.</div>'}</div>
+        <h4 class="dash-sec">🌐 De dónde vienen</h4>
+        <div class="st-box">${fuentesHTML}</div>
+        <h4 class="dash-sec">🏆 Más vendidos</h4>
+        <div class="st-box">${rank(vendidos,'u')}</div>
+        <h4 class="dash-sec">🔍 Más vistos</h4>
+        <div class="st-box">${rank(s.topProductos)}</div>
+        <h4 class="dash-sec">🗂️ Categorías más tocadas</h4>
+        <div class="st-box">${rank(s.topCategorias)}</div>
+        <h4 class="dash-sec">🛒 Carritos abandonados <small class="mkt-sem-lbl">${(_abandonos||[]).length}</small></h4>
+        ${abLista}`;
 }
 
 // ─── HELPERS PEDIDOS / SEGUIMIENTOS ─────────────────────────────

@@ -107,7 +107,10 @@ function manejar(e) {
     else if (accion === 'mayorista_save') out = { ok: true, saved: mayoristaGuardar(p) };
     else if (accion === 'registrar') out = registrar(p);
     else if (accion === 'login')     out = login(p);
-    else if (accion === 'version') out = { ok: true, version: 'v6-mayorista' };
+    else if (accion === 'evento_add')   out = { ok: true, saved: eventoAgregar(p) };
+    else if (accion === 'eventos_stats') out = { ok: true, stats: eventosStats() };
+    else if (accion === 'abandonos_list') out = { ok: true, rows: abandonosList() };
+    else if (accion === 'version') out = { ok: true, version: 'v7-stats' };
     else throw 'Acción desconocida: ' + accion;
   } catch (err) {
     out = { ok: false, error: String(err) };
@@ -434,6 +437,97 @@ function precioOTexto(v) {
   if (!/\d/.test(s)) return s.trim();
   var n = parseInt(s.replace(/[^\d]/g, ''), 10);
   return isNaN(n) ? s.trim() : n;
+}
+
+// ══════════ ESTADÍSTICAS (eventos de la web) ══════════
+// Pestaña "Eventos" en la planilla del CRM. Columnas:
+// Fecha | Tipo | Item | Sesión | Fuente | Contacto | Monto
+function hojaEventos() {
+  var ss = SpreadsheetApp.openById(CRM_ID);
+  var sh = ss.getSheetByName('Eventos');
+  if (!sh) {
+    sh = ss.insertSheet('Eventos');
+    sh.appendRow(['Fecha', 'Tipo', 'Item', 'Sesión', 'Fuente', 'Contacto', 'Monto']);
+    sh.getRange(1, 1, 1, 7).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+// Registra un evento que manda la web (visita, categoria, producto, carrito, abandono, compra).
+function eventoAgregar(p) {
+  var tipo = String(p.tipo || '').trim();
+  if (!tipo) return false;
+  var sh = hojaEventos();
+  sh.appendRow([
+    new Date(),
+    tipo,
+    String(p.item || '').slice(0, 500),
+    String(p.sesion || ''),
+    String(p.fuente || ''),
+    String(p.contacto || ''),
+    parseInt(String(p.monto || '').replace(/[^\d]/g, ''), 10) || ''
+  ]);
+  return true;
+}
+function _iniDia(d){ var x=new Date(d); x.setHours(0,0,0,0); return x; }
+function _iniSemana(d){ var x=_iniDia(d); var wd=(x.getDay()+6)%7; x.setDate(x.getDate()-wd); return x; }
+// Agrega los eventos en números listos para el CRM.
+function eventosStats() {
+  var sh = hojaEventos();
+  var datos = sh.getDataRange().getValues();
+  var ahora = new Date();
+  var iniHoy = _iniDia(ahora), iniSem = _iniSemana(ahora), iniMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+  var vis = { hoy:0, semana:0, mes:0, total:0 };
+  var fuentes = {}, prod = {}, cat = {};
+  var carrito = 0, abandonos = 0, compras = 0;
+  // Visitas por día de los últimos 14 días.
+  var porDia = {}; for (var k=0;k<14;k++){ var dd=_iniDia(ahora); dd.setDate(dd.getDate()-k); porDia[Utilities.formatDate(dd,'GMT-3','yyyy-MM-dd')] = 0; }
+  for (var i = 1; i < datos.length; i++) {
+    var f = datos[i][0]; if (!(f instanceof Date)) f = new Date(f);
+    var tipo = String(datos[i][1] || '').trim();
+    var item = String(datos[i][2] || '').trim();
+    var fuente = String(datos[i][4] || '').trim() || 'directo';
+    if (tipo === 'visita') {
+      vis.total++;
+      if (f >= iniHoy) vis.hoy++;
+      if (f >= iniSem) vis.semana++;
+      if (f >= iniMes) vis.mes++;
+      fuentes[fuente] = (fuentes[fuente] || 0) + 1;
+      var dk = Utilities.formatDate(f, 'GMT-3', 'yyyy-MM-dd');
+      if (porDia[dk] !== undefined) porDia[dk]++;
+    } else if (tipo === 'producto' && item) { prod[item] = (prod[item] || 0) + 1; }
+    else if (tipo === 'categoria' && item) { cat[item] = (cat[item] || 0) + 1; }
+    else if (tipo === 'carrito') { carrito++; }
+    else if (tipo === 'abandono') { abandonos++; }
+    else if (tipo === 'compra') { compras++; }
+  }
+  var top = function(obj, n){ return Object.keys(obj).map(function(k){ return { nombre:k, n:obj[k] }; }).sort(function(a,b){ return b.n-a.n; }).slice(0, n||10); };
+  var porDiaArr = Object.keys(porDia).sort().map(function(k){ return { d:k, n:porDia[k] }; });
+  return {
+    visitas: vis, porDia: porDiaArr,
+    fuentes: top(fuentes, 8),
+    topProductos: top(prod, 10),
+    topCategorias: top(cat, 12),
+    carrito: carrito, abandonos: abandonos, compras: compras
+  };
+}
+// Lista los carritos abandonados (con contacto si lo dejaron), más nuevos primero.
+function abandonosList() {
+  var sh = hojaEventos();
+  var datos = sh.getDataRange().getValues();
+  var out = [];
+  for (var i = 1; i < datos.length; i++) {
+    if (String(datos[i][1] || '').trim() !== 'abandono') continue;
+    var f = datos[i][0];
+    out.push({
+      fecha:    (f instanceof Date) ? Utilities.formatDate(f, 'GMT-3', 'yyyy-MM-dd HH:mm') : String(f),
+      item:     String(datos[i][2] || ''),
+      contacto: String(datos[i][5] || ''),
+      monto:    datos[i][6]
+    });
+  }
+  out.reverse();
+  return out.slice(0, 100);
 }
 
 // Formatea a "$72.500" (con signo y puntos de miles). Vacío queda vacío.
