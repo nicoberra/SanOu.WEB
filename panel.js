@@ -254,6 +254,7 @@ function pintarCotizaciones(lista) {
             </div>
             <div class="rec-acciones">
                 ${web ? `<button class="cli-btn cli-verpdf" onclick="verPresupuestoWeb('${c.id}')"><i class="fas fa-file-arrow-down"></i> Ver PDF</button>` : ''}
+                <button class="cli-btn cli-topedido" onclick="pasarCotizacionAPedido('${c.id}')"><i class="fas fa-box"></i> A pedido</button>
                 ${wa ? `<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>` : ''}
                 <button class="cli-btn cli-del" onclick="borrarCotizacion('${c.id}')"><i class="fas fa-trash"></i></button>
             </div>
@@ -300,10 +301,41 @@ async function renderMarketing(){
         if (!cache) v.innerHTML = `<div class="panel-error">No se pudo cargar el resumen de marketing.<br><button class="panel-reintentar" onclick="renderMarketing()"><i class="fas fa-rotate"></i> Reintentar</button></div>`;
     }
 }
-function accionKey(i){ return 'mkt_accion_' + i; }
-function toggleAccion(i, el){ try{ localStorage.setItem(accionKey(i), el.checked?'1':''); }catch(e){} el.closest('.mkt-accion').classList.toggle('hecha', el.checked); }
+// ── Acciones: se reinician cada semana (lunes) y queda registro de lo hecho ──
+function semMktKey(){ return String(lunesDe(new Date()).getTime()); }
+function semMktLabel(ts){ const l=new Date(+ts), f=new Date(l); f.setDate(f.getDate()+6); const p=n=>String(n).padStart(2,'0');
+    return `${p(l.getDate())}/${p(l.getMonth()+1)} – ${p(f.getDate())}/${p(f.getMonth()+1)}`; }
+function mktDone(){ try{ return JSON.parse(localStorage.getItem('mkt_done_'+semMktKey())||'[]'); }catch(e){ return []; } }
+function mktSetDone(arr){
+    try{ localStorage.setItem('mkt_done_'+semMktKey(), JSON.stringify(arr)); }catch(e){}
+    // Registro histórico por semana (lo que quedó marcado).
+    try{ const reg=JSON.parse(localStorage.getItem('mkt_registro')||'{}');
+        if(arr.length) reg[semMktKey()]={ label: semMktLabel(semMktKey()), hechas: arr };
+        else delete reg[semMktKey()];
+        localStorage.setItem('mkt_registro', JSON.stringify(reg)); }catch(e){}
+}
+function toggleAccion(i, el){
+    const a = _marketingData && _marketingData.acciones && _marketingData.acciones[i];
+    const texto = a ? a.texto : null; if(!texto) return;
+    const arr = mktDone(); const j = arr.indexOf(texto);
+    if(el.checked && j<0) arr.push(texto); else if(!el.checked && j>=0) arr.splice(j,1);
+    mktSetDone(arr);
+    el.closest('.mkt-accion').classList.toggle('hecha', el.checked);
+}
+function registroMktHTML(){
+    let reg={}; try{ reg=JSON.parse(localStorage.getItem('mkt_registro')||'{}'); }catch(e){}
+    const wkNow = semMktKey();
+    const claves = Object.keys(reg).filter(k => k!==wkNow && (reg[k].hechas||[]).length).sort((a,b)=>b-a);
+    if(!claves.length) return '';
+    return `<h4 class="dash-sec">🗓️ Registro semanal</h4>` + claves.map(k=>`
+        <div class="mkt-reg">
+            <div class="mkt-reg-sem">${esc(reg[k].label||'')} <span>${reg[k].hechas.length} ${reg[k].hechas.length===1?'hecha':'hechas'}</span></div>
+            <ul class="mkt-reg-list">${reg[k].hechas.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+        </div>`).join('');
+}
 function pintarMarketing(d){
     const v = document.getElementById('vista'); if(!v || seccionActual!=='marketing') return;
+    _marketingData = d;   // asegura que toggleAccion pueda leer el texto de la acción
     const comp = (d.competidores||[]).map(c => `
         <div class="mkt-card">
             <div class="mkt-nombre">${esc(c.nombre)}</div>
@@ -324,8 +356,9 @@ function pintarMarketing(d){
             <div class="mkt-idea-guion">${esc(r.guion||'')}</div>
             ${r.referencia?`<div class="mkt-idea-ref"><i class="fas fa-link"></i> ${esc(r.referencia)}</div>`:''}
         </div>`).join('');
+    const hechas = mktDone();
     const acciones = (d.acciones||[]).map((a,i)=>{
-        let done=false; try{ done = localStorage.getItem(accionKey(i))==='1'; }catch(e){}
+        const done = hechas.includes(a.texto);
         return `<label class="mkt-accion${done?' hecha':''}">
             <input type="checkbox" ${done?'checked':''} onchange="toggleAccion(${i},this)">
             <span class="mkt-accion-txt">${esc(a.texto)}</span>
@@ -342,8 +375,10 @@ function pintarMarketing(d){
         ${otros?`<div class="mkt-otros"><span>También seguí:</span> ${otros}</div>`:''}
         <h4 class="dash-sec">🎬 Contenido para replicar</h4>
         ${replicar}
-        <h4 class="dash-sec">✅ Acciones de marketing</h4>
-        <div class="mkt-acciones">${acciones}</div>`;
+        <h4 class="dash-sec">✅ Acciones de la semana <small class="mkt-sem-lbl">${semMktLabel(semMktKey())}</small></h4>
+        <p class="mkt-sem-nota">Se reinician cada lunes. Lo que marques queda en el registro.</p>
+        <div class="mkt-acciones">${acciones}</div>
+        ${registroMktHTML()}`;
 }
 
 // ─── FACTURACIÓN ─────────────────────────────────────────────────
@@ -418,7 +453,7 @@ async function renderFacturacion(){
     const etMes = d => MESES[d.getMonth()]+' '+d.getFullYear();
     const etSem = d => { const f=new Date(d); f.setDate(f.getDate()+6); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} – ${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}`; };
     // Fila de la lista: facturación + beneficio (si hay costos cargados en ese período).
-    const filaBen = (o, et) => `<div class="fact-fila"><span>${et(o.d)}</span>
+    const filaBen = (o, et) => `<div class="fact-fila"><span class="fact-et">${et(o.d)}<small class="fact-nv">${o.n} ${o.n===1?'venta':'ventas'}</small></span>
         <span class="fact-cifras"><b>${fmtMoney(o.monto)}</b>${o.mb ? `<span class="fact-ben">↑ ${fmtMoney(o.ben)}</span>` : ''}</span></div>`;
 
     v.innerHTML = `
@@ -497,7 +532,8 @@ function limpiarTel(raw){
         .replace(/[    ]/g, ' ')               // espacios especiales → normal
         .replace(/[^\d+()\-\s]/g, '')                              // solo dígitos + ( ) - espacios
         .replace(/\s+/g, ' ')
-        .trim();
+        .trim()
+        .replace(/^[+\-=@]+\s*/, '');   // sin "+"/"="/"-"/"@" al inicio: Sheets lo tomaría como fórmula (#ERROR!)
 }
 
 let vistaClientes = 'mis';   // 'mis' (cargados por vos) o 'web' (registrados en la web)
@@ -640,12 +676,22 @@ async function verCliente(id) {
         return;
     }
     hist.innerHTML =
-        cots.map(x => `<div class="hist-item"><span class="hist-tipo hist-cot"><i class="fas fa-file-invoice-dollar"></i></span>
+        cots.map(x => `<div class="hist-item hist-click" onclick="pasarCotizacionAPedido('${x.id}')">
+            <span class="hist-tipo hist-cot"><i class="fas fa-file-invoice-dollar"></i></span>
             <div><div class="hist-det">${esc(x.detalle) || 'Cotización'}</div><div class="hist-sub">${montoTxt(x.monto)}${x.fecha ? ' · ' + fechaTxt(x.fecha) : ''}</div></div>
-            ${badgeEstado(x.estado || 'Abierta')}</div>`).join('') +
-        peds.map(p => `<div class="hist-item"><span class="hist-tipo hist-ped"><i class="fas fa-box"></i></span>
+            <span class="hist-topedido"><i class="fas fa-arrow-right"></i> Pedido</span></div>`).join('') +
+        peds.map(p => `<div class="hist-item hist-click" onclick="cerrarModal(); setTimeout(()=>abrirFormPedido('${p.id}'),200)">
+            <span class="hist-tipo hist-ped"><i class="fas fa-box"></i></span>
             <div><div class="hist-det">${esc(p.detalle) || 'Pedido'}</div><div class="hist-sub">${montoTxt(p.monto)}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''}</div></div>
             ${badgeEstado(estPed(p.estado))}</div>`).join('');
+}
+
+// Pasa una cotización a un pedido nuevo (precarga usuario, teléfono, productos y monto).
+function pasarCotizacionAPedido(id){
+    const x = cotizaciones.find(c => c.id === id); if(!x) return;
+    const tel = x.telefono || telDeCliente(x.cliente) || '';
+    cerrarModal();
+    setTimeout(()=>abrirFormPedido(null, { cliente:x.cliente, telefono:tel, detalle:x.detalle, monto:x.monto }), 200);
 }
 
 // Abrir el form de pedido con el cliente precargado (desde la ficha).

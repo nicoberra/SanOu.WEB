@@ -373,6 +373,27 @@ body:not(.bloqueado) .panel-lock{display:none}
 .prod-num{display:flex;flex-direction:column;gap:4px;font-size:.72rem;color:var(--gris2);font-weight:600}
 .prod-num input{background:var(--neg3);border:1px solid var(--linea);border-radius:9px;padding:10px 11px;color:#fff;font-size:.92rem;font-weight:600}
 .prod-num input:focus{outline:none;border-color:var(--am)}
+/* Marketing: acciones semanales + registro */
+.mkt-sem-lbl{color:var(--gris2);font-weight:600;font-size:.8rem}
+.mkt-sem-nota{color:var(--gris);font-size:.76rem;margin:-6px 0 10px}
+.mkt-reg{background:var(--neg2);border:1px solid var(--linea);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.mkt-reg-sem{font-weight:700;font-size:.85rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.mkt-reg-sem span{color:var(--am);font-size:.72rem;font-weight:700}
+.mkt-reg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.mkt-reg-list li{color:var(--gris2);font-size:.78rem;line-height:1.4;padding-left:16px;position:relative}
+.mkt-reg-list li::before{content:'✓';position:absolute;left:0;color:#25D366;font-weight:700}
+
+/* Facturación: cantidad de ventas del período */
+.fact-et{display:flex;flex-direction:column;gap:2px}
+.fact-nv{color:var(--gris);font-size:.68rem;font-weight:600}
+
+/* Historial clickeable (ficha del usuario) */
+.hist-click{cursor:pointer;transition:background .15s}
+.hist-click:active{background:var(--neg3)}
+.hist-topedido{white-space:nowrap;font-size:.72rem;font-weight:700;color:var(--am);
+    background:rgba(255,212,0,.12);border:1px solid rgba(255,212,0,.35);border-radius:50px;padding:4px 10px}
+.cli-btn.cli-topedido{width:auto;padding:0 12px;gap:6px;font-size:.8rem;font-weight:700;color:var(--am);white-space:nowrap}
+
 /* Mayorista */
 .may-costo{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px;padding-top:12px;
     border-top:1px solid var(--linea);font-size:.8rem;color:var(--gris2)}
