@@ -1866,8 +1866,21 @@ function refrescarCatalogo() {
     } catch (e) { console.warn('Error refrescando el catálogo:', e); }
 }
 
-// Cargar precios y luego dibujar (o refrescar si la red de seguridad ya dibujó).
-loadPricesFromSheet().finally(() => {
+// Fotos: lee fotos.json (lo mantiene el CRM) y actualiza qué fotos tiene cada producto.
+async function loadFotosManifest() {
+    try {
+        const r = await fetch('fotos.json?_=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) return;
+        const man = await r.json();
+        products.forEach(p => {
+            const key = (p.catFolder || p.category) + '/' + (p.folder || p.name);
+            if (man[key] && man[key].length) p.imgs = man[key];   // sobreescribe con las fotos reales
+        });
+    } catch (e) { /* si falla, quedan las fotos del catálogo */ }
+}
+
+// Cargar precios + manifest de fotos y luego dibujar (o refrescar si la red de seguridad ya dibujó).
+Promise.all([loadPricesFromSheet(), loadFotosManifest()]).finally(() => {
     if (_catalogoDibujado) refrescarCatalogo();
     else dibujarCatalogo();
 });

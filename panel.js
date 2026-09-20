@@ -841,6 +841,11 @@ function catDeProducto(nombre){
     const cat = (window.SANOU_PRODUCTOS||[]).find(p => norm(p.name)===n || (p.sheetName && norm(p.sheetName)===n));
     return cat ? cat.category : 'otros';   // los que no están en el catálogo van a "Otros"
 }
+// Producto del catálogo (para saber en qué carpeta están sus fotos).
+function catalogoDe(nombre){
+    const n = norm(nombre);
+    return (window.SANOU_PRODUCTOS||[]).find(p => norm(p.name)===n || (p.sheetName && norm(p.sheetName)===n)) || null;
+}
 let prodCat = 'all';
 function renderProdCats(){
     const cont = document.getElementById('prodCats'); if(!cont) return;
@@ -903,6 +908,7 @@ function pintarProductos(lista, q) {
                 </label>
             </div>
             ${bloqueCosto(p, i)}
+            ${catalogoDe(p.nombre) ? `<button class="prod-fotos-btn" onclick="abrirFotos('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-camera"></i> Fotos</button>` : ''}
         </div>`;
     }).join('');
 }
@@ -945,6 +951,80 @@ async function guardarProducto(i, campo, valor) {
     } catch (e) {
         alert('No se pudo guardar "' + p.nombre + '". Reintentá.');
     }
+}
+
+// ─── FOTOS DE PRODUCTO (ver / subir / borrar, se guardan en la web) ──
+const FOTOS_BASE = 'https://sanou.com.ar/productos/';
+let _fotosProd = null;
+function abrirFotos(nombre){
+    const cp = catalogoDe(nombre);
+    if(!cp){ alert('Este producto no está en el catálogo, no puedo ubicar su carpeta de fotos.'); return; }
+    _fotosProd = { nombre: nombre, cf: cp.catFolder || cp.category, fo: cp.folder || cp.name, lista: [] };
+    document.getElementById('modalTitulo').textContent = 'Fotos — ' + nombre;
+    document.getElementById('modalBody').innerHTML = `
+        <div class="fotos-wrap">
+            <label class="fotos-subir"><i class="fas fa-camera"></i> Subir foto
+                <input type="file" accept="image/*" onchange="subirFoto(this)" hidden>
+            </label>
+            <div class="fotos-msg" id="fotosMsg"></div>
+            <div class="fotos-grid" id="fotosGrid"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>
+        </div>`;
+    abrirModal();
+    cargarFotos();
+}
+async function cargarFotos(msg){
+    if(!_fotosProd) return;
+    const grid = document.getElementById('fotosGrid'), m = document.getElementById('fotosMsg');
+    if(m) m.textContent = msg || '';
+    try {
+        const r = await crm({ action:'fotos_list', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo });
+        const fotos = (r && r.fotos) || [];
+        _fotosProd.lista = fotos;
+        if(!grid) return;
+        grid.innerHTML = fotos.length ? fotos.map(fn=>{
+            const url = `${FOTOS_BASE}${encodeURIComponent(_fotosProd.cf)}/${encodeURIComponent(_fotosProd.fo)}/${encodeURIComponent(fn)}?_=${Date.now()}`;
+            return `<div class="foto-item"><img src="${url}" loading="lazy" onerror="this.style.opacity=.25">
+                <button class="foto-del" onclick="borrarFoto('${esc(fn).replace(/'/g,"\\'")}')"><i class="fas fa-trash"></i></button></div>`;
+        }).join('') : '<div class="panel-vacio-chico">Este producto no tiene fotos todavía. Subí la primera con el botón de arriba.</div>';
+    } catch(e){ if(m) m.textContent = 'No se pudieron cargar las fotos.'; }
+}
+// Redimensiona a máx 1600px y exporta webp (buena calidad, poco peso).
+function redimensionarImg(file, maxLado, calidad){
+    return new Promise((resolve, reject)=>{
+        const img = new Image();
+        img.onload = ()=>{
+            let w = img.naturalWidth, h = img.naturalHeight;
+            if(Math.max(w,h) > maxLado){ const r = maxLado/Math.max(w,h); w = Math.round(w*r); h = Math.round(h*r); }
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(img.src);
+            resolve(c.toDataURL('image/webp', calidad || 0.85));
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+    });
+}
+async function subirFoto(input){
+    const file = input.files && input.files[0]; if(!file || !_fotosProd) return;
+    const m = document.getElementById('fotosMsg'); if(m) m.textContent = 'Procesando imagen…';
+    try {
+        const dataUrl = await redimensionarImg(file, 1600, 0.85);
+        const b64 = dataUrl.replace(/^data:[^,]*,/, '');
+        if(m) m.textContent = 'Subiendo…';
+        const params = new URLSearchParams({ action:'foto_subir', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, data:b64 });
+        await fetch(CRM_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params.toString() });
+        input.value = '';
+        setTimeout(()=>cargarFotos('✓ Subida. Puede tardar ~1 min en verse en la web.'), 4500);
+    } catch(e){ if(m) m.textContent = 'No se pudo subir la foto. Reintentá.'; }
+}
+async function borrarFoto(fn){
+    if(!_fotosProd) return;
+    if(!(await confirmar('¿Borrar esta foto? No se puede deshacer.','Borrar'))) return;
+    const m = document.getElementById('fotosMsg'); if(m) m.textContent = 'Borrando…';
+    try {
+        await crm({ action:'foto_borrar', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, filename:fn });
+        setTimeout(()=>cargarFotos('✓ Borrada.'), 1500);
+    } catch(e){ if(m) m.textContent = 'No se pudo borrar. Reintentá.'; }
 }
 
 // ─── MAYORISTA (sheet aparte que se manda a clientes) ───────────
