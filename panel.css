@@ -435,6 +435,8 @@ body:not(.bloqueado) .panel-lock{display:none}
     border-top:1px solid var(--linea);font-size:.8rem;color:var(--gris2)}
 .may-costo-item b{color:#fff}
 .may-costo .prod-margen{margin-left:auto}
+.may-costo-input{flex:0 0 auto;min-width:120px}
+.may-costo-input input{width:110px}
 .prod-sw{display:flex;align-items:center;gap:9px;font-size:.82rem;color:var(--gris2);font-weight:600;cursor:pointer;user-select:none}
 .prod-sw input{position:absolute;opacity:0;width:0;height:0}
 .prod-sw-track{position:relative;width:42px;height:24px;border-radius:24px;background:#3a3a3a;flex-shrink:0;transition:background .2s}

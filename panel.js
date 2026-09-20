@@ -940,6 +940,7 @@ async function guardarProducto(i, campo, valor) {
     if (!p) return;
     p[campo] = valor;
     if (campo === 'costousd' || campo === 'stock') filtrarProductos();   // actualizar pesos/ganancia o el cartel "Sin stock"
+    if (campo === 'precio') sincronizarPrecioAMayorista(p.nombre, valor);  // conectado con el unitario del mayorista
     try {
         await crm({ action: 'productos_save', tab: 'Clientes', nombre: p.nombre, [campo]: valor });
         const ok = document.getElementById('prodok-' + i);
@@ -1115,19 +1116,30 @@ function pintarMayorista(lista, q){
         </div>`;
     }).join('');
 }
-// Costo (USD y pesos) del producto, tomado de la planilla de Productos, + ganancia sobre el precio mayorista.
+// Fila de la planilla Productos para un producto del mayorista (tolera el sufijo "(6–50 mm²)").
+function filaProdMay(nombre){
+    let p = filaProd(nombre);
+    if (!p) { const b = baseNombre(nombre); p = (productos||[]).find(x => baseNombre(x.nombre) === b); }
+    return p || null;
+}
+// Costo (USD) EDITABLE + pesos + ganancia sobre el precio mayorista. Se guarda en la planilla de Productos.
 function bloqueCostoMay(m){
-    const costo = costoUsdFlex(m.producto);           // USD
+    const fila = filaProdMay(m.producto);
+    if (!fila) return '';   // sin match en Productos: no hay dónde guardar el costo
     const rate = dolarValor();
-    if (!costo) return '';
-    const costoPesos = rate ? Math.round(costo * rate) : 0;
+    const costo = parseFloat(String(fila.costousd||'').replace(/[^\d.]/g,'')) || 0;
+    const costoPesos = (costo && rate) ? Math.round(costo * rate) : 0;
     const may = parseInt(String(m.mayorista).replace(/[^\d]/g,''),10) || 0;
     const gan = may - costoPesos;
     const margen = (may>0 && costoPesos>0) ? Math.round((gan/may)*100) : null;
+    const nombreEsc = esc(fila.nombre).replace(/'/g,"\\'");
     return `
         <div class="may-costo">
-            <span class="may-costo-item">Costo: <b>US$ ${costo.toLocaleString('es-AR')}</b></span>
-            ${costoPesos ? `<span class="may-costo-item">≈ <b>${fmtMoney(costoPesos)}</b></span>` : ''}
+            <label class="prod-num may-costo-input">Costo (USD)
+                <input type="text" inputmode="decimal" value="${esc(fila.costousd||'')}" placeholder="0"
+                    onchange="guardarCostoMay('${nombreEsc}', this.value)">
+            </label>
+            ${costoPesos ? `<span class="may-costo-item">≈ <b>${fmtMoney(costoPesos)}</b> en pesos</span>` : ''}
             ${(may && costoPesos) ? `<span class="prod-margen ${gan<0?'neg':''}">Ganancia ${fmtMoney(gan)}${margen!=null?` · ${margen}%`:''}</span>` : ''}
         </div>`;
 }
@@ -1145,10 +1157,33 @@ async function guardarMayorista(row, campo, valor){
     try {
         await crm({ action:'mayorista_save', tab:'Clientes', row, producto: m.producto, [campo]: valor });
         cacheSet('mayorista', mayorista);
+        // El precio UNITARIO del mayorista está conectado con el PRECIO de Productos: se sincroniza.
+        if (campo === 'unitario') {
+            const fila = filaProdMay(m.producto);
+            if (fila) { fila.precio = valor; cacheSet('productos', productos); crm({ action:'productos_save', tab:'Clientes', nombre: fila.nombre, precio: valor }); }
+        }
         const ok = document.getElementById('mayok-' + row);
         if (ok) { ok.classList.add('on'); clearTimeout(_mayTimers[row]); _mayTimers[row] = setTimeout(()=>ok.classList.remove('on'), 1800); }
-        if (campo === 'mayorista') filtrarMayorista();   // refrescar la ganancia
+        if (campo === 'mayorista' || campo === 'unitario') filtrarMayorista();   // refrescar la ganancia
     } catch(e){ alert('No se pudo guardar "' + m.producto + '". Reintentá.'); }
+}
+// Guarda el costo (USD) del producto en la planilla de Productos, desde la sección Mayorista.
+async function guardarCostoMay(nombreProd, valor){
+    const fila = (productos||[]).find(x => x.nombre === nombreProd);
+    if (fila) { fila.costousd = valor; cacheSet('productos', productos); }
+    try {
+        await crm({ action:'productos_save', tab:'Clientes', nombre: nombreProd, costousd: valor });
+        filtrarMayorista();   // recomputar ganancia con el costo nuevo
+    } catch(e){ alert('No se pudo guardar el costo. Reintentá.'); }
+}
+// Sincroniza el precio de Productos hacia el "precio unitario" del mayorista (mismo producto).
+async function sincronizarPrecioAMayorista(nombreProd, valor){
+    try {
+        if (!mayorista.length) { const r = await crm({ action:'mayorista_list', tab:'Clientes' }); if (r && r.rows) { mayorista = r.rows; cacheSet('mayorista', mayorista); } }
+        const b = baseNombre(nombreProd);
+        const m = (mayorista||[]).find(x => x.tipo === 'prod' && baseNombre(x.producto) === b);
+        if (m) { m.unitario = valor; cacheSet('mayorista', mayorista); crm({ action:'mayorista_save', tab:'Clientes', row: m.row, producto: m.producto, unitario: valor }); }
+    } catch(e){ /* silencioso */ }
 }
 
 // ─── ESTADÍSTICAS (eventos de la web) ───────────────────────────
