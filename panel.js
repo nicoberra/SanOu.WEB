@@ -967,6 +967,7 @@ function abrirFotos(nombre){
             <label class="fotos-subir"><i class="fas fa-camera"></i> Subir foto
                 <input type="file" accept="image/*" onchange="subirFoto(this)" hidden>
             </label>
+            <div class="fotos-tip"><i class="fas fa-hand-pointer"></i> Mantené apretada una foto y arrastrala para cambiar el orden. La <b>★ Principal</b> es la que se ve primero.</div>
             <div class="fotos-msg" id="fotosMsg"></div>
             <div class="fotos-grid" id="fotosGrid"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>
         </div>`;
@@ -982,12 +983,98 @@ async function cargarFotos(msg){
         const fotos = (r && r.fotos) || [];
         _fotosProd.lista = fotos;
         if(!grid) return;
-        grid.innerHTML = fotos.length ? fotos.map(fn=>{
+        grid.innerHTML = fotos.length ? fotos.map((fn,i)=>{
             const url = `${FOTOS_BASE}${encodeURIComponent(_fotosProd.cf)}/${encodeURIComponent(_fotosProd.fo)}/${encodeURIComponent(fn)}?_=${Date.now()}`;
-            return `<div class="foto-item"><img src="${url}" loading="lazy" onerror="this.style.opacity=.25">
+            return `<div class="foto-item" data-fn="${esc(fn)}"><img src="${url}" loading="lazy" draggable="false" onerror="this.style.opacity=.25">
+                <span class="foto-orden">${i===0?'★ Principal':(i+1)}</span>
                 <button class="foto-del" onclick="borrarFoto('${esc(fn).replace(/'/g,"\\'")}')"><i class="fas fa-trash"></i></button></div>`;
         }).join('') : '<div class="panel-vacio-chico">Este producto no tiene fotos todavía. Subí la primera con el botón de arriba.</div>';
+        if(fotos.length > 1) habilitarReordenFotos(grid);
     } catch(e){ if(m) m.textContent = 'No se pudieron cargar las fotos.'; }
+}
+// Reordenar fotos arrastrando con el dedo (o el mouse). Mantener apretado ~una décima y mover.
+function habilitarReordenFotos(grid){
+    let dragEl=null, ph=null, offX=0, offY=0, timer=null, activo=false, sx=0, sy=0, fromEl=null;
+    const items = ()=>[...grid.querySelectorAll('.foto-item')];
+    function numerar(){
+        let n=1;
+        items().forEach(el=>{
+            if(el===dragEl) return;
+            const b=el.querySelector('.foto-orden'); if(b) b.textContent = n===1 ? '★ Principal' : n;
+            n++;
+        });
+    }
+    function pos(e){ const t=e.touches&&e.touches[0]; return t?{x:t.clientX,y:t.clientY}:{x:e.clientX,y:e.clientY}; }
+    function bajoPunto(x,y){
+        for(const el of items()){
+            if(el===dragEl) continue;
+            const r=el.getBoundingClientRect();
+            if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) return el;
+        }
+        return null;
+    }
+    function iniciar(el,p){
+        activo=true; dragEl=el;
+        const r=el.getBoundingClientRect(); offX=p.x-r.left; offY=p.y-r.top;
+        ph=document.createElement('div'); ph.className='foto-ph'; ph.style.width=r.width+'px'; ph.style.height=r.height+'px';
+        el.parentNode.insertBefore(ph, el);
+        el.classList.add('foto-drag');
+        el.style.width=r.width+'px'; el.style.height=r.height+'px';
+        mover(p);
+        numerar();
+        if(navigator.vibrate) try{ navigator.vibrate(15); }catch(e){}
+    }
+    function mover(p){
+        dragEl.style.left=(p.x-offX)+'px'; dragEl.style.top=(p.y-offY)+'px';
+        const sobre=bajoPunto(p.x,p.y);
+        if(sobre && sobre!==ph){
+            const r=sobre.getBoundingClientRect();
+            const antes = p.x < r.left + r.width/2;
+            grid.insertBefore(ph, antes ? sobre : sobre.nextSibling);
+            numerar();
+        }
+    }
+    function onDown(e){
+        const el=e.target.closest('.foto-item');
+        if(!el || e.target.closest('.foto-del')) return;
+        const p=pos(e); sx=p.x; sy=p.y; fromEl=el;
+        timer=setTimeout(()=>iniciar(el,p), 130);
+    }
+    function onMove(e){
+        const p=pos(e);
+        if(activo){ e.preventDefault(); mover(p); return; }
+        // si se movió mucho antes de activar, era un scroll: cancelar
+        if(timer && (Math.abs(p.x-sx)>10 || Math.abs(p.y-sy)>10)){ clearTimeout(timer); timer=null; }
+    }
+    function onUp(){
+        if(timer){ clearTimeout(timer); timer=null; }
+        if(!activo){ return; }
+        activo=false;
+        ph.parentNode.insertBefore(dragEl, ph); ph.remove();
+        dragEl.classList.remove('foto-drag'); dragEl.style.cssText='';
+        dragEl=null; ph=null;
+        numerar();
+        guardarOrdenFotos();
+    }
+    grid.addEventListener('touchstart', onDown, {passive:true});
+    grid.addEventListener('touchmove', onMove, {passive:false});
+    grid.addEventListener('touchend', onUp);
+    grid.addEventListener('touchcancel', onUp);
+    grid.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+}
+// Guarda en el backend el orden actual (el que muestra el grid).
+async function guardarOrdenFotos(){
+    if(!_fotosProd) return;
+    const orden = [...document.querySelectorAll('#fotosGrid .foto-item')].map(el=>el.dataset.fn).filter(Boolean);
+    if(!orden.length) return;
+    _fotosProd.lista = orden;
+    const m = document.getElementById('fotosMsg'); if(m) m.textContent = 'Guardando orden…';
+    try {
+        await crm({ action:'fotos_orden', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, orden: orden.join(',') });
+        if(m) m.textContent = '✓ Orden guardado. Puede tardar ~1 min en verse en la web.';
+    } catch(e){ if(m) m.textContent = 'No se pudo guardar el orden. Reintentá.'; }
 }
 // Redimensiona a máx 1600px y exporta webp (buena calidad, poco peso).
 function redimensionarImg(file, maxLado, calidad){
