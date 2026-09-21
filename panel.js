@@ -1320,12 +1320,16 @@ function pintarEstadisticas(){
         const dd = x.d.slice(8,10)+'/'+x.d.slice(5,7);
         return `<div class="st-bar" title="${dd}: ${x.n}"><div class="st-bar-fill" style="height:${h}%"></div><span class="st-bar-lbl">${x.d.slice(8,10)}</span></div>`;
     }).join('');
-    const fuentes = (s.fuentes||[]);
-    const totFuente = fuentes.reduce((a,b)=>a+b.n,0) || 1;
-    const fuentesHTML = fuentes.length ? fuentes.map(f=>{
-        const pct = Math.round(f.n/totFuente*100);
-        return `<div class="st-fuente"><span>${esc(f.nombre)}</span><div class="st-fuente-bar"><div style="width:${pct}%"></div></div><b>${f.n}</b></div>`;
-    }).join('') : '<div class="panel-vacio-chico">Todavía sin datos.</div>';
+    // Barras con % (mismo estilo que "de dónde vienen"). Sirve para geo y dispositivos.
+    const barrasPct = (arr) => {
+        arr = arr || [];
+        const tot = arr.reduce((a,b)=>a+b.n,0) || 1;
+        return arr.length ? arr.map(f=>{
+            const pct = Math.round(f.n/tot*100);
+            return `<div class="st-fuente"><span>${esc(f.nombre)}</span><div class="st-fuente-bar"><div style="width:${pct}%"></div></div><b>${f.n}</b></div>`;
+        }).join('') : '<div class="panel-vacio-chico">Todavía sin datos.</div>';
+    };
+    const fuentesHTML = barrasPct(s.fuentes);
     const abLista = (_abandonos||[]).slice(0,20).map(a=>`
         <div class="rec-card">
             <div class="rec-top"><span class="rec-nombre">${a.contacto ? esc(a.contacto) : 'Anónimo (sin datos)'}</span>
@@ -1343,8 +1347,23 @@ function pintarEstadisticas(){
         </div>
         <h4 class="dash-sec">📈 Visitas (últimos 14 días)</h4>
         <div class="st-chart">${barras || '<div class="panel-vacio-chico">Todavía sin datos.</div>'}</div>
-        <h4 class="dash-sec">🌐 De dónde vienen</h4>
+        <h4 class="dash-sec">🌐 De dónde vienen (fuente)</h4>
         <div class="st-box">${fuentesHTML}</div>
+        <h4 class="dash-sec">🇦🇷 País</h4>
+        <div class="st-box">${barrasPct(s.paises)}</div>
+        <h4 class="dash-sec">📍 Provincia / Región</h4>
+        <div class="st-box">${barrasPct(s.regiones)}</div>
+        <h4 class="dash-sec">🏙️ Ciudad</h4>
+        <div class="st-box">${barrasPct(s.ciudades)}</div>
+        <h4 class="dash-sec">📱 Dispositivo</h4>
+        <div class="st-box">${barrasPct(s.dispositivos)}</div>
+        <h4 class="dash-sec">💻 Sistema operativo</h4>
+        <div class="st-box">${barrasPct(s.sistemas)}</div>
+        <h4 class="dash-sec">🌍 Navegador</h4>
+        <div class="st-box">${barrasPct(s.navegadores)}</div>
+        <h4 class="dash-sec">🗣️ Idioma</h4>
+        <div class="st-box">${barrasPct(s.idiomas)}</div>
+        <div class="st-nota"><i class="fas fa-circle-info"></i> El <b>sexo (hombres/mujeres) y la edad</b> no se pueden saber de una visita web: solo los estima Google Analytics con Google Signals, y de forma aproximada. Todo lo demás (país, zona, dispositivo, etc.) se registra acá con datos reales.</div>
         <h4 class="dash-sec">🏆 Más vendidos</h4>
         <div class="st-box">${rank(vendidos,'u')}</div>
         <h4 class="dash-sec">🔍 Más vistos</h4>

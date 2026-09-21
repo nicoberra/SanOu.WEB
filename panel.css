@@ -418,6 +418,10 @@ body:not(.bloqueado) .panel-lock{display:none}
 .st-fuente-bar{flex:1;height:8px;background:var(--neg3);border-radius:50px;overflow:hidden}
 .st-fuente-bar>div{height:100%;background:var(--am);border-radius:50px}
 .st-fuente>b{color:#fff;font-size:.82rem;min-width:28px;text-align:right}
+.st-nota{display:flex;gap:8px;background:var(--neg2);border:1px solid var(--linea);border-left:3px solid var(--am);
+    border-radius:10px;padding:10px 12px;margin:12px 0 4px;font-size:.74rem;color:var(--gris2);line-height:1.4}
+.st-nota i{color:var(--am);margin-top:2px}
+.st-nota b{color:#fff}
 
 /* Marketing: acciones semanales + registro */
 .mkt-sem-lbl{color:var(--gris2);font-weight:600;font-size:.8rem}

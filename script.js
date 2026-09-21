@@ -34,18 +34,92 @@ function _fuenteTrafico() {
 function sanouTrack(tipo, item, extra) {
     if (!CLIENTES_URL) return;
     try {
+        extra = extra || {};
         const params = new URLSearchParams({
             action: 'evento_add', tab: 'Clientes',
             tipo: tipo, item: item || '', sesion: _sesionId(),
-            fuente: (extra && extra.fuente) || '',
-            contacto: (extra && extra.contacto) || '',
-            monto: (extra && extra.monto != null) ? String(extra.monto) : ''
+            fuente: extra.fuente || '',
+            contacto: extra.contacto || '',
+            monto: (extra.monto != null) ? String(extra.monto) : '',
+            // Datos de la persona / dispositivo (para las estadísticas)
+            pais:     extra.pais     || '',
+            region:   extra.region   || '',
+            ciudad:   extra.ciudad   || '',
+            disp:     extra.disp     || '',
+            so:       extra.so       || '',
+            nav:      extra.nav      || '',
+            idioma:   extra.idioma   || '',
+            pantalla: extra.pantalla || ''
         });
         const url = CLIENTES_URL + '?' + params.toString();
         // sendBeacon aguanta el cierre de la página (para el carrito abandonado)
         if (navigator.sendBeacon) navigator.sendBeacon(url);
         else fetch(url, { mode: 'no-cors', keepalive: true });
     } catch (e) { /* silencioso */ }
+}
+// ── Datos del dispositivo (se leen del navegador, sin API) ──
+function _dispositivo() {
+    const ua = navigator.userAgent || '';
+    if (/iPad|Tablet|PlayBook|Silk/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua))) return 'Tablet';
+    if (/Mobi|iPhone|Android.*Mobile|Windows Phone|iPod/i.test(ua)) return 'Móvil';
+    return 'Escritorio';
+}
+function _sistemaOp() {
+    const ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
+    if (/Android/i.test(ua))          return 'Android';
+    if (/Windows/i.test(ua))          return 'Windows';
+    if (/Mac OS X|Macintosh/i.test(ua)) return 'macOS';
+    if (/Linux/i.test(ua))            return 'Linux';
+    return 'Otro';
+}
+function _navegador() {
+    const ua = navigator.userAgent || '';
+    if (/Edg\//i.test(ua))                     return 'Edge';
+    if (/OPR\/|Opera/i.test(ua))               return 'Opera';
+    if (/SamsungBrowser/i.test(ua))            return 'Samsung Internet';
+    if (/CriOS/i.test(ua))                     return 'Chrome';
+    if (/Chrome\//i.test(ua) && !/Chromium/i.test(ua)) return 'Chrome';
+    if (/Firefox\/|FxiOS/i.test(ua))           return 'Firefox';
+    if (/Safari/i.test(ua) && /Version\//i.test(ua)) return 'Safari';
+    return 'Otro';
+}
+function _datosDispositivo() {
+    let pantalla = '', idioma = '';
+    try { pantalla = window.screen ? (screen.width + 'x' + screen.height) : ''; } catch (e) {}
+    try { idioma = (navigator.language || '').slice(0, 10); } catch (e) {}
+    return { disp: _dispositivo(), so: _sistemaOp(), nav: _navegador(), idioma: idioma, pantalla: pantalla };
+}
+// ── Geo por IP (país / provincia / ciudad). Best-effort, cacheado por sesión, nunca frena la visita. ──
+function _geoVisita() {
+    return new Promise((resolve) => {
+        try {
+            const cache = sessionStorage.getItem('sanou_geo');
+            if (cache) return resolve(JSON.parse(cache));
+        } catch (e) {}
+        let listo = false;
+        const done = (g) => {
+            if (listo) return; listo = true;
+            try { sessionStorage.setItem('sanou_geo', JSON.stringify(g)); } catch (e) {}
+            resolve(g);
+        };
+        // Si tarda más de 2s, mandamos la visita igual (sin geo).
+        setTimeout(() => done({}), 2000);
+        fetch('https://ipwho.is/?fields=success,country,region,city')
+            .then(r => r.json())
+            .then(d => {
+                if (d && d.success !== false && (d.country || d.city))
+                    done({ pais: d.country || '', region: d.region || '', ciudad: d.city || '' });
+                else throw 0;
+            })
+            .catch(() => {
+                // Fallback: geojs
+                fetch('https://get.geojs.io/v1/ip/geo.json')
+                    .then(r => r.json())
+                    .then(d => done({ pais: d.country || '', region: d.region || '', ciudad: d.city || '' }))
+                    .catch(() => done({}));
+            });
+    });
 }
 // Carrito abandonado: si se va con productos y no compró en esta sesión, lo registramos una vez.
 let _compraHecha = false, _abandonoEnviado = false;
@@ -1910,7 +1984,8 @@ window.addEventListener('load', () => {
     injectStructuredData();
 
     // Estadísticas: registrar la visita (una vez por carga) y preparar el aviso de carrito abandonado.
-    sanouTrack('visita', location.pathname, { fuente: _fuenteTrafico() });
+    // Junta dispositivo/navegador al toque y país/ciudad por IP (best-effort). La visita se manda igual.
+    _geoVisita().then(geo => sanouTrack('visita', location.pathname, Object.assign({ fuente: _fuenteTrafico() }, _datosDispositivo(), geo)));
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') registrarAbandono(); });
     window.addEventListener('pagehide', registrarAbandono);
 });
