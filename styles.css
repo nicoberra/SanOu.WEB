@@ -16,10 +16,10 @@
 html { scroll-behavior: smooth; scroll-padding-top: 90px; overflow-x: hidden; }
 
 /* ── Banner canal de WhatsApp ── */
-.wa-canal { padding: 24px 0; }
+.wa-canal { padding: 40px 0 24px; }
 .wa-canal-card {
     position: relative; display: flex; align-items: center; justify-content: space-between; gap: 20px;
-    overflow: hidden; text-decoration: none;
+    overflow: visible; text-decoration: none;
     background: linear-gradient(135deg, #FFD400 0%, #F4B400 100%);
     border-radius: 26px; padding: 40px 44px;
     box-shadow: 0 14px 44px rgba(0,0,0,.28);
@@ -42,17 +42,23 @@ html { scroll-behavior: smooth; scroll-padding-top: 90px; overflow-x: hidden; }
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 .wa-canal-foto {
-    position: absolute; right: 40px; bottom: -30px; z-index: 2;
-    height: 118%; max-height: 260px; width: auto; transform: rotate(7deg);
-    pointer-events: none; filter: drop-shadow(0 16px 30px rgba(0,0,0,.4));
+    position: absolute; right: 48px; bottom: -34px; z-index: 3;
+    height: 168%; max-height: 340px; width: auto;
+    transform: perspective(1100px) rotateY(-20deg) rotateZ(7deg) rotateX(5deg);
+    transform-origin: bottom right; pointer-events: none;
+    filter: drop-shadow(-22px 34px 40px rgba(0,0,0,.55));
+    transition: transform .35s ease;
 }
+.wa-canal-card:hover .wa-canal-foto { transform: perspective(1100px) rotateY(-14deg) rotateZ(4deg) rotateX(3deg) scale(1.03); }
 @media (max-width: 640px) {
-    .wa-canal-card { padding: 26px 22px; border-radius: 22px; overflow: hidden; }
-    .wa-canal-text { max-width: 60%; }
+    .wa-canal { padding: 28px 0 20px; }
+    .wa-canal-card { padding: 26px 22px; border-radius: 22px; }
+    .wa-canal-text { max-width: 58%; }
     .wa-canal-text h3 { font-size: 1.35rem; }
     .wa-canal-text p { font-size: .88rem; margin-bottom: 18px; }
     .wa-canal-btn { padding: 12px 20px; font-size: .9rem; }
-    .wa-canal-foto { height: auto; width: 42%; max-height: none; right: -6px; bottom: -14px; transform: rotate(6deg); }
+    .wa-canal-foto { height: auto; width: 46%; max-height: none; right: -4px; bottom: -24px;
+        transform: perspective(700px) rotateY(-16deg) rotateZ(6deg); filter: drop-shadow(-12px 20px 24px rgba(0,0,0,.5)); }
 }
 img { max-width: 100%; height: auto; }
 button, a { -webkit-tap-highlight-color: transparent; }
