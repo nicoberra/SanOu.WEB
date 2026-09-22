@@ -132,6 +132,7 @@ body:not(.bloqueado) .panel-lock{display:none}
 .cli-tab.active{background:var(--am);color:var(--neg);border-color:var(--am)}
 .cli-ped-badge{display:inline-flex;align-items:center;gap:4px;margin-left:8px;background:rgba(255,212,0,.15);
     color:var(--am);border:1px solid rgba(255,212,0,.35);border-radius:20px;padding:1px 8px;font-size:.68rem;font-weight:700;vertical-align:middle}
+.cli-ped-badge.cli-ped-0{background:var(--neg3);color:var(--gris2);border-color:var(--linea)}
 .cli-card{cursor:pointer}
 .cli-card:hover{border-color:rgba(255,212,0,.28)}
 

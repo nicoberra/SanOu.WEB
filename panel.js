@@ -623,7 +623,7 @@ function pintarClientes(lista) {
         <div class="cli-card" onclick="verCliente('${c.id}')">
             <div class="cli-avatar">${esc((c.nombre || '?').charAt(0).toUpperCase())}</div>
             <div class="cli-info">
-                <div class="cli-nombre">${esc(c.nombre) || '(sin nombre)'}${nped ? `<span class="cli-ped-badge"><i class="fas fa-box"></i> ${nped}</span>` : ''}</div>
+                <div class="cli-nombre">${esc(c.nombre) || '(sin nombre)'}<span class="cli-ped-badge${nped ? '' : ' cli-ped-0'}" title="Compras (pedidos) hechas"><i class="fas fa-bag-shopping"></i> ${nped} ${nped === 1 ? 'compra' : 'compras'}</span></div>
                 ${sub ? `<div class="cli-sub">${esc(sub)}</div>` : ''}
                 <div class="cli-contacto">
                     ${c.telefono ? `<span><i class="fas fa-phone"></i> ${esc(c.telefono)}</span>` : ''}

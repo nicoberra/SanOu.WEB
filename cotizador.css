@@ -326,3 +326,34 @@ body:not(.bloqueado) .cot-lock { display: none; }
     .cot-tot-final { background: var(--negro) !important; color: #fff !important; }
     .cot-tot-final span:last-child { color: var(--amarillo) !important; }
 }
+
+/* ══════════ EXPORTAR A PDF (html2pdf) ══════════
+   Se activa mientras se genera el PDF. Fuerza un layout tipo A4 (tabla, ancho
+   fijo, sin controles) para que el PDF salga IGUAL en la compu y en el celular
+   (sin depender de @media print, que html2canvas no aplica). */
+body.exportando .no-print { display: none !important; }
+body.exportando .cot-hoja {
+    width: 780px !important; max-width: 780px !important;
+    margin: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+    padding: 28px 30px !important; background: #fff !important;
+}
+body.exportando .cot-grid-2,
+body.exportando .cot-cliente-grid { grid-template-columns: 1fr 1fr !important; }
+body.exportando .cot-tabla { display: table !important; width: 100% !important; }
+body.exportando .cot-tabla thead { display: table-header-group !important; }
+body.exportando .cot-tabla tbody { display: table-row-group !important; }
+body.exportando .cot-tabla tr {
+    display: table-row !important; border: none !important; padding: 0 !important; margin: 0 !important;
+}
+body.exportando .cot-tabla td {
+    display: table-cell !important; width: auto !important; text-align: left;
+    border-bottom: 1px solid var(--linea) !important; padding: 8px 8px !important;
+}
+body.exportando .cot-tabla td[data-label]::before { content: none !important; }
+body.exportando .cot-tabla .col-n { position: static !important; text-align: center; }
+body.exportando .cot-tabla .col-desc { padding-right: 8px !important; }
+body.exportando .cot-tabla .col-unit,
+body.exportando .cot-tabla .col-sub { text-align: right !important; border-top: none !important; margin-top: 0 !important; }
+body.exportando .cot-tabla thead th { background: var(--negro) !important; color: #fff !important; }
+body.exportando .cot-tot-final { background: var(--negro) !important; color: #fff !important; }
+body.exportando .cot-tot-final span:last-child { color: var(--amarillo) !important; }

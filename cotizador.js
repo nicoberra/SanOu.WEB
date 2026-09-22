@@ -312,6 +312,33 @@ function guardarClienteDesdeCotizacion() {
     } catch (e) { /* silencioso */ }
 }
 
+// Genera un PDF REAL y lo descarga (funciona en el celular, a diferencia de window.print()).
+async function descargarPDF() {
+    const hoja = document.getElementById('hoja');
+    const cliente = (document.getElementById('cliNombre').value || '').trim();
+    const nombreArch = 'Cotizacion-' + ((cliente || 'SanOu').replace(/[^\w\- ]/g, '').trim() || 'SanOu') + '-' + hoyISO() + '.pdf';
+    const btn = document.querySelector('.cot-btn-pdf');
+    const txtOrig = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Generando PDF…'; }
+    document.body.classList.add('exportando');
+    try {
+        await html2pdf().set({
+            margin: [8, 8, 8, 8],
+            filename: nombreArch,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: hoja.scrollWidth },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] }
+        }).from(hoja).save();
+    } catch (e) {
+        // Si algo falla con la librería, caemos al diálogo de impresión.
+        window.print();
+    } finally {
+        document.body.classList.remove('exportando');
+        if (btn) { btn.disabled = false; btn.textContent = txtOrig; }
+    }
+}
+
 function imprimirCotizacion() {
     if (!items.length) { alert('Agregá al menos un producto antes de generar la cotización.'); return; }
     const cliente = document.getElementById('cliNombre');
@@ -329,7 +356,9 @@ function imprimirCotizacion() {
         span.textContent = v || '—';
     });
 
-    window.print();
+    // PDF real y descargable (celular incluido). Si no cargó la librería, imprime.
+    if (typeof html2pdf !== 'undefined') descargarPDF();
+    else window.print();
 }
 
 // ─── INICIO ──────────────────────────────────────────────────────
