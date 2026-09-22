@@ -1654,9 +1654,16 @@ function abrirFormPedido(id, prefill){
         document.getElementById('modalBody').innerHTML = `
             <form class="panel-form" onsubmit="guardarPedido(event,'${id||''}')">
                 <label>Usuario</label>
-                ${clientesSelect(p.cliente)}
+                <div id="pdUsuarioSel">
+                    ${clientesSelect(p.cliente)}
+                    <button type="button" class="pd-nuevo-cli" onclick="pedNuevoCliente(true)"><i class="fas fa-user-plus"></i> Cliente nuevo</button>
+                </div>
+                <div id="pdUsuarioNuevo" style="display:none">
+                    <input type="text" id="pdNuevoNombre" placeholder="Nombre del cliente nuevo" autocomplete="off">
+                    <button type="button" class="pd-nuevo-cli" onclick="pedNuevoCliente(false)"><i class="fas fa-arrow-left"></i> Elegir uno existente</button>
+                </div>
                 <div class="panel-form-2">
-                    <div><label>Teléfono</label><input type="tel" id="pdTel" value="${esc(p.telefono)}" readonly></div>
+                    <div><label>Teléfono</label><input type="tel" id="pdTel" value="${esc(p.telefono)}" readonly placeholder="Se completa solo"></div>
                     <div><label>Fecha de la venta</label><input type="date" id="pdFecha" value="${id&&p.fecha?String(p.fecha).slice(0,10):hoyISO()}"></div>
                 </div>
                 <label>Productos</label>
@@ -1687,9 +1694,46 @@ function abrirFormPedido(id, prefill){
         abrirModal();
     });
 }
+// Alterna entre elegir un usuario existente y cargar uno nuevo, dentro del form de pedido.
+function pedNuevoCliente(nuevo){
+    const sel = document.getElementById('pdUsuarioSel');
+    const nue = document.getElementById('pdUsuarioNuevo');
+    const tel = document.getElementById('pdTel');
+    if(!sel || !nue || !tel) return;
+    if(nuevo){
+        sel.style.display = 'none'; nue.style.display = '';
+        const s = document.getElementById('pdCliente'); if(s) s.value = '';
+        tel.readOnly = false; tel.value = ''; tel.placeholder = 'Teléfono del cliente nuevo';
+        const n = document.getElementById('pdNuevoNombre'); if(n) setTimeout(()=>n.focus(),50);
+    } else {
+        nue.style.display = 'none'; sel.style.display = '';
+        const n = document.getElementById('pdNuevoNombre'); if(n) n.value = '';
+        tel.readOnly = true; tel.placeholder = 'Se completa solo';
+        autoTel('pd');
+    }
+}
+// ¿Está activo el modo "cliente nuevo"?
+function pedEnModoNuevo(){
+    const nue = document.getElementById('pdUsuarioNuevo');
+    return nue && nue.style.display !== 'none';
+}
 async function guardarPedido(e,id){
     e.preventDefault();
     const btn=document.getElementById('btnGuardarPed'); btn.disabled=true; btn.textContent='Guardando…';
+    // Si se está cargando un cliente NUEVO, primero lo creamos en Clientes y usamos ese nombre.
+    let clienteNombre = val('pdCliente'), clienteTel = val('pdTel');
+    if(pedEnModoNuevo()){
+        const nombreNuevo = val('pdNuevoNombre');
+        if(!nombreNuevo){ btn.disabled=false; btn.textContent='Guardar'; alert('Escribí el nombre del cliente nuevo.'); return; }
+        clienteNombre = nombreNuevo;
+        clienteTel = limpiarTel(clienteTel);
+        try {
+            const rc = await crm({ action:'add', tab:'Clientes', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
+            // Sumarlo a la lista local para que aparezca al instante en Usuarios.
+            clientes.unshift({ id:(rc&&rc.id)||'tmp'+Date.now(), fecha:'', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
+            cacheSet('clientes', clientes);
+        } catch(err){ /* si falla el alta del cliente, igual guardamos el pedido con el nombre escrito */ }
+    }
     const detalle = pedidoItems.map(it=>it.cantidad+'x '+it.nombre).join(', ');
     const subtotal = pedidoItems.reduce((s,it)=>s+precioDe(it.nombre)*it.cantidad,0);
     const montoInput = document.getElementById('pdMontoInput');
@@ -1698,7 +1742,7 @@ async function guardarPedido(e,id){
     const envio = document.getElementById('pdEnvio').checked?'Sí':'No';
     const envCobr = (envio==='Sí' && document.getElementById('pdEnvioCobr').checked)?'Sí':'No';
     const envMonto = envCobr==='Sí' ? String(val('pdEnvioMonto').replace(/[^\d]/g,'')) : '';
-    const datos={ cliente:val('pdCliente'), fecha:val('pdFecha'), telefono:val('pdTel'), detalle, monto:String(monto), estado:val('pdEstado'), notas:val('pdNotas'), envio, enviocobrado:envCobr, enviomonto:envMonto };
+    const datos={ cliente:clienteNombre, fecha:val('pdFecha'), telefono:clienteTel, detalle, monto:String(monto), estado:val('pdEstado'), notas:val('pdNotas'), envio, enviocobrado:envCobr, enviomonto:envMonto };
     try {
         if(id){ await crm({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
         else { const r=await crm({action:'add',tab:'Pedidos',...datos}); pedidos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
