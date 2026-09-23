@@ -498,34 +498,52 @@ body:not(.bloqueado) .panel-lock{display:none}
     .panel-form-2{grid-template-columns:1fr}
 }
 
-/* ══════════ ESCRITORIO (pantallas grandes) ══════════
-   El CRM es mobile-first; en la compu aprovechamos el ancho, la barra de
-   pestañas se acomoda en línea sin scroll horizontal, y agregamos hover. */
+/* ══════════ ESCRITORIO (pantallas grandes): BARRA LATERAL IZQUIERDA ══════════
+   SOLO en la compu (≥900px). En el celular queda igual (pestañas arriba). */
 @media(min-width:900px){
-    .panel-app{max-width:1180px}
-    .panel-top{padding:16px 30px}
-    .panel-logo{height:34px}
-    .panel-title{font-size:1.7rem}
-    /* Pestañas: que entren todas sin scroll (se acomodan solas). */
-    .panel-nav{flex-wrap:wrap;overflow-x:visible;padding:12px 30px;row-gap:8px}
-    .panel-nav::-webkit-scrollbar{display:none}
-    .panel-nav-btn{font-size:.9rem;padding:10px 18px;transition:background .15s,color .15s,border-color .15s}
-    .panel-nav-btn:hover{border-color:var(--am);color:#fff}
-    .panel-nav-btn.active:hover{color:var(--neg)}
-    .panel-main{padding:26px 30px;padding-bottom:40px}
-    /* Un poco más de aire en tarjetas y listas */
-    .st-cards{gap:12px}
+    /* Layout en grilla: columna izquierda (logo + nav) fija, contenido a la derecha. */
+    .panel-app{
+        max-width:none; margin:0; min-height:100vh;
+        display:grid;
+        grid-template-columns:238px 1fr;
+        grid-template-rows:auto 1fr;
+        grid-template-areas:"top main" "nav main";
+    }
+    /* --- Cabecera de la barra lateral (logo) --- */
+    .panel-top{
+        grid-area:top; position:sticky; top:0; z-index:21;
+        background:var(--neg2); border-bottom:1px solid var(--linea); border-right:1px solid var(--linea);
+        padding:20px 18px; height:72px;
+    }
+    .panel-logo{height:32px}
+    .panel-title{font-size:1.55rem}
+    .panel-salir{width:34px;height:34px;cursor:pointer}
+    /* --- Navegación vertical (sidebar) --- */
+    .panel-nav{
+        grid-area:nav; position:sticky; top:72px; align-self:start;
+        flex-direction:column; gap:4px; overflow-x:visible; overflow-y:auto;
+        max-height:calc(100vh - 72px);
+        padding:16px 12px; border-bottom:none; border-right:1px solid var(--linea);
+        background:var(--neg2);
+    }
+    .panel-nav::-webkit-scrollbar{width:0}
+    .panel-nav-btn{
+        width:100%; justify-content:flex-start; border:none; border-radius:12px;
+        padding:12px 14px; font-size:.92rem; color:var(--gris2);
+        transition:background .15s,color .15s;
+    }
+    .panel-nav-btn i{width:22px;text-align:center;font-size:.98rem}
+    .panel-nav-btn:hover{background:var(--neg3);color:#fff}
+    .panel-nav-btn.active{background:var(--am);color:var(--neg)}
+    .panel-nav-btn.active:hover{background:var(--am);color:var(--neg)}
+    /* --- Contenido a la derecha --- */
+    .panel-main{grid-area:main;padding:28px 34px;padding-bottom:40px;max-width:1200px}
+    /* Un poco más de aire y feedback de PC */
     .dash-cards,.st-cards{gap:12px}
-    /* Botones e ítems clickeables: cursor y hover de PC */
     .cli-card{transition:background .15s,border-color .15s}
     .cli-card:hover{background:var(--neg3);border-color:rgba(255,212,0,.25)}
     .cli-btn,.panel-btn-add,.panel-salir,.prod-fotos-btn,.pd-nuevo-cli{cursor:pointer}
     .cli-btn:hover{color:#fff;background:#333}
-    /* Modal un poco más ancho y cómodo en la compu */
     .panel-modal{width:min(560px,92vw)}
     .panel-form-2{gap:12px}
-}
-/* Pantallas muy anchas: no estirar de más */
-@media(min-width:1400px){
-    .panel-app{max-width:1320px}
 }
