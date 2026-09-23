@@ -545,27 +545,34 @@ function esWeb(c){ return c.origen === 'web' || (!c.origen && /web|registro|barr
 
 async function ensurePedidos(force){ if(_pedidosCargados && !force) return; try{ const r=await crm({action:'list',tab:'Pedidos'}); if(r&&r.ok&&r.rows){ pedidos=r.rows; cacheSet('pedidos',pedidos);} _pedidosCargados=true; }catch(e){} }
 async function ensureSeguimientos(force){ if(_segCargados && !force) return; try{ const r=await crm({action:'list',tab:'Seguimientos'}); if(r&&r.ok&&r.rows){ seguimientos=r.rows; cacheSet('seguimientos',seguimientos);} _segCargados=true; }catch(e){} }
-// Pedidos de un cliente: matchea por nombre O por teléfono (así renombrar no desconecta nada).
-function pedidosDeCliente(nombre, tel){
+// Pedidos de un cliente: matchea por ID permanente (lo más seguro), y por nombre/teléfono
+// como respaldo para pedidos viejos. Así editar nombre/teléfono NUNCA desconecta un pedido.
+function pedidosDeCliente(nombre, tel, cid){
     const n=norm(nombre), td=tel?soloDigitos(tel):'';
-    return pedidos.filter(p=>norm(p.cliente)===n || (td && td.length>=6 && soloDigitos(p.telefono)===td));
+    return pedidos.filter(p=>
+        (cid && p.clienteid && String(p.clienteid)===String(cid)) ||
+        norm(p.cliente)===n ||
+        (td && td.length>=6 && soloDigitos(p.telefono)===td)
+    );
 }
 function segsDeCliente(nombre){ const n=norm(nombre); return seguimientos.filter(s=>norm(s.cliente)===n); }
 // Al renombrar un cliente, cambia su nombre en pedidos/cotizaciones/seguimientos (match por nombre viejo o teléfono).
 // Así nunca se "desconecta" un pedido por editar el nombre. Silencioso; no frena el guardado del cliente.
-async function renombrarEnRegistros(viejo, tel, nuevo){
+async function renombrarEnRegistros(viejo, tel, nuevo, cid){
     try {
         await ensurePedidos();
         try { await ensureCotizaciones(); } catch(e){}
         try { await ensureSeguimientos(); } catch(e){}
         const nv = norm(viejo), td = tel ? soloDigitos(tel) : '';
-        const coincide = r => norm(r.cliente)===nv || (td && td.length>=6 && soloDigitos(r.telefono)===td);
+        const coincide = r => (cid && r.clienteid && String(r.clienteid)===String(cid)) ||
+                              norm(r.cliente)===nv || (td && td.length>=6 && soloDigitos(r.telefono)===td);
         const tareas = [];
         const barrer = (arr, tab) => (arr||[]).forEach(r => {
-            if (coincide(r) && norm(r.cliente)!==norm(nuevo)) {
-                r.cliente = nuevo;
-                tareas.push(crm({ action:'update', tab:tab, id:r.id, cliente:nuevo }));
-            }
+            if (!coincide(r)) return;
+            const cambios = {};
+            if (norm(r.cliente)!==norm(nuevo)) { r.cliente = nuevo; cambios.cliente = nuevo; }
+            if (cid && String(r.clienteid||'')!==String(cid)) { r.clienteid = cid; cambios.clienteid = cid; }  // dejarlo atado para siempre
+            if (Object.keys(cambios).length) tareas.push(crm({ action:'update', tab:tab, id:r.id, ...cambios }));
         });
         barrer(pedidos, 'Pedidos');
         barrer(cotizaciones, 'Cotizaciones');
@@ -575,7 +582,7 @@ async function renombrarEnRegistros(viejo, tel, nuevo){
             cacheSet('pedidos', pedidos);
             if (seccionActual==='pedidos') filtrarPedidos();
         }
-    } catch(e){ /* si algo falla, el pedido igual sigue existiendo; el match por teléfono lo muestra */ }
+    } catch(e){ /* si algo falla, el pedido igual sigue existiendo; el match por ID/teléfono lo muestra */ }
 }
 
 async function renderClientes() {
@@ -648,7 +655,7 @@ function pintarClientes(lista) {
         const tel = soloDigitos(c.telefono);
         const wa = tel ? `https://wa.me/${tel.length <= 11 ? '549' + tel : tel}?text=${encodeURIComponent('¡Hola ' + (c.nombre || '') + '! Te escribo de San Ou 🔧')}` : '';
         const sub = [c.empresa, c.ciudad].filter(Boolean).join(' · ');
-        const nped = _pedidosCargados ? pedidosDeCliente(c.nombre, c.telefono).length : 0;
+        const nped = _pedidosCargados ? pedidosDeCliente(c.nombre, c.telefono, c.id).length : 0;
         return `
         <div class="cli-card" onclick="verCliente('${c.id}')">
             <div class="cli-avatar">${esc((c.nombre || '?').charAt(0).toUpperCase())}</div>
@@ -698,9 +705,9 @@ async function verCliente(id) {
     await ensurePedidos();
     await ensureCotizaciones();
     const n = norm(c.nombre), td = soloDigitos(c.telefono);
-    const coincideTel = x => td && td.length>=6 && soloDigitos(x.telefono)===td;
-    const peds = pedidosDeCliente(c.nombre, c.telefono);
-    const cots = cotizaciones.filter(x => norm(x.cliente) === n || coincideTel(x));
+    const coincide = x => (x.clienteid && String(x.clienteid)===String(c.id)) || norm(x.cliente)===n || (td && td.length>=6 && soloDigitos(x.telefono)===td);
+    const peds = pedidosDeCliente(c.nombre, c.telefono, c.id);
+    const cots = cotizaciones.filter(coincide);
     const hist = document.getElementById('fichaHist');
     if (!hist) return;
     if (!peds.length && !cots.length) {
@@ -787,7 +794,7 @@ async function guardarCliente(e, id) {
             cacheSet('clientes', clientes);
             // Si cambió el nombre, arrastrar el cambio a TODOS sus registros (así no se "pierden").
             if (nombreViejo && norm(nombreViejo) !== norm(datos.nombre)) {
-                renombrarEnRegistros(nombreViejo, telViejo || datos.telefono, datos.nombre);
+                renombrarEnRegistros(nombreViejo, telViejo || datos.telefono, datos.nombre, id);
             }
         } else {
             datos.origen = 'panel';                     // cargado por vos (no web)
@@ -1759,7 +1766,7 @@ async function guardarPedido(e,id){
     e.preventDefault();
     const btn=document.getElementById('btnGuardarPed'); btn.disabled=true; btn.textContent='Guardando…';
     // Si se está cargando un cliente NUEVO, primero lo creamos en Clientes y usamos ese nombre.
-    let clienteNombre = val('pdCliente'), clienteTel = val('pdTel');
+    let clienteNombre = val('pdCliente'), clienteTel = val('pdTel'), clienteId = '';
     if(pedEnModoNuevo()){
         const nombreNuevo = val('pdNuevoNombre');
         if(!nombreNuevo){ btn.disabled=false; btn.textContent='Guardar'; alert('Escribí el nombre del cliente nuevo.'); return; }
@@ -1767,10 +1774,15 @@ async function guardarPedido(e,id){
         clienteTel = limpiarTel(clienteTel);
         try {
             const rc = await crm({ action:'add', tab:'Clientes', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
+            clienteId = (rc&&rc.id) || '';
             // Sumarlo a la lista local para que aparezca al instante en Usuarios.
-            clientes.unshift({ id:(rc&&rc.id)||'tmp'+Date.now(), fecha:'', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
+            clientes.unshift({ id: clienteId||('tmp'+Date.now()), fecha:'', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
             cacheSet('clientes', clientes);
         } catch(err){ /* si falla el alta del cliente, igual guardamos el pedido con el nombre escrito */ }
+    } else {
+        // Cliente existente elegido en el select: guardamos su ID permanente.
+        const cliObj = clientes.find(x => norm(x.nombre) === norm(clienteNombre));
+        if (cliObj) clienteId = cliObj.id;
     }
     const detalle = pedidoItems.map(it=>it.cantidad+'x '+it.nombre).join(', ');
     const subtotal = pedidoItems.reduce((s,it)=>s+precioDe(it.nombre)*it.cantidad,0);
@@ -1781,6 +1793,8 @@ async function guardarPedido(e,id){
     const envCobr = (envio==='Sí' && document.getElementById('pdEnvioCobr').checked)?'Sí':'No';
     const envMonto = envCobr==='Sí' ? String(val('pdEnvioMonto').replace(/[^\d]/g,'')) : '';
     const datos={ cliente:clienteNombre, fecha:val('pdFecha'), telefono:clienteTel, detalle, monto:String(monto), estado:val('pdEstado'), notas:val('pdNotas'), envio, enviocobrado:envCobr, enviomonto:envMonto };
+    // ID permanente del cliente: ata el pedido al cliente aunque después cambie nombre/teléfono.
+    if (clienteId) datos.clienteid = clienteId;
     try {
         if(id){ await crm({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
         else { const r=await crm({action:'add',tab:'Pedidos',...datos}); pedidos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
