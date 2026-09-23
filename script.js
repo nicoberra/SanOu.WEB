@@ -31,10 +31,29 @@ function _fuenteTrafico() {
         try { return new URL(document.referrer).hostname.replace(/^www\./,''); } catch(e){ return 'otro'; }
     } catch (e) { return 'directo'; }
 }
+// Cuenta una acción UNA sola vez por persona y por día. Devuelve true si HOY ya se contó.
+// (visita/categoria/producto/carrito: si la persona repite en el día, no se vuelve a mandar.)
+function _yaContadoHoy(clave) {
+    try {
+        const hoy = new Date().toISOString().slice(0, 10);
+        let o = {};
+        try { o = JSON.parse(localStorage.getItem('sanou_ev') || '{}'); } catch (e) {}
+        if (o.dia !== hoy) o = { dia: hoy, hechas: {} };   // día nuevo: se reinicia
+        if (o.hechas[clave]) return true;                  // ya contado hoy
+        o.hechas[clave] = 1;
+        localStorage.setItem('sanou_ev', JSON.stringify(o));
+        return false;
+    } catch (e) { return false; }   // si el storage falla, mejor contar que perder el dato
+}
 function sanouTrack(tipo, item, extra) {
     if (!CLIENTES_URL) return;
     try {
         extra = extra || {};
+        // Deduplicado por persona/día: la visita cuenta 1 por día; producto/categoría/carrito, 1 por ítem por día.
+        // Las compras y abandonos NO se deduplican acá (cada uno importa).
+        const claveDia = { visita: 'visita', categoria: 'categoria|' + (item || ''),
+                           producto: 'producto|' + (item || ''), carrito: 'carrito|' + (item || '') }[tipo];
+        if (claveDia && _yaContadoHoy(claveDia)) return;
         const params = new URLSearchParams({
             action: 'evento_add', tab: 'Clientes',
             tipo: tipo, item: item || '', sesion: _sesionId(),
