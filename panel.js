@@ -545,8 +545,38 @@ function esWeb(c){ return c.origen === 'web' || (!c.origen && /web|registro|barr
 
 async function ensurePedidos(force){ if(_pedidosCargados && !force) return; try{ const r=await crm({action:'list',tab:'Pedidos'}); if(r&&r.ok&&r.rows){ pedidos=r.rows; cacheSet('pedidos',pedidos);} _pedidosCargados=true; }catch(e){} }
 async function ensureSeguimientos(force){ if(_segCargados && !force) return; try{ const r=await crm({action:'list',tab:'Seguimientos'}); if(r&&r.ok&&r.rows){ seguimientos=r.rows; cacheSet('seguimientos',seguimientos);} _segCargados=true; }catch(e){} }
-function pedidosDeCliente(nombre){ const n=norm(nombre); return pedidos.filter(p=>norm(p.cliente)===n); }
+// Pedidos de un cliente: matchea por nombre O por teléfono (así renombrar no desconecta nada).
+function pedidosDeCliente(nombre, tel){
+    const n=norm(nombre), td=tel?soloDigitos(tel):'';
+    return pedidos.filter(p=>norm(p.cliente)===n || (td && td.length>=6 && soloDigitos(p.telefono)===td));
+}
 function segsDeCliente(nombre){ const n=norm(nombre); return seguimientos.filter(s=>norm(s.cliente)===n); }
+// Al renombrar un cliente, cambia su nombre en pedidos/cotizaciones/seguimientos (match por nombre viejo o teléfono).
+// Así nunca se "desconecta" un pedido por editar el nombre. Silencioso; no frena el guardado del cliente.
+async function renombrarEnRegistros(viejo, tel, nuevo){
+    try {
+        await ensurePedidos();
+        try { await ensureCotizaciones(); } catch(e){}
+        try { await ensureSeguimientos(); } catch(e){}
+        const nv = norm(viejo), td = tel ? soloDigitos(tel) : '';
+        const coincide = r => norm(r.cliente)===nv || (td && td.length>=6 && soloDigitos(r.telefono)===td);
+        const tareas = [];
+        const barrer = (arr, tab) => (arr||[]).forEach(r => {
+            if (coincide(r) && norm(r.cliente)!==norm(nuevo)) {
+                r.cliente = nuevo;
+                tareas.push(crm({ action:'update', tab:tab, id:r.id, cliente:nuevo }));
+            }
+        });
+        barrer(pedidos, 'Pedidos');
+        barrer(cotizaciones, 'Cotizaciones');
+        barrer(seguimientos, 'Seguimientos');
+        if (tareas.length) {
+            await Promise.all(tareas);
+            cacheSet('pedidos', pedidos);
+            if (seccionActual==='pedidos') filtrarPedidos();
+        }
+    } catch(e){ /* si algo falla, el pedido igual sigue existiendo; el match por teléfono lo muestra */ }
+}
 
 async function renderClientes() {
     const v = document.getElementById('vista');
@@ -618,7 +648,7 @@ function pintarClientes(lista) {
         const tel = soloDigitos(c.telefono);
         const wa = tel ? `https://wa.me/${tel.length <= 11 ? '549' + tel : tel}?text=${encodeURIComponent('¡Hola ' + (c.nombre || '') + '! Te escribo de San Ou 🔧')}` : '';
         const sub = [c.empresa, c.ciudad].filter(Boolean).join(' · ');
-        const nped = _pedidosCargados ? pedidosDeCliente(c.nombre).length : 0;
+        const nped = _pedidosCargados ? pedidosDeCliente(c.nombre, c.telefono).length : 0;
         return `
         <div class="cli-card" onclick="verCliente('${c.id}')">
             <div class="cli-avatar">${esc((c.nombre || '?').charAt(0).toUpperCase())}</div>
@@ -667,9 +697,10 @@ async function verCliente(id) {
     abrirModal();
     await ensurePedidos();
     await ensureCotizaciones();
-    const n = norm(c.nombre);
-    const peds = pedidosDeCliente(c.nombre);
-    const cots = cotizaciones.filter(x => norm(x.cliente) === n);
+    const n = norm(c.nombre), td = soloDigitos(c.telefono);
+    const coincideTel = x => td && td.length>=6 && soloDigitos(x.telefono)===td;
+    const peds = pedidosDeCliente(c.nombre, c.telefono);
+    const cots = cotizaciones.filter(x => norm(x.cliente) === n || coincideTel(x));
     const hist = document.getElementById('fichaHist');
     if (!hist) return;
     if (!peds.length && !cots.length) {
@@ -748,9 +779,16 @@ async function guardarCliente(e, id) {
     btn.disabled = true; btn.textContent = 'Guardando…';
     try {
         if (id) {
-            await crm({ action: 'update', tab: 'Clientes', id, ...datos });
             const c = clientes.find(x => x.id === id);
+            const nombreViejo = c ? c.nombre : '';
+            const telViejo = c ? c.telefono : '';
+            await crm({ action: 'update', tab: 'Clientes', id, ...datos });
             if (c) Object.assign(c, datos);            // actualizar en el acto
+            cacheSet('clientes', clientes);
+            // Si cambió el nombre, arrastrar el cambio a TODOS sus registros (así no se "pierden").
+            if (nombreViejo && norm(nombreViejo) !== norm(datos.nombre)) {
+                renombrarEnRegistros(nombreViejo, telViejo || datos.telefono, datos.nombre);
+            }
         } else {
             datos.origen = 'panel';                     // cargado por vos (no web)
             const r = await crm({ action: 'add', tab: 'Clientes', ...datos });
