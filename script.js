@@ -682,7 +682,7 @@ function cardMedia(p) {
 // Carga el recorte (para el efecto hover) recién cuando el mouse entra a la tarjeta:
 // así los productos sin recorte no hacen ningún pedido de más.
 document.addEventListener('mouseover', function (e) {
-    const card = e.target.closest && e.target.closest('.product-card');
+    const card = e.target.closest && e.target.closest('.product-card, .featured-slide');
     if (!card) return;
     const pop = card.querySelector('.prod-pop[data-pop]');
     if (pop) { pop.src = pop.getAttribute('data-pop'); pop.removeAttribute('data-pop'); }
@@ -1522,8 +1522,10 @@ function renderFeatured() {
 
     track.innerHTML = items.map((p, i) => {
         const imgs = getImgs(p);
+        const folder = p.folder || p.name;
+        const popImg = `<img class="prod-pop" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="this.classList.add('pop-ok')" onerror="this.remove()">`;
         const imgHTML = imgs.length
-            ? `<img src="${imgs[0]}" alt="${p.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} featured-icon\\'></i>'">`
+            ? `<img src="${imgs[0]}" alt="${p.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} featured-icon\\'></i>'">${popImg}`
             : `<i class="fas ${p.icon} featured-icon"></i>`;
         const specsHTML = p.specs.filter(s => s.l).map(s =>
             `<div class="featured-spec-row"><span>${s.l}</span><span>${s.v}</span></div>`
