@@ -112,7 +112,15 @@ const EMPRESA = {
 
 // Alícuota reducida (bienes de capital)
 const IVA = 0.105;
+// Alícuota general (algunos productos se facturan al 21%, ej. Mordazas de Torno)
+const IVA_GENERAL = 0.21;
 const VALIDEZ_DIAS = 7;
+// Devuelve la alícuota de IVA de un ítem según el producto (mordazas de torno = 21%).
+function ivaDeItem(it) {
+    const p = products.find(x => x.id === it.id);
+    const nombre = p ? p.name : '';
+    return /mordaza/i.test(nombre) ? IVA_GENERAL : IVA;
+}
 
 let items = [];            // { id, cantidad, precioFinal }
 
@@ -135,9 +143,10 @@ function money(n) {
 
 // ─── CÁLCULO ─────────────────────────────────────────────────────
 // Los precios del Sheet son FINALES (IVA incluido). Para la cotización
-// se desglosa hacia atrás: neto = final / 1,105. Así el TOTAL coincide
-// exactamente con el precio publicado en la web.
-function netoDesdeFinal(final) { return final / (1 + IVA); }
+// se desglosa hacia atrás: neto = final / (1 + iva). El IVA depende del
+// producto (10,5% general, 21% para mordazas de torno). El TOTAL siempre
+// coincide con el precio publicado.
+function netoDesdeFinal(final, iva) { return final / (1 + (iva != null ? iva : IVA)); }
 
 let envio = 0; // costo de envío (monto final que paga el cliente)
 
@@ -147,9 +156,13 @@ function cambiarEnvio(val) {
 }
 
 function calcularTotales() {
-    let subtotalNeto = 0;
-    items.forEach(it => { subtotalNeto += netoDesdeFinal(it.precioFinal) * it.cantidad; });
-    const ivaMonto = subtotalNeto * IVA;
+    let subtotalNeto = 0, ivaMonto = 0;
+    items.forEach(it => {
+        const iva = ivaDeItem(it);
+        const neto = netoDesdeFinal(it.precioFinal, iva);
+        subtotalNeto += neto * it.cantidad;
+        ivaMonto     += (it.precioFinal - neto) * it.cantidad;
+    });
     // El envío se suma como monto final (aparte), no se le desglosa IVA:
     // es un presupuesto comercial, no un comprobante fiscal.
     return {
@@ -158,6 +171,13 @@ function calcularTotales() {
         envio,
         total: subtotalNeto + ivaMonto + envio
     };
+}
+// Etiqueta del IVA según las alícuotas presentes en la cotización.
+function etiquetaIva() {
+    const tasas = Array.from(new Set(items.map(ivaDeItem)));
+    if (tasas.length === 1) return 'IVA ' + String(tasas[0] * 100).replace('.', ',') + '%';
+    if (tasas.length > 1)  return 'IVA (10,5% y 21%)';
+    return 'IVA 10,5%';
 }
 
 // ─── ÍTEMS ───────────────────────────────────────────────────────
@@ -218,7 +238,7 @@ function renderItems() {
     } else {
         tbody.innerHTML = items.map((it, i) => {
             const p = products.find(x => x.id === it.id);
-            const netoUnit = netoDesdeFinal(it.precioFinal);
+            const netoUnit = netoDesdeFinal(it.precioFinal, ivaDeItem(it));
             const subtotal = netoUnit * it.cantidad;
             return `<tr>
                 <td class="col-n">${i + 1}</td>
@@ -239,6 +259,8 @@ function renderItems() {
     const t = calcularTotales();
     document.getElementById('totSubtotal').textContent = money(t.subtotalNeto);
     document.getElementById('totIva').textContent      = money(t.ivaMonto);
+    const ivaLbl = document.getElementById('totIvaLbl');
+    if (ivaLbl) ivaLbl.textContent = etiquetaIva();
     document.getElementById('totFinal').textContent    = money(t.total);
 
     // Fila de envío: solo aparece si se cargó un costo
@@ -273,6 +295,45 @@ function pintarFechas() {
 // ─── IMPRIMIR / PDF ──────────────────────────────────────────────
 // Guarda la cotización en el CRM (pestaña Cotizaciones) para el historial del cliente.
 const CRM_COTIZ_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
+
+// ─── CLIENTES YA INGRESADOS (para elegir en el cotizador) ────────
+let _cotClientes = [], _cotClienteId = '';
+// Lectura por JSONP (Apps Script no manda CORS para leer la respuesta).
+function crmJSONP(params) {
+    return new Promise((resolve, reject) => {
+        const cb = 'cotcb_' + Date.now() + Math.floor(Math.random() * 1000);
+        const s = document.createElement('script');
+        const q = new URLSearchParams(Object.assign({}, params, { callback: cb })).toString();
+        window[cb] = (data) => { resolve(data); try { delete window[cb]; } catch (e) {} s.remove(); };
+        s.onerror = () => { try { delete window[cb]; } catch (e) {} s.remove(); reject('red'); };
+        s.src = CRM_COTIZ_URL + '?' + q;
+        document.body.appendChild(s);
+    });
+}
+async function cargarClientesCotizador() {
+    try {
+        const r = await crmJSONP({ action: 'list', tab: 'Clientes' });
+        if (r && r.ok && r.rows) { _cotClientes = r.rows; llenarSelectClientes(); }
+    } catch (e) { /* si no cargan, se puede cargar el cliente a mano igual */ }
+}
+function llenarSelectClientes() {
+    const sel = document.getElementById('cotClienteExistente');
+    if (!sel) return;
+    const ord = _cotClientes.slice().sort((a, b) => String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es'));
+    sel.innerHTML = '<option value="">— Cargar un cliente ya ingresado… —</option>' +
+        ord.map(c => `<option value="${c.id}">${(c.nombre || '(sin nombre)')}${c.razon ? ' — ' + c.razon : ''}</option>`).join('');
+}
+// Al elegir un cliente, completa los campos del cotizador y recuerda su ID.
+function elegirClienteCotizador(id) {
+    _cotClienteId = id || '';
+    const c = _cotClientes.find(x => String(x.id) === String(id));
+    if (!c) return;
+    const set = (el, v) => { const e = document.getElementById(el); if (e) e.value = v || ''; };
+    set('cliNombre', c.razon || c.nombre || '');
+    set('cliCuit', c.cuit || '');
+    set('cliContacto', [c.telefono, c.email].filter(Boolean).join(' / '));
+    set('cliDom', c.direccion || '');
+}
 function guardarCotizacionEnCRM() {
     try {
         const cliente = (document.getElementById('cliNombre').value || '').trim();
@@ -283,18 +344,21 @@ function guardarCotizacionEnCRM() {
         }).join(', ');
         const total = calcularTotales().total;
         const tel = (document.getElementById('cliContacto').value || '').replace(/[^\d]/g, '');
-        const params = new URLSearchParams({
+        const p = {
             action: 'add', tab: 'Cotizaciones',
             cliente: cliente, telefono: tel, detalle: detalle,
             monto: String(Math.round(total)), estado: 'Abierta'
-        });
-        fetch(CRM_COTIZ_URL + '?' + params.toString(), { mode: 'no-cors' });
+        };
+        if (_cotClienteId) p.clienteid = _cotClienteId;   // atar al cliente elegido (ID permanente)
+        fetch(CRM_COTIZ_URL + '?' + new URLSearchParams(p).toString(), { mode: 'no-cors' });
     } catch (e) { /* silencioso */ }
 }
 
 // Agrega/actualiza como cliente a la persona del presupuesto.
 function guardarClienteDesdeCotizacion() {
     try {
+        // Si se eligió un cliente ya existente, NO lo volvemos a crear (evita duplicar/renombrar).
+        if (_cotClienteId) return;
         const nombre = (document.getElementById('cliNombre').value || '').trim();
         if (!nombre) return;
         const contacto = (document.getElementById('cliContacto').value || '').trim();
@@ -373,4 +437,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderItems();
     const aviso = document.getElementById('avisoPrecios');
     if (aviso) aviso.textContent = 'Precios actualizados desde el Sheet.';
+    cargarClientesCotizador();   // llena el selector de clientes ya ingresados
 });

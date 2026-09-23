@@ -39,10 +39,18 @@
             <small id="avisoPrecios">Cargando precios…</small>
         </div>
 
+        <div class="cot-campo">
+            <label>Cliente existente (opcional)</label>
+            <select id="cotClienteExistente" onchange="elegirClienteCotizador(this.value)">
+                <option value="">— Cargar un cliente ya ingresado… —</option>
+            </select>
+            <small class="cot-ayuda">Elegí uno y se completan solos los datos. O dejalo vacío y cargá uno nuevo abajo.</small>
+        </div>
+
         <div class="cot-grid-2">
             <div class="cot-campo">
                 <label>Cliente / Razón social</label>
-                <input type="text" id="cliNombre" placeholder="Ej: Electricidad del Sur S.R.L.">
+                <input type="text" id="cliNombre" placeholder="Ej: Electricidad del Sur S.R.L." oninput="_cotClienteId=''">
             </div>
             <div class="cot-campo">
                 <label>CUIT</label>
@@ -151,7 +159,7 @@
 
     <section class="cot-totales">
         <div class="cot-tot-fila"><span>Subtotal (neto)</span><span id="totSubtotal">$0,00</span></div>
-        <div class="cot-tot-fila"><span>IVA 10,5%</span><span id="totIva">$0,00</span></div>
+        <div class="cot-tot-fila"><span id="totIvaLbl">IVA 10,5%</span><span id="totIva">$0,00</span></div>
         <div class="cot-tot-fila" id="filaEnvio" style="display:none"><span>Envío</span><span id="totEnvio">$0,00</span></div>
         <div class="cot-tot-fila cot-tot-final"><span>TOTAL</span><span id="totFinal">$0,00</span></div>
     </section>
