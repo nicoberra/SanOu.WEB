@@ -670,11 +670,23 @@ function getImgs(p) {
 
 function cardMedia(p) {
     const imgs = getImgs(p);
+    // Recorte transparente opcional (carpeta /recortes/<folder>.png): al pasar el mouse,
+    // la herramienta "sale" del marco. Se carga solo al hacer hover; si no existe, se ignora.
+    const folder = p.folder || p.name;
+    const pop = `<img class="prod-pop" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="this.classList.add('pop-ok')" onerror="this.remove()">`;
     if (imgs.length > 0) {
-        return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'"></div>`;
+        return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
     }
     return `<div class="product-media product-media-icon"><i class="fas ${p.icon}"></i></div>`;
 }
+// Carga el recorte (para el efecto hover) recién cuando el mouse entra a la tarjeta:
+// así los productos sin recorte no hacen ningún pedido de más.
+document.addEventListener('mouseover', function (e) {
+    const card = e.target.closest && e.target.closest('.product-card');
+    if (!card) return;
+    const pop = card.querySelector('.prod-pop[data-pop]');
+    if (pop) { pop.src = pop.getAttribute('data-pop'); pop.removeAttribute('data-pop'); }
+}, { passive: true });
 
 function getVideo(p) {
     if (!p.video) return null;

@@ -1098,6 +1098,7 @@ section { padding: 90px 0; }
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
 }
 .product-media img {
     width: 100%;
@@ -1105,9 +1106,30 @@ section { padding: 90px 0; }
     object-fit: cover;
     object-position: center;
     display: block;
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
 }
 .product-card:hover .product-media img { transform: scale(1.07); }
+
+/* ── Efecto "sale del marco" al pasar el mouse (solo productos con recorte transparente en /recortes/) ──
+   Se usa img.prod-pop y prefijos .product-media para ganarle por especificidad a ".product-media img". */
+.product-media img.prod-pop {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain; object-position: center bottom;
+    transform: scale(0.94); transform-origin: center bottom;
+    opacity: 0; pointer-events: none; z-index: 4;
+    filter: drop-shadow(0 16px 24px rgba(0,0,0,0.55));
+    transition: transform 0.4s cubic-bezier(0.2,0.8,0.25,1), opacity 0.3s ease;
+}
+/* Al hacer hover, si el recorte cargó bien: abrimos el marco y la herramienta sube y sobresale (lo justo). */
+.product-card:has(.prod-pop.pop-ok):hover { overflow: visible; z-index: 6; }
+.product-card:has(.prod-pop.pop-ok):hover .product-media { overflow: visible; }
+.product-card:has(.prod-pop.pop-ok):hover .product-media img:not(.prod-pop) { opacity: 0; transform: scale(1); }
+.product-card:has(.prod-pop.pop-ok):hover .product-media img.prod-pop {
+    opacity: 1; transform: translateY(-16%) scale(1.14);
+}
+/* En pantallas táctiles no hay hover: el recorte nunca molesta (queda oculto). */
+@media (hover: none) { .product-media img.prod-pop { display: none; } }
 .product-media-icon {
     display: flex;
     align-items: center;
