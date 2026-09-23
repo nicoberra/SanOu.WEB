@@ -1110,7 +1110,7 @@ section { padding: 90px 0; }
 }
 .product-card:hover .product-media img { transform: scale(1.07); }
 
-/* ── Efecto "sale del marco" al pasar el mouse (solo productos con recorte transparente en /recortes/) ──
+/* ── Efecto "sale del marco" con la herramienta en 3D (recorte transparente en /recortes/) ──
    Se usa img.prod-pop y prefijos .product-media para ganarle por especificidad a ".product-media img". */
 .product-media img.prod-pop {
     position: absolute; left: 0; right: 0; bottom: 0; top: auto;
@@ -1121,16 +1121,31 @@ section { padding: 90px 0; }
     filter: drop-shadow(0 14px 22px rgba(0,0,0,0.5));
     transition: transform 0.4s cubic-bezier(0.2,0.8,0.25,1), opacity 0.3s ease;
 }
+/* Panel BLANCO detrás de la herramienta: en estado normal cubre el marco; al hacer 3D se
+   estira hacia arriba para que el fondo detrás del recorte quede TOTALMENTE BLANCO. */
+.product-media::before {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; top: 0;
+    background: #fff; border-radius: 16px 16px 0 0; z-index: 0;
+    transition: top 0.4s cubic-bezier(0.2,0.8,0.25,1), border-radius 0.4s;
+}
 /* Al hacer hover: abrimos el marco y la herramienta crece SOLO hacia arriba (anclada abajo),
    así la base siempre queda apoyada en la línea del marco y no se corta. */
 .product-card:has(.prod-pop.pop-ok):hover { overflow: visible; z-index: 6; }
 .product-card:has(.prod-pop.pop-ok):hover .product-media { overflow: visible; }
+.product-card:has(.prod-pop.pop-ok):hover .product-media::before { top: -86px; border-radius: 16px; }
 .product-card:has(.prod-pop.pop-ok):hover .product-media img:not(.prod-pop) { opacity: 0; transform: scale(1); }
 .product-card:has(.prod-pop.pop-ok):hover .product-media img.prod-pop {
     opacity: 1; transform: scale(1.28);
 }
-/* En pantallas táctiles no hay hover: el recorte nunca molesta (queda oculto). */
-@media (hover: none) { .product-media img.prod-pop { display: none; } }
+/* En el celular (sin hover): la herramienta se muestra en 3D SIEMPRE, con fondo blanco. */
+@media (hover: none) {
+    .product-card:has(.prod-pop.pop-ok) { overflow: visible; }
+    .product-card:has(.prod-pop.pop-ok) .product-media { overflow: visible; }
+    .product-card:has(.prod-pop.pop-ok) .product-media::before { top: -70px; border-radius: 16px; }
+    .product-card:has(.prod-pop.pop-ok) .product-media img:not(.prod-pop) { opacity: 0; }
+    .product-card:has(.prod-pop.pop-ok) .product-media img.prod-pop { opacity: 1; transform: scale(1.24); }
+    .products-grid { row-gap: 80px; }   /* aire para que la herramienta que sobresale no se pise */
+}
 .product-media-icon {
     display: flex;
     align-items: center;
@@ -2087,10 +2102,22 @@ section { padding: 90px 0; }
     filter: drop-shadow(0 16px 24px rgba(0,0,0,0.55));
     transition: transform 0.45s cubic-bezier(0.2,0.8,0.25,1), opacity 0.3s ease;
 }
+/* Panel blanco detrás de la herramienta (para que el fondo del 3D quede TOTALMENTE BLANCO). */
+.featured-media::before {
+    content: ''; position: absolute; inset: 0; background: #fff; border-radius: 14px; z-index: 0;
+    transition: top 0.45s cubic-bezier(0.2,0.8,0.25,1);
+}
 .featured-slide:has(.prod-pop.pop-ok):hover .featured-media { overflow: visible; }
+.featured-slide:has(.prod-pop.pop-ok):hover .featured-media::before { top: -80px; }
 .featured-slide:has(.prod-pop.pop-ok):hover .featured-media img:not(.prod-pop) { opacity: 0; }
 .featured-slide:has(.prod-pop.pop-ok):hover .featured-media img.prod-pop { opacity: 1; transform: scale(1.24); }
-@media (hover: none) { .featured-media img.prod-pop { display: none; } }
+/* En el celular (sin hover): mostrar el 3D SIEMPRE con fondo blanco. */
+@media (hover: none) {
+    .featured-slide:has(.prod-pop.pop-ok) .featured-media { overflow: visible; }
+    .featured-slide:has(.prod-pop.pop-ok) .featured-media::before { top: -66px; }
+    .featured-slide:has(.prod-pop.pop-ok) .featured-media img:not(.prod-pop) { opacity: 0; }
+    .featured-slide:has(.prod-pop.pop-ok) .featured-media img.prod-pop { opacity: 1; transform: scale(1.2); }
+}
 .featured-info {
     flex: 1;
     display: flex;
