@@ -1110,42 +1110,37 @@ section { padding: 90px 0; }
 }
 .product-card:hover .product-media img { transform: scale(1.07); }
 
-/* ── Efecto "sale del marco" con la herramienta en 3D (recorte transparente en /recortes/) ──
-   Se usa img.prod-pop y prefijos .product-media para ganarle por especificidad a ".product-media img". */
+/* ── Efecto 3D al pasar el mouse (recorte transparente en /recortes/) ──
+   La foto normal se ve SIEMPRE. Al hacer hover: la foto se desvanece, el marco queda BLANCO
+   y la pinza crece y SOBRESALE por ABAJO (sobre la línea que separa la imagen del título).
+   No se expande nada hacia arriba. */
 .product-media img.prod-pop {
-    position: absolute; left: 0; right: 0; bottom: 0; top: auto;
+    position: absolute; inset: 0;
     width: 100%; height: 100%;
     object-fit: contain; object-position: center bottom;
-    transform: scale(0.96); transform-origin: center bottom;
+    transform: scale(0.97); transform-origin: center bottom;
     opacity: 0; pointer-events: none; z-index: 4;
-    filter: drop-shadow(0 14px 22px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 16px 22px rgba(0,0,0,0.5));
     transition: transform 0.4s cubic-bezier(0.2,0.8,0.25,1), opacity 0.3s ease;
 }
-/* Panel BLANCO detrás de la herramienta: en estado normal cubre el marco; al hacer 3D se
-   estira hacia arriba para que el fondo detrás del recorte quede TOTALMENTE BLANCO. */
+/* La foto normal va SIEMPRE por encima del panel blanco (si no, tapaba la imagen). */
+.product-media img:not(.prod-pop) { position: relative; z-index: 2; }
+/* Panel BLANCO del marco: queda DEBAJO de la foto; al hacer hover la foto se desvanece y
+   este panel queda de fondo (blanco) del marco. NO se estira hacia arriba. */
 .product-media::before {
-    content: ''; position: absolute; left: 0; right: 0; bottom: 0; top: 0;
-    background: #fff; border-radius: 16px 16px 0 0; z-index: 0;
-    transition: top 0.4s cubic-bezier(0.2,0.8,0.25,1), border-radius 0.4s;
+    content: ''; position: absolute; inset: 0;
+    background: #fff; border-radius: 16px 16px 0 0; z-index: 1;
 }
-/* Al hacer hover: abrimos el marco y la herramienta crece SOLO hacia arriba (anclada abajo),
-   así la base siempre queda apoyada en la línea del marco y no se corta. */
+/* Hover: la foto se desvanece (queda el marco blanco) y la pinza crece anclada abajo,
+   sobresaliendo por ARRIBA y por los COSTADOS (la base queda apoyada en la línea). */
 .product-card:has(.prod-pop.pop-ok):hover { overflow: visible; z-index: 6; }
 .product-card:has(.prod-pop.pop-ok):hover .product-media { overflow: visible; }
-.product-card:has(.prod-pop.pop-ok):hover .product-media::before { top: -86px; border-radius: 16px; }
-.product-card:has(.prod-pop.pop-ok):hover .product-media img:not(.prod-pop) { opacity: 0; transform: scale(1); }
+.product-card:has(.prod-pop.pop-ok):hover .product-media img:not(.prod-pop) { opacity: 0; }
 .product-card:has(.prod-pop.pop-ok):hover .product-media img.prod-pop {
-    opacity: 1; transform: scale(1.28);
+    opacity: 1; transform: scale(1.3);
 }
-/* En el celular (sin hover): la herramienta se muestra en 3D SIEMPRE, con fondo blanco. */
-@media (hover: none) {
-    .product-card:has(.prod-pop.pop-ok) { overflow: visible; }
-    .product-card:has(.prod-pop.pop-ok) .product-media { overflow: visible; }
-    .product-card:has(.prod-pop.pop-ok) .product-media::before { top: -70px; border-radius: 16px; }
-    .product-card:has(.prod-pop.pop-ok) .product-media img:not(.prod-pop) { opacity: 0; }
-    .product-card:has(.prod-pop.pop-ok) .product-media img.prod-pop { opacity: 1; transform: scale(1.24); }
-    .products-grid { row-gap: 80px; }   /* aire para que la herramienta que sobresale no se pise */
-}
+/* En el celular (sin hover) no se muestra el recorte: se ve la foto normal, siempre. */
+@media (hover: none) { .product-media img.prod-pop { display: none; } }
 .product-media-icon {
     display: flex;
     align-items: center;
@@ -2090,34 +2085,30 @@ section { padding: 90px 0; }
     font-size: 5rem;
     color: var(--yellow);
 }
-/* Efecto "sale del marco" en Destacados (mismo recorte /recortes/<folder>.png) */
+/* Efecto 3D en Destacados: la foto se ve siempre; al hover la pinza sobresale por abajo, fondo blanco. */
 .featured-media { position: relative; }
 .featured-media img.prod-pop {
-    position: absolute; left: 0; right: 0; bottom: 0; top: auto;
+    position: absolute; inset: 0;
     width: 100%; height: 100%;
     object-fit: contain; object-position: center bottom;
-    transform: scale(0.96); transform-origin: center bottom;
+    transform: scale(0.98); transform-origin: center bottom;
     opacity: 0; pointer-events: none; z-index: 4; animation: none !important;
     background: transparent;
-    filter: drop-shadow(0 16px 24px rgba(0,0,0,0.55));
+    filter: drop-shadow(0 16px 22px rgba(0,0,0,0.5));
     transition: transform 0.45s cubic-bezier(0.2,0.8,0.25,1), opacity 0.3s ease;
 }
-/* Panel blanco detrás de la herramienta (para que el fondo del 3D quede TOTALMENTE BLANCO). */
+/* La foto normal SIEMPRE por encima del panel blanco. */
+.featured-media img:not(.prod-pop) { position: relative; z-index: 2; }
+/* Panel blanco del marco (queda detrás de la foto; al hover queda de fondo). */
 .featured-media::before {
-    content: ''; position: absolute; inset: 0; background: #fff; border-radius: 14px; z-index: 0;
-    transition: top 0.45s cubic-bezier(0.2,0.8,0.25,1);
+    content: ''; position: absolute; inset: 0; background: #fff; border-radius: 14px; z-index: 1;
 }
+.featured-slide:has(.prod-pop.pop-ok):hover { overflow: visible; }
 .featured-slide:has(.prod-pop.pop-ok):hover .featured-media { overflow: visible; }
-.featured-slide:has(.prod-pop.pop-ok):hover .featured-media::before { top: -80px; }
 .featured-slide:has(.prod-pop.pop-ok):hover .featured-media img:not(.prod-pop) { opacity: 0; }
 .featured-slide:has(.prod-pop.pop-ok):hover .featured-media img.prod-pop { opacity: 1; transform: scale(1.24); }
-/* En el celular (sin hover): mostrar el 3D SIEMPRE con fondo blanco. */
-@media (hover: none) {
-    .featured-slide:has(.prod-pop.pop-ok) .featured-media { overflow: visible; }
-    .featured-slide:has(.prod-pop.pop-ok) .featured-media::before { top: -66px; }
-    .featured-slide:has(.prod-pop.pop-ok) .featured-media img:not(.prod-pop) { opacity: 0; }
-    .featured-slide:has(.prod-pop.pop-ok) .featured-media img.prod-pop { opacity: 1; transform: scale(1.2); }
-}
+/* En el celular (sin hover) no se muestra el recorte: se ve la foto normal. */
+@media (hover: none) { .featured-media img.prod-pop { display: none; } }
 .featured-info {
     flex: 1;
     display: flex;
