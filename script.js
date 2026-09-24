@@ -1877,11 +1877,11 @@ function toggleWaWidget() {
             // Si el cliente empieza a escribir, no lo cerramos automáticamente
             input.addEventListener('input', cancelarWaAutoClose, { once: true });
         }
-        // Auto-cerrar a los 15s si el cliente no lo cierra ni interactúa
+        // Auto-cerrar a los 6s si el cliente no lo cierra ni interactúa
         cancelarWaAutoClose();
         _waAutoCloseTimer = setTimeout(() => {
             if (popup.classList.contains('open')) toggleWaWidget();
-        }, 15000);
+        }, 6000);
     }
 }
 
