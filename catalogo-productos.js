@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════════════════════
 window.SANOU_PRODUCTOS = [
     // Pinzas
-    { id: 26, name: 'Pinza Hidráulica HHYJ-50', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–50 mm²', imgs: ['1.png', '2.webp'], folder: 'HHYJ-50', catFolder: 'Crimpadoras',
+    { id: 26, name: 'Pinza Hidráulica HHYJ-50', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–50 mm²', imgs: ['1.webp'], folder: 'HHYJ-50', catFolder: 'Crimpadoras',
       desc: 'Pinza para indentar terminales de cobre con crimpado hexagonal. Diseño compacto y liviano.',
       specs: [
         { l: 'Rango de crimpado', v: '6–50 mm²' },
