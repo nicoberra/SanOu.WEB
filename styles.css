@@ -688,6 +688,16 @@ body {
         0 30px 80px rgba(0,0,0,0.7),
         0 0 40px rgba(255,215,0,0.08);
     overflow: visible;
+    transition: transform 0.35s cubic-bezier(0.2,0.8,0.25,1), box-shadow 0.35s ease;
+}
+/* Al pasar el mouse, el teléfono se agranda un poco (efecto vivo). */
+.iphone-wrap:hover .iphone {
+    transform: scale(1.06);
+    box-shadow:
+        0 0 0 1px #111,
+        inset 0 0 0 2px #2a2a2a,
+        0 40px 100px rgba(0,0,0,0.75),
+        0 0 60px rgba(255,215,0,0.16);
 }
 
 /* Botones laterales */
