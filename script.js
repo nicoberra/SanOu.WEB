@@ -670,13 +670,16 @@ function getImgs(p) {
 
 // ¿El dispositivo NO tiene hover (celular/tablet táctil)? Ahí el recorte 3D se muestra siempre.
 function _sinHover(){ try { return matchMedia('(hover:none)').matches; } catch(e){ return false; } }
+// Productos cuyo recorte, al hover, se muestra "cortado" por el marco (abajo/derecha), como que continúa.
+const RECORTE_CUT = ['Cortadora de Varilla 22mm'];
+function _popClase(folder){ return RECORTE_CUT.indexOf(folder) >= 0 ? 'prod-pop pop-cut' : 'prod-pop'; }
 function cardMedia(p) {
     const imgs = getImgs(p);
     // Recorte transparente opcional (carpeta /recortes/<folder>.png): al pasar el mouse,
     // la herramienta "sale" del marco. Se carga solo al hacer hover; si no existe, se ignora.
     const folder = p.folder || p.name;
     // El recorte se carga recién al pasar el mouse (data-pop), para no pedir imágenes de más.
-    const pop = `<img class="prod-pop" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="this.classList.add('pop-ok')" onerror="this.remove()">`;
+    const pop = `<img class="${_popClase(folder)}" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="this.classList.add('pop-ok')" onerror="this.remove()">`;
     if (imgs.length > 0) {
         return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
     }
@@ -1526,7 +1529,7 @@ function renderFeatured() {
     track.innerHTML = items.map((p, i) => {
         const imgs = getImgs(p);
         const folder = p.folder || p.name;
-        const popImg = `<img class="prod-pop" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="this.classList.add('pop-ok')" onerror="this.remove()">`;
+        const popImg = `<img class="${_popClase(folder)}" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="this.classList.add('pop-ok')" onerror="this.remove()">`;
         const imgHTML = imgs.length
             ? `<img src="${imgs[0]}" alt="${p.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} featured-icon\\'></i>'">${popImg}`
             : `<i class="fas ${p.icon} featured-icon"></i>`;

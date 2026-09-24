@@ -1151,6 +1151,16 @@ section { padding: 90px 0; }
 }
 /* En el celular (sin hover) no se muestra el recorte: se ve la foto normal, siempre. */
 @media (hover: none) { .product-media img.prod-pop { display: none; } }
+
+/* ── Modo "cortado por el marco" (pop-cut): la herramienta llena el marco y se corta por
+   ABAJO y por la DERECHA (queda como que continúa fuera del cuadro). El corte lo hace el marco. */
+.product-media img.prod-pop.pop-cut {
+    object-fit: cover; object-position: left top;
+    transform-origin: left top; transform: scale(1.02);
+}
+.product-card:has(.prod-pop.pop-cut.pop-ok):hover { overflow: hidden; }        /* que el marco recorte */
+.product-card:has(.prod-pop.pop-cut.pop-ok):hover .product-media { overflow: hidden; }
+.product-card:has(.prod-pop.pop-cut.pop-ok):hover .product-media img.prod-pop { opacity: 1; transform: scale(1.1); }
 .product-media-icon {
     display: flex;
     align-items: center;
