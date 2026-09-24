@@ -1517,77 +1517,30 @@ function getDestacados() {
 function featuredPrev() { if (featuredCount > 0) featuredGo((featuredCurrent - 1 + featuredCount) % featuredCount); }
 function featuredNext() { if (featuredCount > 0) featuredGo((featuredCurrent + 1) % featuredCount); }
 
+// Destacados: carrusel continuo (foto en recuadro + nombre) que se desliza de derecha a izquierda.
 function renderFeatured() {
     const track = document.getElementById('featuredTrack');
-    const dotsEl = document.getElementById('featuredDots');
-    if (!track || !dotsEl) return;
-    if (featuredTimer) clearInterval(featuredTimer);
+    if (!track) return;
 
     const items = getDestacados();
     featuredCount = items.length;
+    if (!items.length) { track.innerHTML = ''; return; }
 
-    track.innerHTML = items.map((p, i) => {
+    const cardHTML = (p) => {
         const imgs = getImgs(p);
-        const folder = p.folder || p.name;
-        const popImg = `<img class="${_popClase(folder)}" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="this.classList.add('pop-ok')" onerror="this.remove()">`;
-        const imgHTML = imgs.length
-            ? `<img src="${imgs[0]}" alt="${p.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} featured-icon\\'></i>'">${popImg}`
-            : `<i class="fas ${p.icon} featured-icon"></i>`;
-        const specsHTML = p.specs.filter(s => s.l).map(s =>
-            `<div class="featured-spec-row"><span>${s.l}</span><span>${s.v}</span></div>`
-        ).join('');
-        return `
-        <div class="featured-slide${i === 0 ? ' active' : ''}" data-id="${p.id}" style="cursor:pointer">
-            <div class="featured-media">${imgHTML}</div>
-            <div class="featured-info">
-                <span class="featured-badge">${p.badge || ''}</span>
-                <h3 class="featured-name">${p.name}</h3>
-                <div class="featured-specs">${specsHTML}</div>
-                <button class="featured-cta" onclick="event.stopPropagation();openModal(${p.id})">
-                    <i class="fas fa-eye"></i> Ver más detalles
-                </button>
-            </div>
+        const media = imgs.length
+            ? `<img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} feat-card-icon\\'></i>'">`
+            : `<i class="fas ${p.icon} feat-card-icon"></i>`;
+        return `<div class="feat-card" onclick="openModal(${p.id})">
+            <div class="feat-card-media">${media}</div>
+            <div class="feat-card-name">${p.name}</div>
         </div>`;
-    }).join('');
-
-    dotsEl.innerHTML = items.map((_, i) =>
-        `<button class="featured-dot${i === 0 ? ' active' : ''}" onclick="featuredGo(${i})"></button>`
-    ).join('');
-
-    featuredTimer = setInterval(() => featuredGo((featuredCurrent + 1) % items.length), 15000);
-
-    // Swipe táctil
-    let touchStartX = 0;
-    let featuredSwiped = false;
-    track.addEventListener('touchstart', e => {
-        touchStartX = e.touches[0].clientX;
-        featuredSwiped = false;
-    }, { passive: true });
-    track.addEventListener('touchend', e => {
-        const diff = touchStartX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) < 40) return;
-        featuredSwiped = true;
-        const total = featuredCount;
-        if (diff > 0) featuredGo((featuredCurrent + 1) % total);
-        else featuredGo((featuredCurrent - 1 + total) % total);
-    }, { passive: true });
-    track.addEventListener('click', e => {
-        if (featuredSwiped) { featuredSwiped = false; return; }
-        const slide = e.target.closest('.featured-slide');
-        if (slide) {
-            const id = parseInt(slide.dataset.id);
-            if (id) openModal(id);
-        }
-    });
-}
-
-function featuredGo(idx) {
-    const track = document.getElementById('featuredTrack');
-    const dotsEl = document.getElementById('featuredDots');
-    if (!track) return;
-    track.querySelectorAll('.featured-slide').forEach((s, i) => s.classList.toggle('active', i === idx));
-    dotsEl.querySelectorAll('.featured-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
-    featuredCurrent = idx;
+    };
+    // Duplicamos la lista para que el desplazamiento sea continuo (loop sin cortes).
+    const uno = items.map(cardHTML).join('');
+    track.innerHTML = uno + uno;
+    // Velocidad proporcional a la cantidad (para que no vaya ni muy rápido ni muy lento).
+    track.style.animationDuration = Math.max(18, items.length * 5) + 's';
 }
 
 // Destacados: carrusel arriba + un botón que despliega/cierra la grilla completa.

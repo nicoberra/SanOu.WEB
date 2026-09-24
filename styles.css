@@ -2129,6 +2129,40 @@ section { padding: 90px 0; }
 .featured-slide:has(.prod-pop.pop-ok):hover .featured-media img.prod-pop { opacity: 1; transform: scale(1.24); }
 /* En el celular (sin hover) no se muestra el recorte: se ve la foto normal. */
 @media (hover: none) { .featured-media img.prod-pop { display: none; } }
+
+/* ── Destacados: carrusel continuo (foto + nombre) que se desliza de derecha a izquierda ── */
+.featured-marquee {
+    overflow: hidden; width: 100%; padding: 12px 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+.featured-marquee-track {
+    display: flex; gap: 24px; width: max-content;
+    animation: featScroll 30s linear infinite;
+}
+.featured-marquee:hover .featured-marquee-track { animation-play-state: paused; }
+@keyframes featScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }   /* la mitad = la lista duplicada → loop sin cortes */
+}
+.feat-card { flex: 0 0 auto; width: 210px; cursor: pointer; }
+.feat-card-media {
+    width: 210px; height: 210px; border-radius: 18px; overflow: hidden; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.feat-card:hover .feat-card-media { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,215,0,0.4); }
+.feat-card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+.feat-card:hover .feat-card-media img { transform: scale(1.07); }
+.feat-card-icon { font-size: 3rem; color: var(--yellow); }
+.feat-card-name { margin-top: 12px; text-align: center; color: #fff; font-weight: 700; font-size: 0.95rem; line-height: 1.25; }
+@media (max-width: 640px) {
+    .feat-card, .feat-card-media { width: 150px; }
+    .feat-card-media { height: 150px; }
+    .feat-card-name { font-size: 0.83rem; }
+    .featured-marquee-track { gap: 16px; }
+}
 .featured-info {
     flex: 1;
     display: flex;
