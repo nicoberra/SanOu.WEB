@@ -670,14 +670,34 @@ function getImgs(p) {
 
 // ¿El dispositivo NO tiene hover (celular/tablet táctil)? Ahí el recorte 3D se muestra siempre.
 function _sinHover(){ try { return matchMedia('(hover:none)').matches; } catch(e){ return false; } }
-// Productos cuyo recorte, al hover, se muestra "cortado" por el marco (abajo/derecha), como que continúa.
-const RECORTE_CUT = ['Cortadora de Varilla 22mm'];
-function _popClase(folder){ return RECORTE_CUT.indexOf(folder) >= 0 ? 'prod-pop pop-cut' : 'prod-pop'; }
-// Al cargar el recorte: lo marca listo y, si es ANCHO (combos con bomba, etc.), usa zoom centrado
-// en vez del "sale por arriba" (que en imágenes horizontales queda chico/flotando).
+// ── Config del efecto 3D por producto: hacia dónde SOBRESALE y qué tan grande ──
+// 'o' = punto de anclaje (transform-origin/object-position). La herramienta CRECE hacia el
+// lado opuesto del anclaje. Ej: 'left bottom' → crece hacia ARRIBA y DERECHA.
+//   'center bottom' → costados + arriba (base en la línea)
+//   'center center' → todo alrededor (costados, arriba y abajo)
+//   'left bottom'   → arriba + derecha    | 'right bottom' → arriba + izquierda
+//   'left top'      → abajo + derecha     | 'right top'    → abajo + izquierda
+// 'escala' = cuánto se agranda al pasar el mouse.
+const RECORTE_CFG = {
+    'HHY-120A':               { o: 'center bottom', escala: 1.55 },  // costados + arriba
+    'HHY-300CF + Bomba':      { o: 'center center', escala: 1.35 },  // todo alrededor
+    'HHY-500 + Bomba':        { o: 'left bottom',   escala: 1.45 },  // arriba + derecha (más grande)
+    'Cortadora de Varilla 22mm': { o: 'left top',   escala: 1.35 }   // abajo + derecha
+};
+function _popClase(folder){ return 'prod-pop'; }
+// Al cargar el recorte, aplica su configuración (o una por defecto según la forma).
 function _popLoaded(img){
     img.classList.add('pop-ok');
-    if (img.naturalWidth && img.naturalWidth / img.naturalHeight > 1.05) img.classList.add('pop-wide');
+    const folder = img.getAttribute('data-folder') || '';
+    let cfg = RECORTE_CFG[folder];
+    if (!cfg) {
+        const ratio = img.naturalWidth ? img.naturalWidth / img.naturalHeight : 1;
+        cfg = ratio > 1.05 ? { o: 'center center', escala: 1.3 }   // ancho: todo alrededor
+                           : { o: 'center bottom', escala: 1.3 };  // vertical: costados + arriba
+    }
+    img.style.objectPosition = cfg.o;
+    img.style.transformOrigin = cfg.o;
+    img.style.setProperty('--pop-scale', cfg.escala);
 }
 function cardMedia(p) {
     const imgs = getImgs(p);
@@ -685,7 +705,7 @@ function cardMedia(p) {
     // la herramienta "sale" del marco. Se carga solo al hacer hover; si no existe, se ignora.
     const folder = p.folder || p.name;
     // El recorte se carga recién al pasar el mouse (data-pop), para no pedir imágenes de más.
-    const pop = `<img class="${_popClase(folder)}" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="_popLoaded(this)" onerror="this.remove()">`;
+    const pop = `<img class="prod-pop" alt="" aria-hidden="true" data-folder="${String(folder).replace(/"/g,'&quot;')}" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="_popLoaded(this)" onerror="this.remove()">`;
     if (imgs.length > 0) {
         return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
     }
