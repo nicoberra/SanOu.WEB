@@ -1131,10 +1131,10 @@ section { padding: 90px 0; }
     transform: scale(0.97); transform-origin: center bottom;
     opacity: 0; pointer-events: none; z-index: 4;
     filter: drop-shadow(0 16px 22px rgba(0,0,0,0.5));
-    transition: transform 0.4s cubic-bezier(0.2,0.8,0.25,1), opacity 0.3s ease;
+    transition: transform 0.22s cubic-bezier(0.2,0.8,0.25,1), opacity 0.16s ease;
 }
 /* La foto normal va SIEMPRE por encima del panel blanco (si no, tapaba la imagen). */
-.product-media img:not(.prod-pop) { position: relative; z-index: 2; }
+.product-media img:not(.prod-pop) { position: relative; z-index: 2; transition: opacity 0.16s ease; }
 /* Panel BLANCO del marco: queda DEBAJO de la foto; al hacer hover la foto se desvanece y
    este panel queda de fondo (blanco) del marco. NO se estira hacia arriba. */
 .product-media::before {
@@ -1150,8 +1150,15 @@ section { padding: 90px 0; }
 .product-card:has(.prod-pop.pop-ok):hover .product-media img.prod-pop {
     opacity: 1; transform: scale(var(--pop-scale, 1.3));
 }
-/* En el celular (sin hover) no se muestra el recorte: se ve la foto normal, siempre. */
-@media (hover: none) { .product-media img.prod-pop { display: none; } }
+/* En el celular (sin hover): la herramienta se muestra en 3D SIEMPRE (sin tocar), sobresaliendo
+   apenas hacia donde dice su config. La foto normal se oculta cuando el recorte cargó. */
+@media (hover: none) {
+    .product-card:has(.prod-pop.pop-ok) { overflow: visible; }
+    .product-card:has(.prod-pop.pop-ok) .product-media { overflow: visible; }
+    .product-card:has(.prod-pop.pop-ok) .product-media img:not(.prod-pop) { opacity: 0; }
+    .product-card:has(.prod-pop.pop-ok) .product-media img.prod-pop { opacity: 1; transform: scale(1.14); }
+    .products-grid { row-gap: 58px; }   /* aire para que lo que sobresale no se pise */
+}
 
 .product-media-icon {
     display: flex;
@@ -2124,18 +2131,14 @@ section { padding: 90px 0; }
 
 /* ── Destacados: carrusel continuo (foto + nombre) que se desliza de derecha a izquierda ── */
 .featured-marquee {
-    overflow: hidden; width: 100%; padding: 12px 0;
+    overflow-x: auto; overflow-y: hidden; width: 100%; padding: 12px 0;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;   /* deslizar con el dedo */
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
             mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
 }
+.featured-marquee::-webkit-scrollbar { display: none; }   /* sin barra visible */
 .featured-marquee-track {
     display: flex; gap: 24px; width: max-content;
-    animation: featScroll 30s linear infinite;
-}
-.featured-marquee:hover .featured-marquee-track { animation-play-state: paused; }
-@keyframes featScroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }   /* la mitad = la lista duplicada → loop sin cortes */
 }
 .feat-card { flex: 0 0 auto; width: 210px; cursor: pointer; }
 .feat-card-media {

@@ -685,6 +685,19 @@ const RECORTE_CFG = {
     'Cortadora de Varilla 22mm': { o: 'left top',   escala: 1.35 }   // abajo + derecha
 };
 function _popClase(folder){ return 'prod-pop'; }
+// Precarga los recortes de las tarjetas ya renderizadas (solo en compu, donde se usa el hover),
+// en segundo plano, para que al pasar el mouse aparezcan al instante (sin esperar la descarga).
+function precargarPops(){
+    if (_sinHover()) return;
+    const cargar = () => {
+        document.querySelectorAll('.prod-pop[data-pop]').forEach(pop => {
+            pop.src = pop.getAttribute('data-pop');
+            pop.removeAttribute('data-pop');
+        });
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(cargar, { timeout: 1500 });
+    else setTimeout(cargar, 500);
+}
 // Al cargar el recorte, aplica su configuración (o una por defecto según la forma).
 function _popLoaded(img){
     img.classList.add('pop-ok');
@@ -705,7 +718,11 @@ function cardMedia(p) {
     // la herramienta "sale" del marco. Se carga solo al hacer hover; si no existe, se ignora.
     const folder = p.folder || p.name;
     // El recorte se carga recién al pasar el mouse (data-pop), para no pedir imágenes de más.
-    const pop = `<img class="prod-pop" alt="" aria-hidden="true" data-folder="${String(folder).replace(/"/g,'&quot;')}" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="_popLoaded(this)" onerror="this.remove()">`;
+    // En el celular (sin hover) el recorte se muestra SIEMPRE → se carga directo (src).
+    // En la compu se carga en segundo plano/al pasar el mouse (data-pop).
+    const _rec = `recortes/${encodeURIComponent(folder)}.png`;
+    const _srcAttr = _sinHover() ? `src="${_rec}"` : `data-pop="${_rec}"`;
+    const pop = `<img class="prod-pop" alt="" aria-hidden="true" data-folder="${String(folder).replace(/"/g,'&quot;')}" ${_srcAttr} onload="_popLoaded(this)" onerror="this.remove()">`;
     if (imgs.length > 0) {
         return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
     }
@@ -862,6 +879,7 @@ function renderProducts(filter, showAll = false) {
     const mostrar = (showAll || list.length <= limite) ? list : list.slice(0, limite);
 
     grid.innerHTML = mostrar.map(productCardHTML).join('');
+    precargarPops();   // deja los recortes listos para que el hover sea instantáneo
 
     // Contador de productos
     const countEl = document.getElementById('productCount');
@@ -1565,8 +1583,44 @@ function renderFeatured() {
     // Duplicamos la lista para que el desplazamiento sea continuo (loop sin cortes).
     const uno = items.map(cardHTML).join('');
     track.innerHTML = uno + uno;
-    // Velocidad proporcional a la cantidad (para que no vaya ni muy rápido ni muy lento).
-    track.style.animationDuration = Math.max(18, items.length * 5) + 's';
+    initFeaturedMarquee();   // auto-scroll por JS (anda en compu y celu) + swipe con el dedo
+}
+
+// Carrusel de destacados: se mueve solo (auto), y en el celular se puede deslizar con el dedo.
+// Se pausa mientras el usuario arrastra o pasa el mouse, y retoma solo.
+let _featRAF = null;
+function initFeaturedMarquee() {
+    const m = document.getElementById('featuredMarquee');
+    if (!m) return;
+    if (_featRAF) { cancelAnimationFrame(_featRAF); _featRAF = null; }
+    let paused = false, resumeTimer = null;
+    const speed = 0.5;   // px por frame (~30px/s)
+    const pausar   = () => { paused = true; clearTimeout(resumeTimer); };
+    const retomar  = (ms) => { clearTimeout(resumeTimer); resumeTimer = setTimeout(() => paused = false, ms || 0); };
+    if (!m.dataset.marqueeInit) {
+        m.dataset.marqueeInit = '1';
+        m.addEventListener('mouseenter', pausar);
+        m.addEventListener('mouseleave', () => retomar(0));
+        m.addEventListener('touchstart', pausar, { passive: true });
+        m.addEventListener('touchend',   () => retomar(2000), { passive: true });
+        m.addEventListener('pointerdown', pausar);
+        m.addEventListener('pointerup',   () => retomar(1500));
+    }
+    let pos = m.scrollLeft || 0;   // acumulador flotante (scrollLeft redondea a entero)
+    function step() {
+        const half = m.scrollWidth / 2;
+        if (half > 0) {
+            if (paused) {
+                pos = m.scrollLeft;                 // mientras arrastra el usuario, seguimos su posición
+            } else {
+                pos += speed;
+                if (pos >= half) pos -= half;        // loop sin cortes
+                m.scrollLeft = pos;
+            }
+        }
+        _featRAF = requestAnimationFrame(step);
+    }
+    step();
 }
 
 // Destacados: carrusel arriba + un botón que despliega/cierra la grilla completa.
