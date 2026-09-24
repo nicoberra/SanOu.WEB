@@ -673,13 +673,19 @@ function _sinHover(){ try { return matchMedia('(hover:none)').matches; } catch(e
 // Productos cuyo recorte, al hover, se muestra "cortado" por el marco (abajo/derecha), como que continúa.
 const RECORTE_CUT = ['Cortadora de Varilla 22mm'];
 function _popClase(folder){ return RECORTE_CUT.indexOf(folder) >= 0 ? 'prod-pop pop-cut' : 'prod-pop'; }
+// Al cargar el recorte: lo marca listo y, si es ANCHO (combos con bomba, etc.), usa zoom centrado
+// en vez del "sale por arriba" (que en imágenes horizontales queda chico/flotando).
+function _popLoaded(img){
+    img.classList.add('pop-ok');
+    if (img.naturalWidth && img.naturalWidth / img.naturalHeight > 1.05) img.classList.add('pop-wide');
+}
 function cardMedia(p) {
     const imgs = getImgs(p);
     // Recorte transparente opcional (carpeta /recortes/<folder>.png): al pasar el mouse,
     // la herramienta "sale" del marco. Se carga solo al hacer hover; si no existe, se ignora.
     const folder = p.folder || p.name;
     // El recorte se carga recién al pasar el mouse (data-pop), para no pedir imágenes de más.
-    const pop = `<img class="${_popClase(folder)}" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="this.classList.add('pop-ok')" onerror="this.remove()">`;
+    const pop = `<img class="${_popClase(folder)}" alt="" aria-hidden="true" data-pop="recortes/${encodeURIComponent(folder)}.png" onload="_popLoaded(this)" onerror="this.remove()">`;
     if (imgs.length > 0) {
         return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
     }

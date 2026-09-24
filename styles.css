@@ -1161,6 +1161,15 @@ section { padding: 90px 0; }
 .product-card:has(.prod-pop.pop-cut.pop-ok):hover { overflow: hidden; }        /* que el marco recorte */
 .product-card:has(.prod-pop.pop-cut.pop-ok):hover .product-media { overflow: hidden; }
 .product-card:has(.prod-pop.pop-cut.pop-ok):hover .product-media img.prod-pop { opacity: 1; transform: scale(1.1); }
+
+/* ── Modo ANCHO (pop-wide): combos/imágenes horizontales. Llenan el marco (cover) y el marco los
+   recorta por los COSTADOS y por ABAJO (se ven grandes, "pasando" por los bordes). ── */
+.product-media img.prod-pop.pop-wide {
+    object-fit: cover; object-position: center; transform-origin: center; transform: scale(1.02);
+}
+.product-card:has(.prod-pop.pop-wide.pop-ok):hover { overflow: hidden; }
+.product-card:has(.prod-pop.pop-wide.pop-ok):hover .product-media { overflow: hidden; }
+.product-card:has(.prod-pop.pop-wide.pop-ok):hover .product-media img.prod-pop { opacity: 1; transform: scale(1.08); }
 .product-media-icon {
     display: flex;
     align-items: center;
