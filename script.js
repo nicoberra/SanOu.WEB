@@ -904,7 +904,8 @@ function mostrarTodosProductos() {
 // ─── MODAL DE DETALLE ────────────────────────────────────────────
 function openModal(id) {
     const p = products.find(x => x.id === id);
-    if (p) sanouTrack('producto', p.name);
+    if (!p) return;   // si el producto no existe, no hacemos nada (evita que se corte el JS)
+    sanouTrack('producto', p.name);
     // GA4 — vista de producto
     if (typeof gtag !== 'undefined') {
         gtag('event', 'view_item', {
@@ -2510,3 +2511,32 @@ function initHeroVideo() {
     if (document.readyState === 'complete') cargar();
     else window.addEventListener('load', cargar, { once: true });
 }
+
+// ─────────────────────────────────────────────────────────────────
+// RED DE SEGURIDAD ANTI-BLOQUEO
+// Evita que la página quede "trabada" (un panel/overlay invisible tapando
+// los botones, o el scroll bloqueado) y haya que refrescar.
+// ─────────────────────────────────────────────────────────────────
+(function () {
+    const OVERLAYS = ['modalOverlay','cartOverlay','compareOverlay','ppOverlay','klOverlay','favOverlay','ordersOverlay','cuentaOverlay'];
+    const PANELES  = ['productModal','cartSidebar','compareModal','ppModal','klModal','favPanel','ordersPanel','cuentaPanel'];
+    function algunOverlayActivo() {
+        return OVERLAYS.some(id => { const el = document.getElementById(id); return el && el.classList.contains('active'); });
+    }
+    // Cierra TODO y libera el scroll.
+    window.cerrarTodosLosPaneles = function () {
+        OVERLAYS.concat(PANELES).forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('active'); });
+        document.body.style.overflow = '';
+    };
+    // Escape cierra todo (desktop).
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') window.cerrarTodosLosPaneles(); });
+    // Watchdog: si el scroll quedó bloqueado pero NO hay ningún panel abierto, lo liberamos.
+    // (cubre el caso en que un cierre no restauró el scroll y la página "se siente" trabada.)
+    setInterval(() => {
+        if (!algunOverlayActivo() && document.body.style.overflow === 'hidden') {
+            document.body.style.overflow = '';
+        }
+    }, 1200);
+    // Al volver por atrás/adelante o recuperar la pestaña, saneamos el estado.
+    window.addEventListener('pageshow', () => { if (!algunOverlayActivo()) document.body.style.overflow = ''; });
+})();
