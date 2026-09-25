@@ -990,6 +990,7 @@ function pintarProductos(lista, q) {
             ${cp ? `<div class="prod-rec rec-cargando" id="rec-${i}" data-folder="${esc(fo)}"><i class="fas fa-spinner fa-spin"></i> Buscando recorte…</div>
             <div class="prod-btns">
                 <button class="prod-fotos-btn" onclick="abrirFotos('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-camera"></i> Fotos</button>
+                <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadreFoto('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-up-down-left-right"></i> Encuadre foto</button>
                 <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadre('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-crop-simple"></i> Encuadre 3D</button>
             </div>` : ''}
         </div>`;
@@ -1306,6 +1307,95 @@ async function encGuardar(){
     } catch(err){
         if(m){ m.classList.add('err'); m.textContent = 'No se pudo guardar. Reintentá.'; }
     }
+}
+
+// ─── ENCUADRE FOTO NORMAL (cómo se ve la foto principal en la tarjeta) ─────────
+// Edita recortes.json (fpos = qué parte se ve / ffit = completa o recortada) sin tocar la foto.
+let _encfFolder = '', _encfCf = '', _encfFo = '';
+async function abrirEncuadreFoto(nombre){
+    const cp = catalogoDe(nombre);
+    if(!cp){ alert('Este producto no está en el catálogo.'); return; }
+    _encfFolder = cp.folder || cp.name; _encfCf = cp.catFolder || cp.category; _encfFo = cp.folder || cp.name;
+    document.getElementById('modalTitulo').textContent = 'Encuadre foto — ' + nombre;
+    document.getElementById('modalBody').innerHTML = `
+        <div class="enc-wrap">
+            <div class="encf-preview">
+                <div class="encf-marco" id="encfMarco">
+                    <img class="encf-img" id="encfImg" alt="" draggable="false"
+                        onerror="this.style.display='none';document.getElementById('encfFalta').style.display='flex'">
+                    <div class="enc-falta" id="encfFalta"><i class="fas fa-spinner fa-spin"></i> Cargando foto…</div>
+                </div>
+                <div class="enc-linea"></div>
+                <div class="enc-linea-lbl">así se ve la foto en la tarjeta de la web</div>
+            </div>
+            <div class="enc-ctrls">
+                <label class="encf-check"><input type="checkbox" id="encfCompleta" onchange="encfActualizar()"> Mostrar la foto completa (sin recortar)</label>
+                <div id="encfSliders">
+                    <div class="enc-fila"><label>◀ Izquierda / Derecha ▶</label><span id="encfXv">50%</span></div>
+                    <input type="range" id="encfX" min="0" max="100" value="50" oninput="encfActualizar()">
+                    <div class="enc-fila"><label>▲ Arriba / Abajo ▼</label><span id="encfYv">50%</span></div>
+                    <input type="range" id="encfY" min="0" max="100" value="50" oninput="encfActualizar()">
+                </div>
+                <div class="enc-msg" id="encfMsg"></div>
+                <div class="enc-acciones">
+                    <button class="enc-guardar" onclick="encfGuardar()"><i class="fas fa-check"></i> Guardar</button>
+                    <button class="enc-reset" onclick="encfReset()"><i class="fas fa-rotate-left"></i> Centrar</button>
+                </div>
+                <p class="enc-nota">Si la foto es vertical y se ve cortada, tildá "Mostrar completa" para que se vea entera. O usá los sliders para elegir qué parte se ve. No se toca la foto, solo el encuadre.</p>
+            </div>
+        </div>`;
+    abrirModal();
+    // Cargar la primera foto (respeta el orden elegido) y la config actual.
+    try {
+        const r = await crm({ action:'fotos_list', tab:'Clientes', catFolder:_encfCf, folder:_encfFo });
+        const fotos = (r && r.fotos) || [];
+        const img = document.getElementById('encfImg'), falta = document.getElementById('encfFalta');
+        if(fotos.length){
+            img.src = `${FOTOS_BASE}${encodeURIComponent(_encfCf)}/${encodeURIComponent(_encfFo)}/${encodeURIComponent(fotos[0])}?_=${Date.now()}`;
+            falta.style.display = 'none';
+        } else { falta.innerHTML = '<i class="fas fa-image"></i> Este producto no tiene fotos.'; }
+    } catch(e){}
+    try {
+        const rj = await fetch('https://sanou.com.ar/recortes.json?_=' + Date.now());
+        const j = rj.ok ? await rj.json() : {};
+        const c = j[_encfFolder];
+        if(c){
+            if(c.ffit === 'contain') document.getElementById('encfCompleta').checked = true;
+            if(c.fpos){ const m = String(c.fpos).match(/(\d+)%\s+(\d+)%/); if(m){ document.getElementById('encfX').value = +m[1]; document.getElementById('encfY').value = +m[2]; } }
+        }
+    } catch(e){}
+    encfActualizar();
+}
+function encfActualizar(){
+    const completa = document.getElementById('encfCompleta').checked;
+    const x = +document.getElementById('encfX').value, y = +document.getElementById('encfY').value;
+    document.getElementById('encfXv').textContent = x + '%';
+    document.getElementById('encfYv').textContent = y + '%';
+    document.getElementById('encfSliders').style.opacity = completa ? '.4' : '1';
+    document.getElementById('encfX').disabled = completa;
+    document.getElementById('encfY').disabled = completa;
+    const img = document.getElementById('encfImg');
+    if(img){
+        img.style.objectFit = completa ? 'contain' : 'cover';
+        img.style.background = completa ? '#fff' : '';
+        img.style.objectPosition = x + '% ' + y + '%';
+    }
+}
+function encfReset(){
+    document.getElementById('encfCompleta').checked = false;
+    document.getElementById('encfX').value = 50;
+    document.getElementById('encfY').value = 50;
+    encfActualizar();
+}
+async function encfGuardar(){
+    const completa = document.getElementById('encfCompleta').checked;
+    const x = +document.getElementById('encfX').value, y = +document.getElementById('encfY').value;
+    const m = document.getElementById('encfMsg');
+    if(m){ m.className = 'enc-msg'; m.textContent = 'Guardando…'; }
+    try {
+        await crm({ action:'recorte_save', tab:'Clientes', folder:_encfFolder, ffit: completa ? 'contain' : 'cover', fpos: x + '% ' + y + '%' });
+        if(m){ m.classList.add('ok'); m.textContent = '✓ Guardado. Se ve en la web en 1–2 minutos.'; }
+    } catch(err){ if(m){ m.classList.add('err'); m.textContent = 'No se pudo guardar. Reintentá.'; } }
 }
 
 // ─── MAYORISTA (sheet aparte que se manda a clientes) ───────────

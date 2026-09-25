@@ -700,11 +700,24 @@ function _cfgDe(folder, img){
     return ratio > 1.05 ? { o: 'center center', escala: 1.3 }   // ancho: todo alrededor
                         : { o: 'center bottom', escala: 1.3 };  // vertical: costados + arriba
 }
-// Trae recortes.json (lo que Nicolás editó en el CRM) y reaplica a los recortes ya cargados.
+// Aplica a la FOTO normal el encuadre editado en el CRM (recortes.json): object-fit (cover/contain)
+// y object-position (qué parte se ve cuando recorta). Si no hay config, queda el default del CSS.
+function _baseLoaded(img){
+    const folder = img.getAttribute('data-folder') || '';
+    const j = RECORTE_JSON[folder];
+    if (!j) return;
+    if (j.ffit) { img.style.objectFit = j.ffit; img.style.background = (j.ffit === 'contain') ? '#fff' : ''; }
+    if (j.fpos) img.style.objectPosition = j.fpos;
+}
+// Trae recortes.json (lo que Nicolás editó en el CRM) y reaplica a lo ya cargado (recortes 3D + fotos).
 (function cargarRecortesJSON(){
     fetch('recortes.json?_=' + Date.now())
         .then(r => r.ok ? r.json() : {})
-        .then(j => { RECORTE_JSON = j || {}; document.querySelectorAll('.prod-pop.pop-ok').forEach(_popLoaded); })
+        .then(j => {
+            RECORTE_JSON = j || {};
+            document.querySelectorAll('.prod-pop.pop-ok').forEach(_popLoaded);
+            document.querySelectorAll('.product-media img.prod-base').forEach(_baseLoaded);
+        })
         .catch(() => {});
 })();
 function _popClase(folder){ return 'prod-pop'; }
@@ -745,7 +758,8 @@ function cardMedia(p) {
     const _srcAttr = _sinHover() ? `src="${_rec}"` : `data-pop="${_rec}"`;
     const pop = `<img class="prod-pop" alt="" aria-hidden="true" data-folder="${String(folder).replace(/"/g,'&quot;')}" ${_srcAttr} onload="_popLoaded(this)" onerror="this.remove()">`;
     if (imgs.length > 0) {
-        return `<div class="product-media"><img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
+        const fdata = `data-folder="${String(folder).replace(/"/g,'&quot;')}"`;
+        return `<div class="product-media"><img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
     }
     return `<div class="product-media product-media-icon"><i class="fas ${p.icon}"></i></div>`;
 }
