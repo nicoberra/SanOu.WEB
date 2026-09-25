@@ -460,7 +460,7 @@ async function renderFacturacion(){
         const unid = prods.reduce((s,pr)=>s+pr.n,0);
         const det = prods.length
             ? `<div class="fact-det-tit">Productos vendidos <small>(${unid} unidad${unid!==1?'es':''})</small></div>`
-              + prods.map(pr=>`<div class="fact-prod-fila"><span>${esc(pr.nombre)}</span><b>×${pr.n}</b></div>`).join('')
+              + prods.map(pr=>`<div class="fact-prod-fila"><span class="fact-prod-nom">${esc(pr.nombre)}</span><span class="fact-prod-cif"><b>×${pr.n}</b>${pr.importe?`<small class="fact-prod-imp">${fmtMoney(pr.importe)}</small>`:''}</span></div>`).join('')
             : `<div class="fact-prod-vacio">Los pedidos de este período no tienen el detalle de productos cargado.</div>`;
         return `<div class="fact-fila fact-fila-exp" onclick="toggleFactDet(this)"><span class="fact-et"><span class="fact-et-tit"><i class="fas fa-chevron-right fact-chev"></i>${et(o.d)}</span><small class="fact-nv">${o.n} ${o.n===1?'venta':'ventas'}</small></span>
         <span class="fact-cifras"><b>${fmtMoney(o.monto)}</b>${o.mb ? `<span class="fact-ben">↑ ${fmtMoney(o.ben)}</span>` : ''}</span></div>
@@ -519,12 +519,17 @@ async function renderFacturacion(){
 }
 
 // Suma los productos vendidos de un conjunto de ventas (para el desglose por período).
+// n = unidades; importe = facturado estimado (precio unitario de la planilla × cantidad).
 function factProductos(vs){
     const cont = {};
     (vs||[]).forEach(v => (v.items||[]).forEach(it => {
-        const k = it.nombre; if(k) cont[k] = (cont[k]||0) + (it.cantidad||1);
+        const k = it.nombre; if(!k) return;
+        const c = it.cantidad||1;
+        if(!cont[k]) cont[k] = {n:0, importe:0};
+        cont[k].n += c;
+        cont[k].importe += (precioDe(k)||0) * c;
     }));
-    return Object.keys(cont).map(k=>({nombre:k, n:cont[k]})).sort((a,b)=>b.n-a.n);
+    return Object.keys(cont).map(k=>({nombre:k, n:cont[k].n, importe:cont[k].importe})).sort((a,b)=>b.importe-a.importe || b.n-a.n);
 }
 // Despliega/oculta el detalle de productos de una fila de facturación.
 function toggleFactDet(el){

@@ -132,8 +132,10 @@ body:not(.bloqueado) .panel-lock{display:none}
 .fact-det-tit{color:var(--gris);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px}
 .fact-det-tit small{color:var(--gris);font-weight:600;text-transform:none;letter-spacing:0}
 .fact-prod-fila{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.05);font-size:.82rem}
-.fact-prod-fila span{color:var(--gris2)}
+.fact-prod-nom{color:var(--gris2);flex:1}
+.fact-prod-cif{display:flex;align-items:baseline;gap:10px;flex-shrink:0}
 .fact-prod-fila b{color:#fff;font-weight:700;min-width:42px;text-align:right}
+.fact-prod-imp{color:var(--am);font-weight:700;font-size:.82rem;min-width:80px;text-align:right}
 .fact-prod-vacio{color:var(--gris);font-size:.78rem;font-style:italic;padding:4px 0}
 .fact-card-ben .dash-ic{color:#4ade80}
 
