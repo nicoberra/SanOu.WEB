@@ -1610,6 +1610,28 @@ async function cambiarEstadoRegistro(tab, id, valor){
     r.estado = valor;
     if (tab==='Pedidos') pintarPedidos(pedidos); else pintarSeguimientos(seguimientos);
     try { await crm({ action:'update', tab, id, estado:valor }); } catch(e){ alert('No se pudo actualizar el estado.'); }
+    // Al marcar un pedido como Entregado, borrar el presupuesto de ese cliente (ya se concretó la venta).
+    if (tab==='Pedidos' && estPed(valor)==='Entregado') { try { await borrarCotizacionesDeCliente(r); } catch(e){} }
+}
+// Borra de Cotizaciones el/los presupuesto(s) del cliente de un pedido (por clienteid, teléfono o nombre).
+// Se usa cuando el pedido se entrega: el presupuesto ya cumplió su función y no tiene que seguir apareciendo.
+async function borrarCotizacionesDeCliente(ped){
+    await ensureCotizaciones();
+    const dig = t => String(t||'').replace(/\D/g,'');
+    const nom = String(ped.cliente||'').trim().toLowerCase();
+    const cid = ped.clienteid;
+    const telP = dig(ped.telefono);
+    const match = c =>
+        (cid && c.clienteid && String(c.clienteid)===String(cid)) ||
+        (telP && dig(c.telefono) && dig(c.telefono)===telP) ||
+        (nom && String(c.cliente||'').trim().toLowerCase()===nom);
+    const aBorrar = cotizaciones.filter(match);
+    if(!aBorrar.length) return 0;
+    cotizaciones = cotizaciones.filter(c => !match(c));
+    cacheSet('cotizaciones', cotizaciones);
+    if (typeof pintarCotizaciones==='function' && document.getElementById('listaCot')) pintarCotizaciones(cotizaciones);
+    for(const c of aBorrar){ try { await crm({ action:'delete', tab:'Cotizaciones', id:c.id }); } catch(e){} }
+    return aBorrar.length;
 }
 async function borrarRegistro(tab, id){
     const q = tab==='Pedidos' ? '¿Eliminar este pedido? No se puede deshacer.' : '¿Eliminar este seguimiento? No se puede deshacer.';
@@ -1944,8 +1966,11 @@ async function guardarPedido(e,id){
     // ID permanente del cliente: ata el pedido al cliente aunque después cambie nombre/teléfono.
     if (clienteId) datos.clienteid = clienteId;
     try {
-        if(id){ await crm({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
-        else { const r=await crm({action:'add',tab:'Pedidos',...datos}); pedidos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
+        let pedGuardado;
+        if(id){ await crm({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); pedGuardado=c||{id,...datos}; }
+        else { const r=await crm({action:'add',tab:'Pedidos',...datos}); pedGuardado={id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}; pedidos.unshift(pedGuardado); }
+        // Si el pedido queda Entregado, borrar el presupuesto de ese cliente (venta concretada).
+        if (estPed(datos.estado)==='Entregado') { try { await borrarCotizacionesDeCliente(pedGuardado); } catch(e){} }
         cerrarModal(); if(seccionActual==='pedidos') filtrarPedidos();
     } catch(err){ btn.disabled=false; btn.textContent='Guardar'; alert('No se pudo guardar. Reintentá.'); }
 }
