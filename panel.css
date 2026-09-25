@@ -413,8 +413,17 @@ body:not(.bloqueado) .panel-lock{display:none}
 .foto-drag{position:fixed;z-index:9999;margin:0;box-shadow:0 12px 28px rgba(0,0,0,.55);border-color:var(--am);
     transform:scale(1.05);opacity:.97;pointer-events:none;border-radius:12px}
 .foto-ph{background:var(--neg3);border:2px dashed var(--am);border-radius:10px;aspect-ratio:1;opacity:.55}
+/* Cartelito: ¿este producto ya tiene recorte PNG para el 3D? */
+.prod-rec{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:.72rem;font-weight:700;
+    padding:5px 10px;border-radius:8px;border:1px solid var(--linea)}
+.prod-rec i{font-size:.75rem}
+.rec-cargando{color:var(--gris);background:var(--neg3)}
+.rec-si{color:#4ade80;background:rgba(74,222,128,.10);border-color:rgba(74,222,128,.35)}
+.rec-si i{color:#4ade80}
+.rec-no{color:var(--gris2);background:var(--neg3)}
+.rec-no i{color:var(--gris)}
 /* Botonera de producto (Fotos + Encuadre 3D) */
-.prod-btns{display:flex;gap:8px;margin-top:12px}
+.prod-btns{display:flex;gap:8px;margin-top:8px}
 .prod-btns .prod-fotos-btn{margin-top:0;flex:1;padding:11px 6px;font-size:.8rem}
 /* Editor de encuadre 3D */
 .enc-wrap{display:flex;flex-direction:column;gap:16px}

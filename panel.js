@@ -960,6 +960,8 @@ function pintarProductos(lista, q) {
     }
     cont.innerHTML = lista.map(p => {
         const i = productos.indexOf(p);
+        const cp = catalogoDe(p.nombre);
+        const fo = cp ? (cp.folder || cp.name) : '';
         return `
         <div class="prod-card${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
             <div class="prod-top">
@@ -985,12 +987,36 @@ function pintarProductos(lista, q) {
                 </label>
             </div>
             ${bloqueCosto(p, i)}
-            ${catalogoDe(p.nombre) ? `<div class="prod-btns">
+            ${cp ? `<div class="prod-rec rec-cargando" id="rec-${i}" data-folder="${esc(fo)}"><i class="fas fa-spinner fa-spin"></i> Buscando recorte…</div>
+            <div class="prod-btns">
                 <button class="prod-fotos-btn" onclick="abrirFotos('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-camera"></i> Fotos</button>
                 <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadre('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-crop-simple"></i> Encuadre 3D</button>
             </div>` : ''}
         </div>`;
     }).join('');
+    marcarRecortes();
+}
+// Marca en cada tarjeta si el producto ya tiene recorte PNG (recortes/<folder>.png).
+// Chequea con un HEAD liviano (no baja la imagen); si falla, prueba cargándola.
+function marcarRecortes(){
+    document.querySelectorAll('.prod-rec[data-folder]').forEach(el => {
+        const folder = el.getAttribute('data-folder');
+        if(!folder) return;
+        const url = REC_BASE + encodeURIComponent(folder) + '.png';
+        fetch(url, { method:'HEAD', cache:'no-store' })
+            .then(r => pintarRecBadge(el, r.ok))
+            .catch(() => {
+                const img = new Image();
+                img.onload = () => pintarRecBadge(el, true);
+                img.onerror = () => pintarRecBadge(el, false);
+                img.src = url + '?_=' + Date.now();
+            });
+    });
+}
+function pintarRecBadge(el, tiene){
+    el.classList.remove('rec-cargando');
+    if(tiene){ el.classList.add('rec-si'); el.innerHTML = '<i class="fas fa-cube"></i> Con recorte 3D'; }
+    else { el.classList.add('rec-no'); el.innerHTML = '<i class="fas fa-circle-xmark"></i> Sin recorte PNG'; }
 }
 
 function bloqueCosto(p, i){
