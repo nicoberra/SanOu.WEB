@@ -407,7 +407,7 @@ async function renderFacturacion(){
     // Cada venta: monto (facturación) + ganancia (facturación − costo). medible = tiene todos los costos cargados.
     const ventas = pedidos.map(p => {
         const g = gananciaPedido(p);
-        return { fecha: parseFechaCRM(p.fecha), monto: montoVenta(p), ganancia: g.ganancia, medible: g.medible };
+        return { fecha: parseFechaCRM(p.fecha), monto: montoVenta(p), ganancia: g.ganancia, medible: g.medible, items: parseDetalle(p.detalle), cliente: p.cliente };
     }).filter(x => x.fecha);
     if (!ventas.length) {
         v.innerHTML = `<div class="panel-vacio"><i class="fas fa-coins"></i><h3>Sin ventas todavía</h3><p>Cargá pedidos y acá vas a ver la facturación y el beneficio por semana, mes y año.</p></div>`;
@@ -441,11 +441,11 @@ async function renderFacturacion(){
     const porAnio = {}, porMes = {}, porSem = {};
     ventas.forEach(x => {
         const ak = x.fecha.getFullYear();
-        (porAnio[ak] = porAnio[ak] || {monto:0, ben:0, mb:0, n:0, d:new Date(ak,0,1)}); porAnio[ak].monto += x.monto; porAnio[ak].n++; if(x.medible){porAnio[ak].ben+=x.ganancia;porAnio[ak].mb++;}
+        (porAnio[ak] = porAnio[ak] || {monto:0, ben:0, mb:0, n:0, d:new Date(ak,0,1), vs:[]}); porAnio[ak].monto += x.monto; porAnio[ak].n++; porAnio[ak].vs.push(x); if(x.medible){porAnio[ak].ben+=x.ganancia;porAnio[ak].mb++;}
         const mk = x.fecha.getFullYear()+'-'+x.fecha.getMonth();
-        (porMes[mk] = porMes[mk] || {monto:0, ben:0, mb:0, n:0, d:x.fecha}); porMes[mk].monto += x.monto; porMes[mk].n++; if(x.medible){porMes[mk].ben+=x.ganancia;porMes[mk].mb++;}
+        (porMes[mk] = porMes[mk] || {monto:0, ben:0, mb:0, n:0, d:x.fecha, vs:[]}); porMes[mk].monto += x.monto; porMes[mk].n++; porMes[mk].vs.push(x); if(x.medible){porMes[mk].ben+=x.ganancia;porMes[mk].mb++;}
         const lk = lunesDe(x.fecha); const sk = lk.getTime();
-        (porSem[sk] = porSem[sk] || {monto:0, ben:0, mb:0, n:0, d:lk}); porSem[sk].monto += x.monto; porSem[sk].n++; if(x.medible){porSem[sk].ben+=x.ganancia;porSem[sk].mb++;}
+        (porSem[sk] = porSem[sk] || {monto:0, ben:0, mb:0, n:0, d:lk, vs:[]}); porSem[sk].monto += x.monto; porSem[sk].n++; porSem[sk].vs.push(x); if(x.medible){porSem[sk].ben+=x.ganancia;porSem[sk].mb++;}
     });
     const anios = Object.values(porAnio).sort((a,b)=>b.d-a.d);
     const meses = Object.values(porMes).sort((a,b)=>b.d-a.d).slice(0,6);
@@ -454,8 +454,18 @@ async function renderFacturacion(){
     const etMes = d => MESES[d.getMonth()]+' '+d.getFullYear();
     const etSem = d => { const f=new Date(d); f.setDate(f.getDate()+6); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} – ${String(f.getDate()).padStart(2,'0')}/${String(f.getMonth()+1).padStart(2,'0')}`; };
     // Fila de la lista: facturación + beneficio (si hay costos cargados en ese período).
-    const filaBen = (o, et) => `<div class="fact-fila"><span class="fact-et">${et(o.d)}<small class="fact-nv">${o.n} ${o.n===1?'venta':'ventas'}</small></span>
-        <span class="fact-cifras"><b>${fmtMoney(o.monto)}</b>${o.mb ? `<span class="fact-ben">↑ ${fmtMoney(o.ben)}</span>` : ''}</span></div>`;
+    // Es clickeable: se despliega y muestra los productos vendidos en ese período.
+    const filaBen = (o, et) => {
+        const prods = factProductos(o.vs);
+        const unid = prods.reduce((s,pr)=>s+pr.n,0);
+        const det = prods.length
+            ? `<div class="fact-det-tit">Productos vendidos <small>(${unid} unidad${unid!==1?'es':''})</small></div>`
+              + prods.map(pr=>`<div class="fact-prod-fila"><span>${esc(pr.nombre)}</span><b>×${pr.n}</b></div>`).join('')
+            : `<div class="fact-prod-vacio">Los pedidos de este período no tienen el detalle de productos cargado.</div>`;
+        return `<div class="fact-fila fact-fila-exp" onclick="toggleFactDet(this)"><span class="fact-et"><span class="fact-et-tit"><i class="fas fa-chevron-right fact-chev"></i>${et(o.d)}</span><small class="fact-nv">${o.n} ${o.n===1?'venta':'ventas'}</small></span>
+        <span class="fact-cifras"><b>${fmtMoney(o.monto)}</b>${o.mb ? `<span class="fact-ben">↑ ${fmtMoney(o.ben)}</span>` : ''}</span></div>
+        <div class="fact-det" style="display:none">${det}</div>`;
+    };
 
     v.innerHTML = `
         <h4 class="dash-sec">💰 Facturación</h4>
@@ -506,6 +516,23 @@ async function renderFacturacion(){
             <h4>🗓️ Por semana <small>facturación · beneficio</small></h4>
             ${sems.map(s => filaBen(s, etSem)).join('')}
         </div>`;
+}
+
+// Suma los productos vendidos de un conjunto de ventas (para el desglose por período).
+function factProductos(vs){
+    const cont = {};
+    (vs||[]).forEach(v => (v.items||[]).forEach(it => {
+        const k = it.nombre; if(k) cont[k] = (cont[k]||0) + (it.cantidad||1);
+    }));
+    return Object.keys(cont).map(k=>({nombre:k, n:cont[k]})).sort((a,b)=>b.n-a.n);
+}
+// Despliega/oculta el detalle de productos de una fila de facturación.
+function toggleFactDet(el){
+    const d = el.nextElementSibling;
+    if(!d || !d.classList.contains('fact-det')) return;
+    const abierto = d.style.display !== 'none';
+    d.style.display = abierto ? 'none' : 'block';
+    el.classList.toggle('abierto', !abierto);
 }
 
 function enConstruccion(sec) {

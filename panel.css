@@ -122,6 +122,19 @@ body:not(.bloqueado) .panel-lock{display:none}
 .dash-lista h4 small{color:var(--gris);font-size:.68rem;font-weight:500;margin-left:6px}
 .dash-sec small{color:var(--gris);font-weight:500;font-size:.72rem}
 .fact-card-ben .dash-val-sm{color:#4ade80}
+/* Filas de facturación desplegables (clic → productos vendidos del período) */
+.fact-fila-exp{cursor:pointer;transition:background .12s}
+.fact-fila-exp:hover{background:rgba(255,212,0,.05)}
+.fact-et-tit{display:flex;align-items:center;gap:8px}
+.fact-chev{color:var(--am);font-size:.66rem;transition:transform .18s}
+.fact-fila-exp.abierto .fact-chev{transform:rotate(90deg)}
+.fact-det{padding:4px 0 10px 22px}
+.fact-det-tit{color:var(--gris);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:4px 0 6px}
+.fact-det-tit small{color:var(--gris);font-weight:600;text-transform:none;letter-spacing:0}
+.fact-prod-fila{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.05);font-size:.82rem}
+.fact-prod-fila span{color:var(--gris2)}
+.fact-prod-fila b{color:#fff;font-weight:700;min-width:42px;text-align:right}
+.fact-prod-vacio{color:var(--gris);font-size:.78rem;font-style:italic;padding:4px 0}
 .fact-card-ben .dash-ic{color:#4ade80}
 
 /* ── Toggle Mis clientes / Clientes web ── */
