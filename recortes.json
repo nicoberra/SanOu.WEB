@@ -1,0 +1,6 @@
+{
+  "HHY-120A": { "x": 50, "y": 100, "escala": 1.55 },
+  "HHY-300CF + Bomba": { "x": 50, "y": 50, "escala": 1.35 },
+  "HHY-500 + Bomba": { "x": 0, "y": 100, "escala": 1.45 },
+  "Cortadora de Varilla 22mm": { "x": 0, "y": 0, "escala": 1.35 }
+}

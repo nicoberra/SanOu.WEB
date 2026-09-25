@@ -985,7 +985,10 @@ function pintarProductos(lista, q) {
                 </label>
             </div>
             ${bloqueCosto(p, i)}
-            ${catalogoDe(p.nombre) ? `<button class="prod-fotos-btn" onclick="abrirFotos('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-camera"></i> Fotos</button>` : ''}
+            ${catalogoDe(p.nombre) ? `<div class="prod-btns">
+                <button class="prod-fotos-btn" onclick="abrirFotos('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-camera"></i> Fotos</button>
+                <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadre('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-crop-simple"></i> Encuadre 3D</button>
+            </div>` : ''}
         </div>`;
     }).join('');
 }
@@ -1190,6 +1193,93 @@ async function borrarFoto(fn){
         await crm({ action:'foto_borrar', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, filename:fn });
         setTimeout(()=>cargarFotos('✓ Borrada.'), 1500);
     } catch(e){ if(m) m.textContent = 'No se pudo borrar. Reintentá.'; }
+}
+
+// ─── ENCUADRE 3D (qué parte del recorte PNG se ve, por producto) ─────────
+// Edita recortes.json (vía backend/GitHub) sin tocar el PNG: elige el punto (x/y en %)
+// y el tamaño (escala) con que la herramienta "sale" del marco en la web.
+let _encFolder = '', _encRecUrl = '';
+const REC_BASE = 'https://sanou.com.ar/recortes/';
+async function abrirEncuadre(nombre){
+    const cp = catalogoDe(nombre);
+    if(!cp){ alert('Este producto no está en el catálogo, no puedo ubicar su recorte.'); return; }
+    _encFolder = cp.folder || cp.name;
+    _encRecUrl = REC_BASE + encodeURIComponent(_encFolder) + '.png';
+    document.getElementById('modalTitulo').textContent = 'Encuadre 3D — ' + nombre;
+    document.getElementById('modalBody').innerHTML = `
+        <div class="enc-wrap">
+            <div class="enc-preview">
+                <div class="enc-marco" id="encMarco">
+                    <img class="enc-pop" id="encPop" alt="" draggable="false"
+                        onload="document.getElementById('encFalta').style.display='none'"
+                        onerror="this.style.display='none';document.getElementById('encFalta').style.display='flex'">
+                    <div class="enc-falta" id="encFalta"><i class="fas fa-image"></i> Este producto todavía no tiene recorte PNG.</div>
+                </div>
+                <div class="enc-linea"></div>
+                <div class="enc-linea-lbl">línea del título (así se ve en la web)</div>
+            </div>
+            <div class="enc-ctrls">
+                <div class="enc-fila"><label>◀ Izquierda / Derecha ▶</label><span id="encXv">50%</span></div>
+                <input type="range" id="encX" min="0" max="100" value="50" oninput="encActualizar()">
+                <div class="enc-fila"><label>▲ Arriba / Abajo ▼</label><span id="encYv">100%</span></div>
+                <input type="range" id="encY" min="0" max="100" value="100" oninput="encActualizar()">
+                <div class="enc-fila"><label>Tamaño (cuánto sobresale)</label><span id="encEv">140%</span></div>
+                <input type="range" id="encE" min="100" max="220" value="140" oninput="encActualizar()">
+                <div class="enc-msg" id="encMsg"></div>
+                <div class="enc-acciones">
+                    <button class="enc-guardar" onclick="encGuardar()"><i class="fas fa-check"></i> Guardar</button>
+                    <button class="enc-reset" onclick="encReset()"><i class="fas fa-rotate-left"></i> Centrar</button>
+                </div>
+                <p class="enc-nota">Movés el encuadre sin tocar el PNG: elegís qué parte se ve y por dónde sobresale. Después de guardar puede tardar 1–2 min en verse en la web.</p>
+            </div>
+        </div>`;
+    abrirModal();
+    document.getElementById('encPop').src = _encRecUrl;
+    // Cargar los valores actuales desde recortes.json del sitio (si existen).
+    try {
+        const r = await fetch('https://sanou.com.ar/recortes.json?_=' + Date.now());
+        const j = r.ok ? await r.json() : {};
+        const c = j[_encFolder];
+        if(c && typeof c.x === 'number'){
+            document.getElementById('encX').value = c.x;
+            document.getElementById('encY').value = c.y;
+            document.getElementById('encE').value = Math.round((c.escala||1.4)*100);
+        }
+    } catch(e){}
+    encActualizar();
+}
+function encActualizar(){
+    const x = +document.getElementById('encX').value;
+    const y = +document.getElementById('encY').value;
+    const e = +document.getElementById('encE').value / 100;
+    document.getElementById('encXv').textContent = x + '%';
+    document.getElementById('encYv').textContent = y + '%';
+    document.getElementById('encEv').textContent = Math.round(e*100) + '%';
+    const pop = document.getElementById('encPop');
+    if(pop){
+        pop.style.objectPosition = x + '% ' + y + '%';
+        pop.style.transformOrigin = x + '% ' + y + '%';
+        pop.style.transform = 'scale(' + e + ')';
+    }
+}
+function encReset(){
+    document.getElementById('encX').value = 50;
+    document.getElementById('encY').value = 100;
+    document.getElementById('encE').value = 140;
+    encActualizar();
+}
+async function encGuardar(){
+    const x = +document.getElementById('encX').value;
+    const y = +document.getElementById('encY').value;
+    const e = +document.getElementById('encE').value / 100;
+    const m = document.getElementById('encMsg');
+    if(m){ m.className = 'enc-msg'; m.textContent = 'Guardando…'; }
+    try {
+        await crm({ action:'recorte_save', tab:'Clientes', folder:_encFolder, x:x, y:y, escala:e });
+        if(m){ m.classList.add('ok'); m.textContent = '✓ Guardado. Se va a ver en la web en 1–2 minutos.'; }
+    } catch(err){
+        if(m){ m.classList.add('err'); m.textContent = 'No se pudo guardar. Reintentá.'; }
+    }
 }
 
 // ─── MAYORISTA (sheet aparte que se manda a clientes) ───────────

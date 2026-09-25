@@ -678,12 +678,35 @@ function _sinHover(){ try { return matchMedia('(hover:none)').matches; } catch(e
 //   'left bottom'   → arriba + derecha    | 'right bottom' → arriba + izquierda
 //   'left top'      → abajo + derecha     | 'right top'    → abajo + izquierda
 // 'escala' = cuánto se agranda al pasar el mouse.
+// Config del efecto 3D por producto (por dónde sobresale y cuánto crece).
+// Estos son los valores por defecto/históricos; los que Nicolás edita desde el CRM viven
+// en recortes.json y TIENEN PRIORIDAD (se cargan más abajo en RECORTE_JSON).
 const RECORTE_CFG = {
     'HHY-120A':               { o: 'center bottom', escala: 1.55 },  // costados + arriba
     'HHY-300CF + Bomba':      { o: 'center center', escala: 1.35 },  // todo alrededor
     'HHY-500 + Bomba':        { o: 'left bottom',   escala: 1.45 },  // arriba + derecha (más grande)
     'Cortadora de Varilla 22mm': { o: 'left top',   escala: 1.35 }   // abajo + derecha
 };
+// Config editada desde el CRM (recortes.json): { "<folder>": { x, y, escala } } con x/y en %.
+let RECORTE_JSON = {};
+// Devuelve la config a aplicar para un producto: primero lo que se editó en el CRM,
+// después lo hardcodeado, y si no hay nada, un default según la forma de la imagen.
+function _cfgDe(folder, img){
+    const j = RECORTE_JSON[folder];
+    if (j && typeof j.x === 'number') return { o: j.x + '% ' + j.y + '%', escala: j.escala || 1.35 };
+    const h = RECORTE_CFG[folder];
+    if (h) return h;
+    const ratio = img && img.naturalWidth ? img.naturalWidth / img.naturalHeight : 1;
+    return ratio > 1.05 ? { o: 'center center', escala: 1.3 }   // ancho: todo alrededor
+                        : { o: 'center bottom', escala: 1.3 };  // vertical: costados + arriba
+}
+// Trae recortes.json (lo que Nicolás editó en el CRM) y reaplica a los recortes ya cargados.
+(function cargarRecortesJSON(){
+    fetch('recortes.json?_=' + Date.now())
+        .then(r => r.ok ? r.json() : {})
+        .then(j => { RECORTE_JSON = j || {}; document.querySelectorAll('.prod-pop.pop-ok').forEach(_popLoaded); })
+        .catch(() => {});
+})();
 function _popClase(folder){ return 'prod-pop'; }
 // Precarga los recortes de las tarjetas ya renderizadas (solo en compu, donde se usa el hover),
 // en segundo plano, para que al pasar el mouse aparezcan al instante (sin esperar la descarga).
@@ -702,12 +725,7 @@ function precargarPops(){
 function _popLoaded(img){
     img.classList.add('pop-ok');
     const folder = img.getAttribute('data-folder') || '';
-    let cfg = RECORTE_CFG[folder];
-    if (!cfg) {
-        const ratio = img.naturalWidth ? img.naturalWidth / img.naturalHeight : 1;
-        cfg = ratio > 1.05 ? { o: 'center center', escala: 1.3 }   // ancho: todo alrededor
-                           : { o: 'center bottom', escala: 1.3 };  // vertical: costados + arriba
-    }
+    const cfg = _cfgDe(folder, img);
     img.style.objectPosition = cfg.o;
     img.style.transformOrigin = cfg.o;
     img.style.setProperty('--pop-scale', cfg.escala);
