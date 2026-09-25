@@ -711,6 +711,9 @@ function _popLoaded(img){
     img.style.objectPosition = cfg.o;
     img.style.transformOrigin = cfg.o;
     img.style.setProperty('--pop-scale', cfg.escala);
+    // Marcamos la tarjeta con una clase simple (evita usar :has() en CSS, que friza la página).
+    const card = img.closest('.product-card');
+    if (card) card.classList.add('tiene-pop');
 }
 function cardMedia(p) {
     const imgs = getImgs(p);
@@ -1608,16 +1611,17 @@ function initFeaturedMarquee() {
         m.addEventListener('pointerup',   () => retomar(1500));
     }
     let pos = m.scrollLeft || 0;   // acumulador flotante (scrollLeft redondea a entero)
+    let half = m.scrollWidth / 2;  // cacheado: leer scrollWidth cada frame fuerza reflow
+    const recalc = () => { half = m.scrollWidth / 2; };
+    if (!m.dataset.marqueeResize) { m.dataset.marqueeResize = '1'; window.addEventListener('resize', recalc); }
+    setTimeout(recalc, 1500);      // recalcular cuando ya cargaron las imágenes
     function step() {
-        const half = m.scrollWidth / 2;
-        if (half > 0) {
-            if (paused) {
-                pos = m.scrollLeft;                 // mientras arrastra el usuario, seguimos su posición
-            } else {
-                pos += speed;
-                if (pos >= half) pos -= half;        // loop sin cortes
-                m.scrollLeft = pos;
-            }
+        if (half > 0 && !paused) {
+            pos += speed;
+            if (pos >= half) pos -= half;            // loop sin cortes
+            m.scrollLeft = pos;
+        } else if (paused) {
+            pos = m.scrollLeft;                       // mientras arrastra el usuario, seguimos su posición
         }
         _featRAF = requestAnimationFrame(step);
     }
