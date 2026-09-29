@@ -112,6 +112,7 @@ body:not(.bloqueado) .panel-lock{display:none}
 .fact-prom-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fact-prom-grid div{color:var(--gris2);font-size:.8rem}
 .fact-prom-grid span{display:block;color:var(--am);font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.5px;line-height:1.1}
+.fact-prom-ben{color:#4ade80 !important}
 .fact-fila{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.06);font-size:.85rem}
 .fact-fila>span:first-child{color:var(--gris2);flex:1}
 .fact-n{color:var(--gris);font-size:.76rem}
@@ -428,7 +429,8 @@ body:not(.bloqueado) .panel-lock{display:none}
 /* Editor de encuadre 3D */
 .enc-wrap{display:flex;flex-direction:column;gap:16px}
 .enc-preview{position:relative;padding:34px 34px 0}
-.enc-marco{position:relative;height:230px;background:#fff;border-radius:14px 14px 0 0;overflow:visible;display:flex;align-items:center;justify-content:center}
+/* Misma proporción que la tarjeta real de la web (media 260×270) para que el preview coincida. */
+.enc-marco{position:relative;width:100%;max-width:300px;margin:0 auto;aspect-ratio:26/27;background:#fff;border-radius:14px 14px 0 0;overflow:visible;display:flex;align-items:center;justify-content:center}
 .enc-pop{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 14px 20px rgba(0,0,0,.45));-webkit-user-drag:none;transition:transform .12s ease,object-position .12s ease}
 .enc-falta{display:none;flex-direction:column;align-items:center;gap:8px;color:var(--gris);font-size:.82rem;text-align:center;padding:20px}
 .enc-falta i{font-size:1.6rem;color:var(--gris)}
@@ -447,7 +449,7 @@ body:not(.bloqueado) .panel-lock{display:none}
 .enc-nota{color:var(--gris);font-size:.7rem;line-height:1.4;text-align:center;margin-top:2px}
 /* Editor de encuadre de la foto normal (marco igual al de la tarjeta de la web) */
 .encf-preview{padding:0}
-.encf-marco{position:relative;height:250px;background:#0f0f0f;border-radius:14px 14px 0 0;overflow:hidden}
+.encf-marco{position:relative;width:100%;max-width:300px;margin:0 auto;aspect-ratio:26/27;background:#0f0f0f;border-radius:14px 14px 0 0;overflow:hidden}
 .encf-img{width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block}
 .encf-check{display:flex;align-items:center;gap:9px;color:#fff;font-size:.85rem;font-weight:700;margin-bottom:10px;cursor:pointer}
 .encf-check input{width:18px;height:18px;accent-color:var(--am)}

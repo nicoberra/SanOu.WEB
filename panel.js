@@ -434,8 +434,10 @@ async function renderFacturacion(){
     const semanasSpan = Math.max(1, Math.ceil((ahora - primera) / (7*864e5)));
     const mesesSpan   = Math.max(1, (ahora.getFullYear()-primera.getFullYear())*12 + (ahora.getMonth()-primera.getMonth()) + 1);
     const totalMonto  = ventas.reduce((s,x)=>s+x.monto, 0);
+    const totalBen    = ventas.reduce((s,x)=> x.medible ? s+x.ganancia : s, 0);
     const avgVSem = (ventas.length / semanasSpan), avgVMes = (ventas.length / mesesSpan);
     const avgMSem = (totalMonto / semanasSpan),    avgMMes = (totalMonto / mesesSpan);
+    const avgBSem = (totalBen / semanasSpan),      avgBMes = (totalBen / mesesSpan);
 
     // Agrupar por año, por mes y por semana (con beneficio)
     const porAnio = {}, porMes = {}, porSem = {};
@@ -501,6 +503,8 @@ async function renderFacturacion(){
                 <div><span>${avgVMes.toFixed(1)}</span> ventas / mes</div>
                 <div><span>${fmtMoney(Math.round(avgMSem))}</span> por semana</div>
                 <div><span>${fmtMoney(Math.round(avgMMes))}</span> por mes</div>
+                <div><span class="fact-prom-ben">${fmtMoney(Math.round(avgBSem))}</span> beneficio / semana</div>
+                <div><span class="fact-prom-ben">${fmtMoney(Math.round(avgBMes))}</span> beneficio / mes</div>
             </div>
         </div>
 
@@ -1226,6 +1230,7 @@ async function borrarFoto(fn){
 // Edita recortes.json (vía backend/GitHub) sin tocar el PNG: elige el punto (x/y en %)
 // y el tamaño (escala) con que la herramienta "sale" del marco en la web.
 let _encFolder = '', _encRecUrl = '';
+let _encPendienteGuardar = null;   // función de guardado del editor abierto (para autosalvar al cerrar)
 const REC_BASE = 'https://sanou.com.ar/recortes/';
 async function abrirEncuadre(nombre){
     const cp = catalogoDe(nombre);
@@ -1261,6 +1266,7 @@ async function abrirEncuadre(nombre){
             </div>
         </div>`;
     abrirModal();
+    _encPendienteGuardar = encGuardar;   // guarda solo al cerrar
     document.getElementById('encPop').src = _encRecUrl;
     // Cargar los valores actuales desde recortes.json del sitio (si existen).
     try {
@@ -1273,7 +1279,41 @@ async function abrirEncuadre(nombre){
             document.getElementById('encE').value = Math.round((c.escala||1.4)*100);
         }
     } catch(e){}
+    habilitarTactil('encMarco', {getX:()=>+document.getElementById('encX').value, getY:()=>+document.getElementById('encY').value, getZ:()=>+document.getElementById('encE').value,
+        setX:v=>document.getElementById('encX').value=v, setY:v=>document.getElementById('encY').value=v, setZ:v=>document.getElementById('encE').value=v,
+        zmin:100, zmax:220, invert:true, render:encActualizar});
     encActualizar();
+}
+// Táctil: en el celu, arrastrar con el dedo mueve el encuadre y pellizcar (pinch) cambia el tamaño.
+// En la compu: arrastrar con el mouse mueve y la rueda hace zoom. Actualiza los sliders y vuelve a dibujar.
+function habilitarTactil(marcoId, cfg){
+    const el = document.getElementById(marcoId);
+    if(!el) return;
+    const W = () => el.clientWidth || 300, H = () => el.clientHeight || 250;
+    const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+    const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    let drag=false, pinch=false, sx=0, sy=0, bx=0, by=0, bz=0, sd=0;
+    const s = cfg.invert ? -1 : 1;
+    el.addEventListener('touchstart', e => {
+        if(e.touches.length === 2){ pinch=true; drag=false; sd=dist(e.touches); bz=cfg.getZ(); e.preventDefault(); }
+        else if(e.touches.length === 1){ drag=true; sx=e.touches[0].clientX; sy=e.touches[0].clientY; bx=cfg.getX(); by=cfg.getY(); }
+    }, {passive:false});
+    el.addEventListener('touchmove', e => {
+        if(pinch && e.touches.length === 2){
+            const r = dist(e.touches) / (sd || 1);
+            cfg.setZ(clamp(Math.round(bz * r), cfg.zmin, cfg.zmax)); cfg.render(); e.preventDefault();
+        } else if(drag && e.touches.length === 1){
+            const dx = (e.touches[0].clientX - sx) / W() * 100, dy = (e.touches[0].clientY - sy) / H() * 100;
+            cfg.setX(clamp(Math.round(bx + s*dx), 0, 100)); cfg.setY(clamp(Math.round(by + s*dy), 0, 100)); cfg.render(); e.preventDefault();
+        }
+    }, {passive:false});
+    const fin = () => { drag=false; pinch=false; };
+    el.addEventListener('touchend', fin); el.addEventListener('touchcancel', fin);
+    el.addEventListener('mousedown', e => { drag=true; sx=e.clientX; sy=e.clientY; bx=cfg.getX(); by=cfg.getY(); e.preventDefault(); });
+    window.addEventListener('mousemove', e => { if(!drag) return; const dx=(e.clientX-sx)/W()*100, dy=(e.clientY-sy)/H()*100; cfg.setX(clamp(Math.round(bx+s*dx),0,100)); cfg.setY(clamp(Math.round(by+s*dy),0,100)); cfg.render(); });
+    window.addEventListener('mouseup', () => { drag=false; });
+    el.addEventListener('wheel', e => { cfg.setZ(clamp(cfg.getZ() + (e.deltaY<0?5:-5), cfg.zmin, cfg.zmax)); cfg.render(); e.preventDefault(); }, {passive:false});
+    el.style.touchAction = 'none'; el.style.cursor = 'move';
 }
 function encActualizar(){
     const x = +document.getElementById('encX').value;
@@ -1336,6 +1376,8 @@ async function abrirEncuadreFoto(nombre){
                     <div class="enc-fila"><label>▲ Arriba / Abajo ▼</label><span id="encfYv">50%</span></div>
                     <input type="range" id="encfY" min="0" max="100" value="50" oninput="encfActualizar()">
                 </div>
+                <div class="enc-fila"><label>Tamaño (zoom)</label><span id="encfZv">100%</span></div>
+                <input type="range" id="encfZ" min="100" max="300" value="100" oninput="encfActualizar()">
                 <div class="enc-msg" id="encfMsg"></div>
                 <div class="enc-acciones">
                     <button class="enc-guardar" onclick="encfGuardar()"><i class="fas fa-check"></i> Guardar</button>
@@ -1345,6 +1387,7 @@ async function abrirEncuadreFoto(nombre){
             </div>
         </div>`;
     abrirModal();
+    _encPendienteGuardar = encfGuardar;   // guarda solo al cerrar
     // Cargar la primera foto (respeta el orden elegido) y la config actual.
     try {
         const r = await crm({ action:'fotos_list', tab:'Clientes', catFolder:_encfCf, folder:_encfFo });
@@ -1362,15 +1405,20 @@ async function abrirEncuadreFoto(nombre){
         if(c){
             if(c.ffit === 'contain') document.getElementById('encfCompleta').checked = true;
             if(c.fpos){ const m = String(c.fpos).match(/(\d+)%\s+(\d+)%/); if(m){ document.getElementById('encfX').value = +m[1]; document.getElementById('encfY').value = +m[2]; } }
+            if(c.fzoom){ document.getElementById('encfZ').value = Math.round((+c.fzoom)*100); }
         }
     } catch(e){}
+    habilitarTactil('encfMarco', {getX:()=>+document.getElementById('encfX').value, getY:()=>+document.getElementById('encfY').value, getZ:()=>+document.getElementById('encfZ').value,
+        setX:v=>document.getElementById('encfX').value=v, setY:v=>document.getElementById('encfY').value=v, setZ:v=>document.getElementById('encfZ').value=v,
+        zmin:100, zmax:300, invert:true, render:encfActualizar});
     encfActualizar();
 }
 function encfActualizar(){
     const completa = document.getElementById('encfCompleta').checked;
-    const x = +document.getElementById('encfX').value, y = +document.getElementById('encfY').value;
+    const x = +document.getElementById('encfX').value, y = +document.getElementById('encfY').value, z = +document.getElementById('encfZ').value/100;
     document.getElementById('encfXv').textContent = x + '%';
     document.getElementById('encfYv').textContent = y + '%';
+    document.getElementById('encfZv').textContent = Math.round(z*100) + '%';
     document.getElementById('encfSliders').style.opacity = completa ? '.4' : '1';
     document.getElementById('encfX').disabled = completa;
     document.getElementById('encfY').disabled = completa;
@@ -1379,21 +1427,24 @@ function encfActualizar(){
         img.style.objectFit = completa ? 'contain' : 'cover';
         img.style.background = completa ? '#fff' : '';
         img.style.objectPosition = x + '% ' + y + '%';
+        img.style.transformOrigin = x + '% ' + y + '%';
+        img.style.transform = 'scale(' + z + ')';
     }
 }
 function encfReset(){
     document.getElementById('encfCompleta').checked = false;
     document.getElementById('encfX').value = 50;
     document.getElementById('encfY').value = 50;
+    document.getElementById('encfZ').value = 100;
     encfActualizar();
 }
 async function encfGuardar(){
     const completa = document.getElementById('encfCompleta').checked;
-    const x = +document.getElementById('encfX').value, y = +document.getElementById('encfY').value;
+    const x = +document.getElementById('encfX').value, y = +document.getElementById('encfY').value, z = +document.getElementById('encfZ').value/100;
     const m = document.getElementById('encfMsg');
     if(m){ m.className = 'enc-msg'; m.textContent = 'Guardando…'; }
     try {
-        await crm({ action:'recorte_save', tab:'Clientes', folder:_encfFolder, ffit: completa ? 'contain' : 'cover', fpos: x + '% ' + y + '%' });
+        await crm({ action:'recorte_save', tab:'Clientes', folder:_encfFolder, ffit: completa ? 'contain' : 'cover', fpos: x + '% ' + y + '%', fzoom: z });
         if(m){ m.classList.add('ok'); m.textContent = '✓ Guardado. Se ve en la web en 1–2 minutos.'; }
     } catch(err){ if(m){ m.classList.add('err'); m.textContent = 'No se pudo guardar. Reintentá.'; } }
 }
@@ -2168,11 +2219,14 @@ async function guardarSeguimiento(e,id){
 
 // ─── MODAL ──────────────────────────────────────────────────────
 function abrirModal() {
+    _encPendienteGuardar = null;   // cada modal nuevo arranca sin autosave; los editores de encuadre lo setean
     document.getElementById('modalOverlay').classList.add('active');
     document.getElementById('modalForm').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 function cerrarModal() {
+    // Si estabas en un editor de encuadre, guarda solo al salir (sin apretar Guardar).
+    if (_encPendienteGuardar) { try { _encPendienteGuardar(); } catch(e){} _encPendienteGuardar = null; }
     document.getElementById('modalOverlay').classList.remove('active');
     document.getElementById('modalForm').classList.remove('active');
     document.body.style.overflow = '';

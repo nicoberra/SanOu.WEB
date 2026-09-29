@@ -707,7 +707,8 @@ function _baseLoaded(img){
     const j = RECORTE_JSON[folder];
     if (!j) return;
     if (j.ffit) { img.style.objectFit = j.ffit; img.style.background = (j.ffit === 'contain') ? '#fff' : ''; }
-    if (j.fpos) img.style.objectPosition = j.fpos;
+    if (j.fpos) { img.style.objectPosition = j.fpos; img.style.transformOrigin = j.fpos; }
+    if (j.fzoom) img.style.setProperty('--fzoom', j.fzoom);
 }
 // Trae recortes.json (lo que Nicolás editó en el CRM) y reaplica a lo ya cargado (recortes 3D + fotos).
 (function cargarRecortesJSON(){
@@ -855,7 +856,7 @@ function discountBadge(p) {
 // Tarjeta de producto (compartida entre la grilla de productos y la de destacados)
 function stockChipHTML(p) {
     if (p.inStock === false)
-        return '<span class="stock-chip stock-chip--out">Sin stock</span>';
+        return '<span class="stock-chip stock-chip--out">Sin stock · reingreso en ~90 días</span>';
     if (p.lowStock)
         return '<span class="stock-chip stock-chip--low"><i class="fas fa-fire"></i> ¡Pocas unidades!</span>';
     return '<span class="stock-chip"><i class="fas fa-check"></i> En stock</span>';
@@ -898,9 +899,11 @@ function productCardHTML(p) {
 function renderProducts(filter, showAll = false) {
     _currentFilter = filter;
     // "all" usa la copia mezclada; cada categoría mantiene su orden original
-    const list = filter === 'all'
+    let list = filter === 'all'
         ? (productsShuffled.length ? productsShuffled : products)
         : products.filter(p => p.category === filter || (p.extraCategories && p.extraCategories.includes(filter)));
+    // Los productos SIN stock van al final de todo (en "Todas" y en cada categoría). Orden estable.
+    list = [...list].sort((a, b) => (a.inStock === false ? 1 : 0) - (b.inStock === false ? 1 : 0));
     const grid = document.getElementById('productsGrid');
     const verMasWrap = document.getElementById('verMasWrap');
 

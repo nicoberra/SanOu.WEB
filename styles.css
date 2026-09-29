@@ -1119,6 +1119,9 @@ section { padding: 90px 0; }
     transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
 }
 .product-card:hover .product-media img { transform: scale(1.07); }
+/* Zoom de la foto normal, editable desde el CRM (--fzoom). El hover lo multiplica por 1.07. */
+.product-media img.prod-base { transform: scale(var(--fzoom, 1)); }
+.product-card:hover .product-media img.prod-base { transform: scale(calc(var(--fzoom, 1) * 1.07)); }
 
 /* ── Efecto 3D al pasar el mouse (recorte transparente en /recortes/) ──
    La foto normal se ve SIEMPRE. Al hacer hover: la foto se desvanece, el marco queda BLANCO
