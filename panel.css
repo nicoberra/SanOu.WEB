@@ -423,6 +423,11 @@ body:not(.bloqueado) .panel-lock{display:none}
 .rec-si i{color:#4ade80}
 .rec-no{color:var(--gris2);background:var(--neg3)}
 .rec-no i{color:var(--gris)}
+/* Botón: copiar link directo del producto */
+.prod-link-btn{width:100%;margin-top:10px;background:var(--am);color:var(--neg);border:none;border-radius:10px;
+    padding:11px;font-weight:800;font-size:.83rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.prod-link-btn:active{transform:scale(.99)}
+.prod-link-btn.copiado{background:#4ade80}
 /* Botonera de producto (Fotos + Encuadre foto + Encuadre 3D) */
 .prod-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .prod-btns .prod-fotos-btn{margin-top:0;flex:1 1 30%;min-width:120px;padding:11px 6px;font-size:.78rem}

@@ -992,6 +992,7 @@ function pintarProductos(lista, q) {
             </div>
             ${bloqueCosto(p, i)}
             ${cp ? `<div class="prod-rec rec-cargando" id="rec-${i}" data-folder="${esc(fo)}"><i class="fas fa-spinner fa-spin"></i> Buscando recorte…</div>
+            <button class="prod-link-btn" onclick="copiarLinkProducto(${cp.id}, this)"><i class="fas fa-link"></i> Copiar link del producto</button>
             <div class="prod-btns">
                 <button class="prod-fotos-btn" onclick="abrirFotos('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-camera"></i> Fotos</button>
                 <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadreFoto('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-up-down-left-right"></i> Encuadre foto</button>
@@ -1022,6 +1023,27 @@ function pintarRecBadge(el, tiene){
     el.classList.remove('rec-cargando');
     if(tiene){ el.classList.add('rec-si'); el.innerHTML = '<i class="fas fa-cube"></i> Con recorte 3D'; }
     else { el.classList.add('rec-no'); el.innerHTML = '<i class="fas fa-circle-xmark"></i> Sin recorte PNG'; }
+}
+// Copia el link directo a la ficha del producto en la web (abre ese producto solo).
+function copiarLinkProducto(id, btn){
+    const url = 'https://sanou.com.ar/#producto-' + id;
+    const ok = () => {
+        const orig = btn.innerHTML;
+        btn.classList.add('copiado');
+        btn.innerHTML = '<i class="fas fa-check"></i> ¡Link copiado!';
+        setTimeout(() => { btn.classList.remove('copiado'); btn.innerHTML = orig; }, 1800);
+    };
+    const fallback = () => {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.focus(); ta.select();
+            document.execCommand('copy'); ta.remove(); ok();
+        } catch(e){ prompt('Copiá el link:', url); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(ok, fallback);
+    } else fallback();
 }
 
 function bloqueCosto(p, i){
