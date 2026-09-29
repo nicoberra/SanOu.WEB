@@ -345,8 +345,12 @@
     <section class="featured" id="destacados">
         <div class="container">
             <h2 class="section-title text-center featured-title">¡Productos Destacados!</h2>
-            <div class="featured-marquee" id="featuredMarquee">
-                <div class="featured-marquee-track" id="featuredTrack"></div>
+            <div class="featured-marquee-wrap">
+                <button class="feat-nav feat-nav-prev" onclick="featScroll(-1)" aria-label="Anterior"><i class="fas fa-chevron-left"></i></button>
+                <div class="featured-marquee" id="featuredMarquee">
+                    <div class="featured-marquee-track" id="featuredTrack"></div>
+                </div>
+                <button class="feat-nav feat-nav-next" onclick="featScroll(1)" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></button>
             </div>
 
             <div class="products-grid destacados-grid" id="destacadosGrid" style="margin-top:40px;"></div>

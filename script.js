@@ -717,7 +717,7 @@ function _baseLoaded(img){
         .then(j => {
             RECORTE_JSON = j || {};
             document.querySelectorAll('.prod-pop.pop-ok').forEach(_popLoaded);
-            document.querySelectorAll('.product-media img.prod-base').forEach(_baseLoaded);
+            document.querySelectorAll('.prod-base').forEach(_baseLoaded);
         })
         .catch(() => {});
 })();
@@ -744,7 +744,7 @@ function _popLoaded(img){
     img.style.transformOrigin = cfg.o;
     img.style.setProperty('--pop-scale', cfg.escala);
     // Marcamos la tarjeta con una clase simple (evita usar :has() en CSS, que friza la página).
-    const card = img.closest('.product-card');
+    const card = img.closest('.product-card, .feat-card');
     if (card) card.classList.add('tiene-pop');
 }
 function cardMedia(p) {
@@ -767,7 +767,7 @@ function cardMedia(p) {
 // Carga el recorte (para el efecto hover) recién cuando el mouse entra a la tarjeta:
 // así los productos sin recorte no hacen ningún pedido de más.
 document.addEventListener('mouseover', function (e) {
-    const card = e.target.closest && e.target.closest('.product-card, .featured-slide');
+    const card = e.target.closest && e.target.closest('.product-card, .feat-card');
     if (!card) return;
     const pop = card.querySelector('.prod-pop[data-pop]');
     if (pop) { pop.src = pop.getAttribute('data-pop'); pop.removeAttribute('data-pop'); }
@@ -1611,8 +1611,14 @@ function renderFeatured() {
 
     const cardHTML = (p) => {
         const imgs = getImgs(p);
+        const folder = p.folder || p.name;
+        const fdata = `data-folder="${String(folder).replace(/"/g,'&quot;')}"`;
+        // Recorte 3D (mismo sistema que la grilla): al pasar el mouse / en el celu, la herramienta sobresale.
+        const rec = `recortes/${encodeURIComponent(folder)}.png`;
+        const srcAttr = _sinHover() ? `src="${rec}"` : `data-pop="${rec}"`;
+        const pop = `<img class="prod-pop" alt="" aria-hidden="true" ${fdata} ${srcAttr} onload="_popLoaded(this)" onerror="this.remove()">`;
         const media = imgs.length
-            ? `<img src="${imgs[0]}" alt="${p.name}" loading="lazy" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} feat-card-icon\\'></i>'">`
+            ? `<img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} feat-card-icon\\'></i>'">${pop}`
             : `<i class="fas ${p.icon} feat-card-icon"></i>`;
         return `<div class="feat-card" onclick="openModal(${p.id})">
             <div class="feat-card-media">${media}</div>
@@ -1636,6 +1642,7 @@ function initFeaturedMarquee() {
     const speed = 0.5;   // px por frame (~30px/s)
     const pausar   = () => { paused = true; clearTimeout(resumeTimer); };
     const retomar  = (ms) => { clearTimeout(resumeTimer); resumeTimer = setTimeout(() => paused = false, ms || 0); };
+    m._pausar = pausar; m._retomar = retomar;   // para las flechas ◀ ▶
     if (!m.dataset.marqueeInit) {
         m.dataset.marqueeInit = '1';
         m.addEventListener('mouseenter', pausar);
@@ -1661,6 +1668,24 @@ function initFeaturedMarquee() {
         _featRAF = requestAnimationFrame(step);
     }
     step();
+}
+
+// Flechas del carrusel de destacados: mueven una tarjeta a cada lado y pausan el auto-scroll.
+// Loop infinito: al llegar a una punta, salta media vuelta (hay 2 copias) para que nunca se trabe.
+function featScroll(dir){
+    const m = document.getElementById('featuredMarquee');
+    if (!m) return;
+    if (m._pausar) m._pausar();
+    const half = m.scrollWidth / 2;
+    const card = m.querySelector('.feat-card');
+    const step = (card ? card.offsetWidth : 210) + 24;
+    let target = m.scrollLeft + dir * step;
+    if (half > 0) {
+        if (target < 0) target += half;
+        else if (target > half) target -= half;
+    }
+    m.scrollLeft = target;   // movimiento directo (confiable en el webview y aunque el rAF esté pausado)
+    if (m._retomar) m._retomar(3500);
 }
 
 // Destacados: carrusel arriba + un botón que despliega/cierra la grilla completa.

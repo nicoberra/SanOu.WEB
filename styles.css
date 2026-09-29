@@ -2109,7 +2109,7 @@ section { padding: 90px 0; }
 }
 /* ── Destacados: carrusel continuo (foto + nombre) que se desliza de derecha a izquierda ── */
 .featured-marquee {
-    overflow-x: auto; overflow-y: hidden; width: 100%; padding: 12px 0;
+    overflow-x: auto; overflow-y: hidden; width: 100%; padding: 46px 0;
     scrollbar-width: none; -webkit-overflow-scrolling: touch;   /* deslizar con el dedo */
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
             mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
@@ -2136,6 +2136,44 @@ section { padding: 90px 0; }
     .feat-card-name { font-size: 0.83rem; }
     .featured-marquee-track { gap: 16px; }
 }
+/* ── Efecto 3D en los destacados (recorte PNG que sobresale, igual que en la grilla) ── */
+.feat-card-media { position: relative; }
+.feat-card-media::before { content: ''; position: absolute; inset: 0; background: #fff; border-radius: 18px; z-index: 1; }
+.feat-card-media img:not(.prod-pop) { position: relative; z-index: 2; transition: opacity 0.16s ease, transform 0.4s ease; }
+.feat-card-media img.prod-base { transform: scale(var(--fzoom, 1)); }
+.feat-card-media img.prod-pop {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; object-position: center bottom;
+    transform: scale(0.97); transform-origin: center bottom;
+    opacity: 0; pointer-events: none; z-index: 4;
+    filter: drop-shadow(0 14px 20px rgba(0,0,0,0.5));
+    transition: transform 0.22s cubic-bezier(0.2,0.8,0.25,1), opacity 0.16s ease;
+}
+/* Al pasar el mouse: la foto se desvanece, queda el marco blanco y la herramienta sobresale.
+   Usamos una escala fija y moderada (el carrusel recorta lo que se sale de más). */
+.feat-card.tiene-pop:hover { overflow: visible; z-index: 6; }
+.feat-card.tiene-pop:hover .feat-card-media { overflow: visible; }
+.feat-card.tiene-pop:hover .feat-card-media img:not(.prod-pop) { opacity: 0; }
+.feat-card.tiene-pop:hover .feat-card-media img.prod-pop { opacity: 1; transform: scale(1.2); }
+@media (hover: none) {
+    .feat-card.tiene-pop, .feat-card.tiene-pop .feat-card-media { overflow: visible; }
+    .feat-card.tiene-pop .feat-card-media img:not(.prod-pop) { opacity: 0; }
+    .feat-card.tiene-pop .feat-card-media img.prod-pop { opacity: 1; transform: scale(1.12); }
+}
+/* Flechas del carrusel de destacados */
+.featured-marquee-wrap { position: relative; }
+.feat-nav {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 8;
+    width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+    background: rgba(13,13,13,0.82); color: var(--yellow); border: 1.5px solid rgba(255,215,0,0.5);
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45); transition: background 0.15s, transform 0.15s;
+}
+.feat-nav:hover { background: var(--yellow); color: #0D0D0D; }
+.feat-nav:active { transform: translateY(-50%) scale(0.92); }
+.feat-nav-prev { left: 4px; }
+.feat-nav-next { right: 4px; }
+@media (max-width: 640px) { .feat-nav { width: 38px; height: 38px; font-size: 0.95rem; } }
 .featured-info {
     flex: 1;
     display: flex;
