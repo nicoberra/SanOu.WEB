@@ -30,7 +30,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="tuerca-icon.png">
-    <link rel="apple-touch-icon" href="tuerca-icon.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- PWA instalable (Windows/Chrome/Edge/Android) -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0D0D0D">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="San Ou">
     <title>San Ou - Herramientas Hidráulicas | Importador directo Argentina</title>
     <meta name="description" content="Importadores directos de herramientas hidráulicas hace más de 12 años. Crimpadoras, cilindros, bombas, extractores y más. Stock disponible. Envíos a todo el país.">
     <meta name="keywords" content="herramientas hidráulicas, pinza hidráulica, cilindro hidráulico, bomba hidráulica, extractor hidráulico, sacabocados, Argentina">
@@ -920,5 +927,13 @@
 
     <script src="catalogo-productos.js"></script>
     <script src="script.js"></script>
+    <!-- Registro del Service Worker (PWA instalable). No cambia el funcionamiento con internet. -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      }
+    </script>
 </body>
 </html>
