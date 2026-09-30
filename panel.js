@@ -32,6 +32,17 @@ function cerrarSesionPanel() {
     try { localStorage.removeItem('sanou_panel_ok'); } catch (e) {}
     location.reload();
 }
+// Actualiza el CRM sin cerrar/abrir la app. Borra el cache local de datos para forzar traer
+// TODO de nuevo del servidor y recarga (la sesión queda guardada, no vuelve a pedir la clave).
+function refrescarPanel(btn){
+    try { if (btn) btn.classList.add('girando'); } catch (e) {}
+    try {
+        Object.keys(localStorage).forEach(k => {
+            if (k.indexOf('sanou_c_') === 0 || k.indexOf('sanou_t_') === 0) localStorage.removeItem(k);
+        });
+    } catch (e) {}
+    setTimeout(() => location.reload(), 150);
+}
 let _verificando = false;
 async function probarClave() {
     if (_verificando) return;

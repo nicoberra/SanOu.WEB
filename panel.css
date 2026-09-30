@@ -57,6 +57,12 @@ body:not(.bloqueado) .panel-lock{display:none}
 .panel-salir{background:var(--neg3);border:none;color:var(--gris2);width:38px;height:38px;border-radius:10px;
     cursor:pointer;font-size:.95rem}
 .panel-salir:hover{color:#fff;background:#333}
+/* Botón Actualizar (al lado del logo) */
+.panel-refrescar{background:var(--neg3);border:none;color:var(--am);width:34px;height:34px;border-radius:9px;
+    cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.panel-refrescar:hover{background:#333}
+.panel-refrescar.girando i{animation:girarIcono .7s linear infinite}
+@keyframes girarIcono{to{transform:rotate(360deg)}}
 
 .panel-nav{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;border-bottom:1px solid var(--linea);
     position:sticky;top:59px;background:var(--neg);z-index:19;-webkit-overflow-scrolling:touch}
@@ -583,7 +589,7 @@ body:not(.bloqueado) .panel-lock{display:none}
     .panel-nav{
         grid-area:nav; position:sticky; top:72px; align-self:start;
         flex-direction:column; gap:4px; overflow-x:visible; overflow-y:auto;
-        max-height:calc(100vh - 72px);
+        height:calc(100vh - 72px);   /* llega SIEMPRE hasta abajo: la barra gris y la línea continúan */
         padding:16px 12px; border-bottom:none; border-right:1px solid var(--linea);
         background:var(--neg2);
     }
