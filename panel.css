@@ -613,4 +613,15 @@ body:not(.bloqueado) .panel-lock{display:none}
     .cli-btn:hover{color:#fff;background:#333}
     .panel-modal{width:min(560px,92vw)}
     .panel-form-2{gap:12px}
+    /* --- Productos en la compu: categorías en 2 filas y tarjetas más compactas en 2 columnas --- */
+    .prod-cats{flex-wrap:wrap;overflow:visible;padding-bottom:4px}
+    #listaProd{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+    #listaProd .prod-card{margin-bottom:0;padding:12px 14px}
+    .prod-top{margin-bottom:8px}
+    .prod-campos{gap:8px 12px}
+    .prod-num input{padding:7px 10px;font-size:.88rem}
+    .prod-rec{margin-top:8px}
+    .prod-link-btn{margin-top:8px;padding:9px;font-size:.8rem}
+    .prod-btns{margin-top:7px}
+    .prod-btns .prod-fotos-btn{padding:9px 6px;font-size:.76rem}
 }
