@@ -83,6 +83,8 @@
         }
         .may-tag.stock { background: rgba(0,0,0,.65); color: #fff; }
         .may-tag.out   { background: #ff4d4d; color: #fff; }
+        .may-tag.uni   { background: rgba(0,0,0,.72); color: #ffd84d; border: 1px solid rgba(255,215,0,.5); }
+        .may-solo { color: var(--gray-light); font-size: .95rem; font-weight: 800; }
         .may-info { padding: 14px 15px 16px; display: flex; flex-direction: column; flex: 1; }
         .may-name { color: #fff; font-weight: 700; font-size: .92rem; line-height: 1.3; margin-bottom: 10px; }
         .may-min {
@@ -170,6 +172,32 @@
         <div class="may-body">
             <div class="container">
                 <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a la tienda</a>
+
+                <div class="section-header">
+                    <h2 class="section-title">Lista mayorista <span id="mayCount" class="product-count-badge" style="display:none"></span></h2>
+                    <div class="filter-dropdown-wrap" id="filterBar">
+                        <button class="filter-dropdown-btn" onclick="mayToggleFiltro()" id="filterDropdownBtn">
+                            <span id="filterDropdownLabel">Todas las categorías</span>
+                            <i class="fas fa-chevron-down filter-dropdown-arrow" id="filterArrow"></i>
+                        </button>
+                        <div class="filter-dropdown-menu" id="filterDropdownMenu">
+                            <div class="filter-option active" data-filter="all" onclick="mayFiltrar('all','Todas las categorías')">Todas las categorías</div>
+                            <div class="filter-option" data-filter="pinzas" onclick="mayFiltrar('pinzas','Crimpadoras')">Crimpadoras</div>
+                            <div class="filter-option" data-filter="dobladoras" onclick="mayFiltrar('dobladoras','Dobladoras de caño')">Dobladoras de caño</div>
+                            <div class="filter-option" data-filter="cortahierro" onclick="mayFiltrar('cortahierro','Corta hierro')">Corta hierro</div>
+                            <div class="filter-option" data-filter="mordazas" onclick="mayFiltrar('mordazas','Mordazas de torno')">Mordazas de torno</div>
+                            <div class="filter-option" data-filter="bombas" onclick="mayFiltrar('bombas','Bomba hidráulica')">Bomba hidráulica</div>
+                            <div class="filter-option" data-filter="sacabocados" onclick="mayFiltrar('sacabocados','Sacabocados')">Sacabocados</div>
+                            <div class="filter-option" data-filter="cilindros" onclick="mayFiltrar('cilindros','Cilindros hidráulicos')">Cilindros hidráulicos</div>
+                            <div class="filter-option" data-filter="cortadoras" onclick="mayFiltrar('cortadoras','Cortadora barras Cu/Al')">Cortadora barras Cu/Al</div>
+                            <div class="filter-option" data-filter="extractores" onclick="mayFiltrar('extractores','Extractor hidráulico')">Extractor hidráulico</div>
+                            <div class="filter-option" data-filter="punzonadoras" onclick="mayFiltrar('punzonadoras','Punzonadoras')">Punzonadoras</div>
+                            <div class="filter-option" data-filter="motores" onclick="mayFiltrar('motores','Herramientas para vehículos')">Herramientas para vehículos</div>
+                            <div class="filter-option" data-filter="otros" onclick="mayFiltrar('otros','Otros')">Otros</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="mayLista">
                     <div class="may-loading"><i class="fas fa-spinner fa-spin"></i> Cargando lista mayorista…</div>
                 </div>
@@ -202,7 +230,8 @@
         const fmt = n => '$' + Number(n).toLocaleString('es-AR');
         const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
         const parseNum = s => { const m = String(s || '').replace(/[.\s$]/g, '').match(/\d+/); return m ? parseInt(m[0], 10) : 0; };
-        const esSinStock = s => /sin\s*st?ock/i.test(String(s || ''));
+        // Detecta "sin stock" y sus typos comunes ("sin stcok", "sin stok", etc.)
+        const esSinStock = s => /\bsin\s*st/i.test(String(s || ''));
 
         const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
         const STOP = new Set(['de', 'la', 'el', 'con', 'y', 'para', 'hasta', 'mm', 'ton', 'en', 'pz', 'pzs', 'pzas', 'bar', 'nm', 'a']);
@@ -242,32 +271,55 @@
         }
         window._mayEncuadre = aplicarEncuadre;
 
+        // "solo venta unitaria": no hay precio mayorista (lo dice la nota o no hay número de mayorista).
+        const esSoloUnitario = r => /solo\s*unitari/i.test(String(r.nota || '')) || (parseNum(r.mayorista) <= 0 && !esSinStock(r.nota));
+        // Orden dentro de cada categoría: primero los que tienen mayorista, después solo-unitario, al final sin stock.
+        const rank = r => esSinStock(r.nota) || esSinStock(r.mayorista) ? 2 : (esSoloUnitario(r) ? 1 : 0);
+        // Mínimo claro: ">6 unidades" -> "Compra mínima: 6 unidades"
+        function minTexto(minimo) {
+            const n = parseNum(minimo);
+            if (!n) return minimo ? ('Compra mínima: ' + esc(minimo)) : '';
+            return 'Compra mínima: ' + n + (n === 1 ? ' unidad' : ' unidades');
+        }
+
         function cardHTML(r) {
-            const prod = matchProducto(r.producto);
+            const prod = r._prod;
             const folder = prod ? (prod.folder || prod.name) : '';
             const src = imgDe(prod);
-            const agotado = esSinStock(r.nota) || esSinStock(r.mayorista) || esSinStock(r.unitario);
+            const sinStock = esSinStock(r.nota) || esSinStock(r.mayorista) || esSinStock(r.unitario);
+            const soloUni = !sinStock && esSoloUnitario(r);
+            const apagado = sinStock || soloUni;            // línea "apagada" (como sin stock)
             const may = parseNum(r.mayorista);
             const uni = parseNum(r.unitario);
 
             const media = src
                 ? `<div class="may-media"><img src="${esc(src)}" alt="${esc(r.producto)}" loading="lazy" data-folder="${esc(folder)}" onload="_mayEncuadre(this)" onerror="this.parentElement.innerHTML='<div class=\\'may-media-icon\\'><i class=\\'fas ${prod && prod.icon ? esc(prod.icon) : 'fa-screwdriver-wrench'}\\'></i></div>'">`
                 : `<div class="may-media"><div class="may-media-icon"><i class="fas ${prod && prod.icon ? esc(prod.icon) : 'fa-screwdriver-wrench'}"></i></div>`;
-            const tag = agotado ? `<span class="may-tag out">Sin stock</span>` : '';
+            const tag = sinStock ? `<span class="may-tag out">Sin stock</span>`
+                      : (soloUni ? `<span class="may-tag uni">Solo venta unitaria</span>` : '');
 
             let precios = '';
-            if (may > 0) precios += `<div class="may-price-may"><span class="lbl">Mayorista</span><span class="val">${fmt(may)}</span></div>`;
-            if (uni > 0) precios += `<div class="may-price-uni"><span class="lbl">Precio unitario</span><span class="val">${fmt(uni)}</span></div>`;
-            if (may <= 0 && uni <= 0) precios += `<div class="may-price-may"><span class="lbl">Mayorista</span><span class="val" style="font-size:1rem;">A consultar</span></div>`;
+            if (soloUni) {
+                precios += `<div class="may-solo">Solo venta unitaria</div>`;
+                if (uni > 0) precios += `<div class="may-price-uni"><span class="lbl">Precio unitario</span><span class="val">${fmt(uni)}</span></div>`;
+            } else if (sinStock) {
+                if (uni > 0) precios += `<div class="may-price-uni"><span class="lbl">Precio unitario</span><span class="val">${fmt(uni)}</span></div>`;
+                else precios += `<div class="may-solo">Sin stock</div>`;
+            } else {
+                if (may > 0) precios += `<div class="may-price-may"><span class="lbl">Mayorista</span><span class="val">${fmt(may)}</span></div>`;
+                if (uni > 0) precios += `<div class="may-price-uni"><span class="lbl">Precio unitario</span><span class="val">${fmt(uni)}</span></div>`;
+                if (may <= 0 && uni <= 0) precios += `<div class="may-price-may"><span class="lbl">Mayorista</span><span class="val" style="font-size:1rem;">A consultar</span></div>`;
+            }
 
-            const nota = (r.nota && !esSinStock(r.nota)) ? `<div class="may-nota">${esc(r.nota)}</div>` : '';
+            const nota = (r.nota && !esSinStock(r.nota) && !/solo\s*unitari/i.test(r.nota)) ? `<div class="may-nota">${esc(r.nota)}</div>` : '';
             const waTxt = encodeURIComponent('Hola San Ou! Quiero precio mayorista de: ' + r.producto);
+            const minBadge = (!apagado && r.minimo) ? `<div class="may-min"><i class="fas fa-layer-group"></i> ${minTexto(r.minimo)}</div>` : '';
 
-            return `<div class="may-card${agotado ? ' agotado' : ''}">
+            return `<div class="may-card${apagado ? ' agotado' : ''}">
                 ${media}${tag}</div>
                 <div class="may-info">
                     <div class="may-name">${esc(r.producto)}</div>
-                    ${!agotado && r.minimo ? `<div class="may-min"><i class="fas fa-layer-group"></i> Mínimo ${esc(r.minimo)}</div>` : ''}
+                    ${minBadge}
                     <div class="may-prices">${precios}${nota}</div>
                     <a class="may-wa" href="https://wa.me/${WA}?text=${waTxt}" target="_blank"><i class="fab fa-whatsapp"></i> Consultar</a>
                 </div>
@@ -278,27 +330,65 @@
             const cont = document.getElementById('mayLista');
             if (!rows || !rows.length) { cont.innerHTML = '<div class="may-loading">No se pudo cargar la lista. Probá de nuevo en un momento.</div>'; return; }
             let html = '';
-            let abierta = false;
             let buffer = [];
+            let catName = '';
             const cerrarCat = () => {
-                if (!buffer.length) return;
-                // productos sin stock al final de cada categoría
-                buffer.sort((a, b) => (esSinStock(a.nota) || esSinStock(a.mayorista) ? 1 : 0) - (esSinStock(b.nota) || esSinStock(b.mayorista) ? 1 : 0));
-                html += '<div class="may-grid">' + buffer.map(cardHTML).join('') + '</div>';
+                if (!buffer.length) { return; }
+                buffer.sort((a, b) => rank(a) - rank(b));
+                // La categoría (para filtrar) sale del producto del catálogo matcheado.
+                const conMatch = buffer.find(x => x._prod);
+                const secCat = conMatch && conMatch._prod.category ? conMatch._prod.category : 'otros';
+                html += `<section class="may-section" data-cat="${esc(secCat)}">
+                    <div class="may-cat"><h2>${esc(catName)}</h2></div>
+                    <div class="may-grid">${buffer.map(cardHTML).join('')}</div>
+                </section>`;
                 buffer = [];
             };
             rows.forEach(r => {
-                if (r.tipo === 'cat') {
-                    cerrarCat();
-                    if (r.producto) html += `<div class="may-cat"><h2>${esc(r.producto)}</h2></div>`;
-                    abierta = true;
-                } else if (r.tipo === 'prod' && r.producto) {
-                    buffer.push(r);
-                }
+                if (r.tipo === 'cat') { cerrarCat(); catName = r.producto || ''; }
+                else if (r.tipo === 'prod' && r.producto) { r._prod = matchProducto(r.producto); buffer.push(r); }
             });
             cerrarCat();
             cont.innerHTML = html || '<div class="may-loading">No hay productos para mostrar.</div>';
+            mayAplicarFiltro(mayFiltroActual);
         }
+
+        // ── Navegación por categorías (igual que el sitio normal) ──
+        let mayFiltroActual = 'all';
+        function mayToggleFiltro() {
+            const menu = document.getElementById('filterDropdownMenu');
+            const btn = document.getElementById('filterDropdownBtn');
+            const arrow = document.getElementById('filterArrow');
+            const open = menu.classList.toggle('open');
+            btn.classList.toggle('open', open); arrow.classList.toggle('open', open);
+        }
+        function mayFiltrar(cat, label) {
+            document.getElementById('filterDropdownLabel').textContent = label;
+            document.querySelectorAll('.filter-option').forEach(o => o.classList.toggle('active', o.dataset.filter === cat));
+            mayToggleFiltro();
+            mayAplicarFiltro(cat);
+            document.querySelector('.may-body').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function mayAplicarFiltro(cat) {
+            mayFiltroActual = cat;
+            let visibles = 0;
+            document.querySelectorAll('.may-section').forEach(s => {
+                const ok = (cat === 'all' || s.getAttribute('data-cat') === cat);
+                s.style.display = ok ? '' : 'none';
+                if (ok) visibles += s.querySelectorAll('.may-card').length;
+            });
+            const badge = document.getElementById('mayCount');
+            if (badge) { badge.textContent = visibles + (visibles === 1 ? ' producto' : ' productos'); badge.style.display = ''; }
+        }
+        // Cerrar el menú al hacer click afuera (igual que el sitio)
+        document.addEventListener('click', e => {
+            if (!e.target.closest('#filterBar')) {
+                document.getElementById('filterDropdownMenu')?.classList.remove('open');
+                document.getElementById('filterDropdownBtn')?.classList.remove('open');
+                document.getElementById('filterArrow')?.classList.remove('open');
+            }
+        });
+        window.mayToggleFiltro = mayToggleFiltro; window.mayFiltrar = mayFiltrar;
 
         // Fuentes de datos: recortes.json (encuadre, mismo origen) + mayorista_list (backend, por JSONP para evitar CORS)
         function jsonp(url) {
