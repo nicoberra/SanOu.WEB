@@ -1,0 +1,72 @@
+/* Estilos de las páginas SEO (categoría y producto). Usan las variables de styles.css. */
+.seo-page { min-height: 100vh; background: var(--black); padding: 24px 0 70px; }
+.seo-breadcrumb { font-size: .82rem; color: var(--gray); margin: 10px 0 26px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.seo-breadcrumb a { color: var(--yellow); text-decoration: none; }
+.seo-breadcrumb a:hover { text-decoration: underline; }
+.seo-breadcrumb i { font-size: .7rem; color: var(--gray); }
+.seo-breadcrumb span { color: var(--gray-light); }
+
+.seo-tag, .seo-badge {
+    display: inline-block; background: var(--yellow); color: #000; font-weight: 800;
+    font-size: .72rem; text-transform: uppercase; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 6px; margin-bottom: 14px;
+}
+.seo-badge.sm { font-size: .66rem; letter-spacing: .5px; padding: 3px 9px; margin: 0 0 6px; }
+.seo-lead { color: var(--gray-light); font-size: 1rem; line-height: 1.7; }
+
+/* Categoría */
+.seo-cat-head { max-width: 760px; margin-bottom: 36px; }
+.seo-cat-head h1 { font-family: 'Inter', sans-serif; font-weight: 900; font-size: clamp(1.7rem, 4vw, 2.7rem); color: #fff; line-height: 1.1; margin-bottom: 16px; text-transform: uppercase; }
+.seo-cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+.seo-cat-card {
+    background: var(--black-2); border: 1px solid rgba(255,255,255,.07); border-radius: 16px; overflow: hidden;
+    text-decoration: none; display: flex; flex-direction: column; transition: border-color .2s, transform .2s;
+}
+.seo-cat-card:hover { border-color: rgba(255,215,0,.4); transform: translateY(-3px); }
+.seo-cat-card-img { position: relative; aspect-ratio: 1/1; background: #fff; overflow: hidden; }
+.seo-cat-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.seo-chip-out { position: absolute; top: 10px; left: 10px; background: #ff4d4d; color: #fff; font-size: .68rem; font-weight: 800; text-transform: uppercase; padding: 4px 9px; border-radius: 20px; }
+.seo-cat-card-body { padding: 14px 15px 16px; display: flex; flex-direction: column; flex: 1; }
+.seo-cat-card-body h3 { color: #fff; font-size: .98rem; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+.seo-cat-card-body p { color: var(--gray); font-size: .83rem; line-height: 1.5; margin-bottom: 12px; }
+.seo-ver { margin-top: auto; color: var(--yellow); font-weight: 700; font-size: .85rem; display: inline-flex; align-items: center; gap: 6px; }
+
+/* Producto */
+.seo-producto { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; margin-bottom: 20px; }
+.seo-prod-media { background: #fff; border-radius: 18px; overflow: hidden; aspect-ratio: 1/1; }
+.seo-prod-media img { width: 100%; height: 100%; object-fit: contain; }
+.seo-prod-info h1 { font-family: 'Inter', sans-serif; font-weight: 900; font-size: clamp(1.5rem, 3.5vw, 2.4rem); color: #fff; line-height: 1.1; margin-bottom: 14px; }
+.seo-prod-cta { display: flex; flex-direction: column; gap: 10px; margin: 24px 0 16px; }
+.seo-btn-primary, .seo-btn-wa, .seo-btn-sec {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none;
+    font-weight: 800; padding: 14px 20px; border-radius: 12px; font-size: .95rem; transition: opacity .2s, border-color .2s;
+}
+.seo-btn-primary { background: var(--yellow); color: #000; }
+.seo-btn-wa { background: #25D366; color: #fff; }
+.seo-btn-sec { background: var(--black-3); color: var(--gray-light); border: 1px solid rgba(255,255,255,.12); }
+.seo-btn-primary:hover, .seo-btn-wa:hover { opacity: .9; }
+.seo-btn-sec:hover { border-color: var(--yellow); color: var(--yellow); }
+.seo-prod-nota { color: var(--gray); font-size: .84rem; }
+.seo-prod-nota i { color: var(--yellow); margin-right: 3px; }
+.seo-page h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.7rem; letter-spacing: 1.5px; color: #fff; margin: 36px 0 16px; }
+
+/* Relacionados */
+.seo-rel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.seo-rel-card { background: var(--black-2); border: 1px solid rgba(255,255,255,.07); border-radius: 12px; overflow: hidden; text-decoration: none; transition: border-color .2s; }
+.seo-rel-card:hover { border-color: rgba(255,215,0,.4); }
+.seo-rel-img { aspect-ratio: 1/1; background: #fff; }
+.seo-rel-img img { width: 100%; height: 100%; object-fit: cover; }
+.seo-rel-card span { display: block; padding: 10px 12px 14px; color: #fff; font-size: .82rem; font-weight: 600; line-height: 1.3; }
+
+/* Pie: todas las categorías */
+.seo-otras-cats { background: var(--black-2); border-top: 1px solid rgba(255,255,255,.07); padding: 40px 0; margin-top: 50px; }
+.seo-otras-cats h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 1.5px; color: #fff; margin-bottom: 18px; }
+.seo-cat-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.seo-cat-links a { background: var(--black-3); color: var(--gray-light); text-decoration: none; font-size: .86rem; font-weight: 600; padding: 9px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,.08); transition: border-color .2s, color .2s; }
+.seo-cat-links a:hover, .seo-cat-links a.seo-cat-actual { border-color: var(--yellow); color: var(--yellow); }
+.footer .seo-footer-line { color: var(--gray-light); font-size: .9rem; text-align: center; margin: 10px 0 18px; }
+.seo-footer-botones { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+@media (max-width: 760px) {
+    .seo-producto { grid-template-columns: 1fr; gap: 22px; }
+    .seo-cat-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+}
