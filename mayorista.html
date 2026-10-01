@@ -338,7 +338,7 @@
                 // La categoría (para filtrar) sale del producto del catálogo matcheado.
                 const conMatch = buffer.find(x => x._prod);
                 const secCat = conMatch && conMatch._prod.category ? conMatch._prod.category : 'otros';
-                html += `<section class="may-section" data-cat="${esc(secCat)}">
+                html += `<section class="may-section" data-may-cat="${esc(secCat)}">
                     <div class="may-cat"><h2>${esc(catName)}</h2></div>
                     <div class="may-grid">${buffer.map(cardHTML).join('')}</div>
                 </section>`;
@@ -373,7 +373,7 @@
             mayFiltroActual = cat;
             let visibles = 0;
             document.querySelectorAll('.may-section').forEach(s => {
-                const ok = (cat === 'all' || s.getAttribute('data-cat') === cat);
+                const ok = (cat === 'all' || s.getAttribute('data-may-cat') === cat);
                 s.style.display = ok ? '' : 'none';
                 if (ok) visibles += s.querySelectorAll('.may-card').length;
             });
