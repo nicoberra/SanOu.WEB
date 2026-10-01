@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Página privada: se comparte por link, no se indexa -->
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="tuerca-icon.png">
+    <link rel="apple-touch-icon" href="tuerca-icon.png">
+    <title>Lista Mayorista — San Ou</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .may-page { min-height: 100vh; background: var(--black); padding: 0 0 90px; }
+        /* Hero */
+        .may-hero {
+            background: #0D0D0D; border-bottom: 2px solid var(--yellow);
+            padding: 56px 0 46px; text-align: center; position: relative; overflow: hidden;
+        }
+        .may-hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 40%, rgba(255,215,0,0.08) 0%, transparent 70%);
+        }
+        .may-badge {
+            display: inline-block; background: var(--yellow); color: #000;
+            font-weight: 900; font-size: clamp(.8rem, 2vw, 1rem); text-transform: uppercase;
+            letter-spacing: 3px; padding: 9px 30px; margin-bottom: 20px; position: relative;
+            clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+        }
+        .may-hero h1 {
+            font-family: 'Inter', sans-serif; font-weight: 900; line-height: 1.1;
+            font-size: clamp(1.7rem, 4.5vw, 3rem); text-transform: uppercase; position: relative;
+        }
+        .may-hero h1 .y { color: var(--yellow); }
+        .may-hero h1 .w { color: #fff; }
+        .may-hero p {
+            color: var(--gray-light); font-size: 1rem; max-width: 620px;
+            margin: 16px auto 0; line-height: 1.6; position: relative;
+        }
+        .may-note {
+            position: relative; margin: 22px auto 0; max-width: 680px;
+            display: flex; flex-wrap: wrap; gap: 10px 22px; justify-content: center;
+            color: var(--gray-light); font-size: .85rem;
+        }
+        .may-note span { display: inline-flex; align-items: center; gap: 7px; }
+        .may-note i { color: var(--yellow); }
+        /* Body */
+        .may-body { padding: 44px 0 0; }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px; color: var(--yellow);
+            text-decoration: none; font-weight: 700; font-size: .88rem; margin-bottom: 30px;
+            transition: opacity .2s;
+        }
+        .back-btn:hover { opacity: .75; }
+        .may-cat { margin: 42px 0 18px; display: flex; align-items: center; gap: 14px; }
+        .may-cat:first-of-type { margin-top: 6px; }
+        .may-cat h2 {
+            font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 3vw, 1.9rem);
+            letter-spacing: 2px; color: #fff; white-space: nowrap;
+        }
+        .may-cat::after { content: ''; flex: 1; height: 2px; background: linear-gradient(90deg, rgba(255,215,0,.5), transparent); }
+        .may-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(225px, 1fr)); gap: 18px;
+        }
+        .may-card {
+            background: var(--black-2); border: 1px solid rgba(255,255,255,.07);
+            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+            transition: border-color .2s, transform .2s;
+        }
+        .may-card:hover { border-color: rgba(255,215,0,.35); transform: translateY(-3px); }
+        .may-card.agotado { opacity: .72; }
+        .may-media {
+            position: relative; aspect-ratio: 1/1; background: #fff; overflow: hidden;
+        }
+        .may-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .may-media-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #cfcfcf; font-size: 3.2rem; }
+        .may-tag {
+            position: absolute; top: 10px; left: 10px; z-index: 2;
+            font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .5px;
+            padding: 5px 10px; border-radius: 20px;
+        }
+        .may-tag.stock { background: rgba(0,0,0,.65); color: #fff; }
+        .may-tag.out   { background: #ff4d4d; color: #fff; }
+        .may-info { padding: 14px 15px 16px; display: flex; flex-direction: column; flex: 1; }
+        .may-name { color: #fff; font-weight: 700; font-size: .92rem; line-height: 1.3; margin-bottom: 10px; }
+        .may-min {
+            display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+            background: rgba(255,215,0,.1); border: 1px solid rgba(255,215,0,.25); color: var(--yellow);
+            font-size: .72rem; font-weight: 700; padding: 4px 9px; border-radius: 7px; margin-bottom: 12px;
+        }
+        .may-prices { margin-top: auto; }
+        .may-price-may { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+        .may-price-may .lbl { color: var(--gray); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+        .may-price-may .val { color: var(--yellow); font-size: 1.3rem; font-weight: 900; font-family: 'Inter', sans-serif; }
+        .may-price-uni { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 4px; }
+        .may-price-uni .lbl { color: var(--gray); font-size: .72rem; }
+        .may-price-uni .val { color: var(--gray-light); font-size: .92rem; font-weight: 600; }
+        .may-nota { color: var(--gray); font-size: .74rem; margin-top: 8px; font-style: italic; }
+        .may-wa {
+            margin-top: 13px; background: #25D366; color: #fff; text-decoration: none;
+            border-radius: 10px; padding: 10px; font-size: .84rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .2s;
+        }
+        .may-wa:hover { opacity: .88; }
+        .may-loading { text-align: center; color: var(--gray); padding: 60px 0; font-size: .95rem; }
+        .may-cta {
+            margin: 56px auto 0; max-width: 680px; text-align: center;
+            background: var(--black-2); border: 1px solid rgba(255,215,0,.2); border-radius: 18px; padding: 34px 26px;
+        }
+        .may-cta h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; color: #fff; margin-bottom: 8px; }
+        .may-cta p { color: var(--gray); font-size: .9rem; margin-bottom: 20px; }
+        .may-cta a {
+            display: inline-flex; align-items: center; gap: 9px; background: #25D366; color: #fff;
+            text-decoration: none; font-weight: 800; padding: 14px 28px; border-radius: 12px; font-size: 1rem;
+        }
+        @media (max-width: 600px) {
+            .may-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
+            .may-info { padding: 12px 12px 14px; }
+            .may-price-may .val { font-size: 1.15rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <img src="camion_amarillo.png" alt="" class="topbar-truck">
+        🚚 Envíos a todo el país &nbsp;|&nbsp; 📦 Precios por cantidad &nbsp;|&nbsp; 🤝 Programa de revendedores
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo-img-link">
+                <img src="sticker.png" alt="San Ou" class="header-logo">
+            </a>
+            <nav class="nav">
+                <a href="index.html#inicio" class="nav-link">Inicio</a>
+                <a href="index.html#productos" class="nav-link">Productos</a>
+                <a href="mayoristas.html" class="nav-link">Ser revendedor</a>
+                <a href="index.html#contacto" class="nav-link">Contacto</a>
+            </nav>
+            <div class="header-right">
+                <div class="social-icons">
+                    <a href="https://wa.me/5491131751517" target="_blank" class="social-icon si-wa"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://www.instagram.com/sanou.arg" target="_blank" class="social-icon si-ig"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.facebook.com/profile.php?id=61578990548942" target="_blank" class="social-icon si-fb"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="may-page">
+        <!-- Hero -->
+        <div class="may-hero">
+            <div class="container">
+                <div class="may-badge">⚡ Lista mayorista</div>
+                <h1><span class="y">Precios mayoristas</span> <span class="w">San Ou</span></h1>
+                <p>Los mismos productos de siempre, con precios especiales para revendedores y compras por cantidad.</p>
+                <div class="may-note">
+                    <span><i class="fas fa-box"></i> Precios por cantidad mínima</span>
+                    <span><i class="fas fa-truck"></i> Envíos a todo el país</span>
+                    <span><i class="fab fa-whatsapp"></i> Pedidos por WhatsApp</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuerpo -->
+        <div class="may-body">
+            <div class="container">
+                <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver a la tienda</a>
+                <div id="mayLista">
+                    <div class="may-loading"><i class="fas fa-spinner fa-spin"></i> Cargando lista mayorista…</div>
+                </div>
+
+                <div class="may-cta">
+                    <h3>¿Querés hacer un pedido mayorista?</h3>
+                    <p>Escribinos por WhatsApp con los productos y cantidades que necesitás y te pasamos todo.</p>
+                    <a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Quiero%20hacer%20un%20pedido%20mayorista." target="_blank">
+                        <i class="fab fa-whatsapp"></i> Hacer pedido mayorista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp flotante -->
+    <a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Quiero%20información%20sobre%20precios%20mayoristas." target="_blank" class="wa-float">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script src="catalogo-productos.js"></script>
+    <script>
+    (function () {
+        const CRM_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
+        const WA = '5491131751517';
+        const CAT = window.SANOU_PRODUCTOS || [];
+        let RECORTES = {};
+
+        // ── utilidades ──
+        const fmt = n => '$' + Number(n).toLocaleString('es-AR');
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const parseNum = s => { const m = String(s || '').replace(/[.\s$]/g, '').match(/\d+/); return m ? parseInt(m[0], 10) : 0; };
+        const esSinStock = s => /sin\s*st?ock/i.test(String(s || ''));
+
+        const norm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+        const STOP = new Set(['de', 'la', 'el', 'con', 'y', 'para', 'hasta', 'mm', 'ton', 'en', 'pz', 'pzs', 'pzas', 'bar', 'nm', 'a']);
+        const toks = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(t => t.length >= 3 && !STOP.has(t));
+
+        // Matchea un producto del sheet mayorista con el producto del catálogo (para traer la foto).
+        function matchProducto(nombre) {
+            const m = norm(nombre); let best = null, bl = 0;
+            for (const p of CAT) { const cn = norm(p.name); if (cn && m.startsWith(cn) && cn.length > bl) { best = p; bl = cn.length; } }
+            if (best) return best;
+            for (const p of CAT) { const cn = norm(p.name); if (cn && m.includes(cn) && cn.length > bl) { best = p; bl = cn.length; } }
+            if (best) return best;
+            const tk = (nombre.match(/[A-Za-z]{2,4}-?\d+[A-Za-z]*/g) || []).map(norm);
+            for (const p of CAT) { const f = norm(p.folder); for (const t of tk) { if (f && (f === t || f.includes(t) || t.includes(f))) return p; } }
+            const mt = new Set(toks(nombre)); let bs = 0, bp = null;
+            for (const p of CAT) { const ct = toks(p.name); if (!ct.length) continue; let sh = 0; for (const t of ct) if (mt.has(t)) sh++; const sc = sh / ct.length; if (sh >= 3 && sc >= 0.6 && sc > bs) { bs = sc; bp = p; } }
+            return bp;
+        }
+
+        function imgDe(p) {
+            if (!p || !p.imgs || p.imgs === 0) return null;
+            const catFolder = p.catFolder || p.category;
+            const folder = p.folder || p.name;
+            if (Array.isArray(p.imgs)) return `productos/${catFolder}/${folder}/${p.imgs[0]}`;
+            const ext = p.ext || 'jpg';
+            return `productos/${catFolder}/${folder}/1.${ext}`;
+        }
+
+        // Aplica el mismo encuadre que la web (recortes.json) a la foto.
+        function aplicarEncuadre(img) {
+            const folder = img.getAttribute('data-folder') || '';
+            const j = RECORTES[folder];
+            if (!j) return;
+            if (j.ffit) { img.style.objectFit = j.ffit; if (j.ffit === 'contain') img.style.background = '#fff'; }
+            if (j.fpos) { img.style.objectPosition = j.fpos; img.style.transformOrigin = j.fpos; }
+            if (j.fzoom) img.style.transform = 'scale(' + j.fzoom + ')';
+        }
+        window._mayEncuadre = aplicarEncuadre;
+
+        function cardHTML(r) {
+            const prod = matchProducto(r.producto);
+            const folder = prod ? (prod.folder || prod.name) : '';
+            const src = imgDe(prod);
+            const agotado = esSinStock(r.nota) || esSinStock(r.mayorista) || esSinStock(r.unitario);
+            const may = parseNum(r.mayorista);
+            const uni = parseNum(r.unitario);
+
+            const media = src
+                ? `<div class="may-media"><img src="${esc(src)}" alt="${esc(r.producto)}" loading="lazy" data-folder="${esc(folder)}" onload="_mayEncuadre(this)" onerror="this.parentElement.innerHTML='<div class=\\'may-media-icon\\'><i class=\\'fas ${prod && prod.icon ? esc(prod.icon) : 'fa-screwdriver-wrench'}\\'></i></div>'">`
+                : `<div class="may-media"><div class="may-media-icon"><i class="fas ${prod && prod.icon ? esc(prod.icon) : 'fa-screwdriver-wrench'}"></i></div>`;
+            const tag = agotado ? `<span class="may-tag out">Sin stock</span>` : '';
+
+            let precios = '';
+            if (may > 0) precios += `<div class="may-price-may"><span class="lbl">Mayorista</span><span class="val">${fmt(may)}</span></div>`;
+            if (uni > 0) precios += `<div class="may-price-uni"><span class="lbl">Precio unitario</span><span class="val">${fmt(uni)}</span></div>`;
+            if (may <= 0 && uni <= 0) precios += `<div class="may-price-may"><span class="lbl">Mayorista</span><span class="val" style="font-size:1rem;">A consultar</span></div>`;
+
+            const nota = (r.nota && !esSinStock(r.nota)) ? `<div class="may-nota">${esc(r.nota)}</div>` : '';
+            const waTxt = encodeURIComponent('Hola San Ou! Quiero precio mayorista de: ' + r.producto);
+
+            return `<div class="may-card${agotado ? ' agotado' : ''}">
+                ${media}${tag}</div>
+                <div class="may-info">
+                    <div class="may-name">${esc(r.producto)}</div>
+                    ${!agotado && r.minimo ? `<div class="may-min"><i class="fas fa-layer-group"></i> Mínimo ${esc(r.minimo)}</div>` : ''}
+                    <div class="may-prices">${precios}${nota}</div>
+                    <a class="may-wa" href="https://wa.me/${WA}?text=${waTxt}" target="_blank"><i class="fab fa-whatsapp"></i> Consultar</a>
+                </div>
+            </div>`;
+        }
+
+        function render(rows) {
+            const cont = document.getElementById('mayLista');
+            if (!rows || !rows.length) { cont.innerHTML = '<div class="may-loading">No se pudo cargar la lista. Probá de nuevo en un momento.</div>'; return; }
+            let html = '';
+            let abierta = false;
+            let buffer = [];
+            const cerrarCat = () => {
+                if (!buffer.length) return;
+                // productos sin stock al final de cada categoría
+                buffer.sort((a, b) => (esSinStock(a.nota) || esSinStock(a.mayorista) ? 1 : 0) - (esSinStock(b.nota) || esSinStock(b.mayorista) ? 1 : 0));
+                html += '<div class="may-grid">' + buffer.map(cardHTML).join('') + '</div>';
+                buffer = [];
+            };
+            rows.forEach(r => {
+                if (r.tipo === 'cat') {
+                    cerrarCat();
+                    if (r.producto) html += `<div class="may-cat"><h2>${esc(r.producto)}</h2></div>`;
+                    abierta = true;
+                } else if (r.tipo === 'prod' && r.producto) {
+                    buffer.push(r);
+                }
+            });
+            cerrarCat();
+            cont.innerHTML = html || '<div class="may-loading">No hay productos para mostrar.</div>';
+        }
+
+        // Fuentes de datos: recortes.json (encuadre, mismo origen) + mayorista_list (backend, por JSONP para evitar CORS)
+        function jsonp(url) {
+            return new Promise(resolve => {
+                const name = '__may_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+                const s = document.createElement('script');
+                const to = setTimeout(() => { cleanup(); resolve(null); }, 12000);
+                function cleanup() { clearTimeout(to); delete window[name]; s.remove(); }
+                window[name] = d => { cleanup(); resolve(d); };
+                s.onerror = () => { cleanup(); resolve(null); };
+                s.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + name;
+                document.body.appendChild(s);
+            });
+        }
+
+        fetch('recortes.json?_=' + Date.now()).then(r => r.ok ? r.json() : {}).then(j => { RECORTES = j || {}; }).catch(() => {})
+            .finally(() => {
+                jsonp(CRM_URL + '?action=mayorista_list').then(d => {
+                    render(d && d.ok ? d.rows : null);
+                });
+            });
+    })();
+    </script>
+</body>
+</html>
