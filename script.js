@@ -1620,7 +1620,7 @@ function renderFeatured() {
         const media = imgs.length
             ? `<img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} feat-card-icon\\'></i>'">${pop}`
             : `<i class="fas ${p.icon} feat-card-icon"></i>`;
-        return `<div class="feat-card" onclick="openModal(${p.id})">
+        return `<div class="feat-card" ${fdata} onclick="openModal(${p.id})">
             <div class="feat-card-media">${media}</div>
             <div class="feat-card-name">${p.name}</div>
         </div>`;

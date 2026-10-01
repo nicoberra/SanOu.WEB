@@ -2160,6 +2160,25 @@ section { padding: 90px 0; }
     .feat-card.tiene-pop .feat-card-media img:not(.prod-pop) { opacity: 0; }
     .feat-card.tiene-pop .feat-card-media img.prod-pop { opacity: 1; transform: scale(1.12); }
 }
+/* Tijera Cortacable HHD-500 en DESTACADOS: es más larga que el marco, así que la agrandamos y
+   la recortamos AL RAS en el borde de abajo (corte liso, como si continuara) mientras la cabeza
+   sale por arriba. Scopeado SOLO a este producto para no tocar el resto de los destacados. */
+.feat-card[data-folder="Tijera Manual Hasta Hhd-500 Mm"].tiene-pop:hover .feat-card-media,
+.feat-card[data-folder="Tijera Manual Hasta Hhd-500 Mm"].tiene-pop .feat-card-media {
+    clip-path: inset(-150% -150% 0 -150% round 18px);
+}
+.feat-card[data-folder="Tijera Manual Hasta Hhd-500 Mm"].tiene-pop:hover .feat-card-media img.prod-pop {
+    transform: scale(1.45) !important;
+    transform-origin: 50% 50% !important;
+    object-position: 50% 50% !important;
+}
+@media (hover: none) {
+    .feat-card[data-folder="Tijera Manual Hasta Hhd-500 Mm"].tiene-pop .feat-card-media img.prod-pop {
+        transform: scale(1.45) !important;
+        transform-origin: 50% 50% !important;
+        object-position: 50% 50% !important;
+    }
+}
 /* Flechas del carrusel de destacados */
 .featured-marquee-wrap { position: relative; }
 .feat-nav {
