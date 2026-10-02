@@ -35,7 +35,17 @@
 .seo-prod-media { background: #fff; border-radius: 18px; overflow: hidden; aspect-ratio: 1/1; }
 .seo-prod-media img { width: 100%; height: 100%; object-fit: contain; }
 .seo-prod-info h1 { font-family: 'Inter', sans-serif; font-weight: 900; font-size: clamp(1.5rem, 3.5vw, 2.4rem); color: #fff; line-height: 1.1; margin-bottom: 14px; }
-.seo-prod-cta { display: flex; flex-direction: column; gap: 10px; margin: 24px 0 16px; }
+/* Precio en vivo */
+.seo-precio { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin: 20px 0 4px; }
+.seo-precio-lbl { color: var(--gray); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; width: 100%; }
+.seo-precio-consultar { color: var(--gray-light); font-size: 1.1rem; font-weight: 700; }
+.seo-precio-old { color: var(--gray); font-size: 1rem; text-decoration: line-through; }
+.seo-precio-now { color: var(--yellow); font-size: 2rem; font-weight: 900; font-family: 'Inter', sans-serif; line-height: 1; }
+.seo-precio-stock { width: 100%; font-size: .82rem; font-weight: 600; margin-top: 2px; }
+.seo-precio-stock.ok { color: #4ade80; }
+.seo-precio-stock.out { color: #ff6b6b; }
+
+.seo-prod-cta { display: flex; flex-direction: column; gap: 10px; margin: 18px 0 16px; }
 .seo-btn-primary, .seo-btn-wa, .seo-btn-sec {
     display: inline-flex; align-items: center; justify-content: center; gap: 9px; text-decoration: none;
     font-weight: 800; padding: 14px 20px; border-radius: 12px; font-size: .95rem; transition: opacity .2s, border-color .2s;

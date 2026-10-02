@@ -86,7 +86,7 @@ function head(opts) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/seo-paginas.css">
-    ${opts.jsonld.map(j => `<script type="application/ld+json">\n${JSON.stringify(j, null, 2)}\n</script>`).join('\n    ')}
+    ${opts.jsonld.map(j => `<script type="application/ld+json"${j['@type'] === 'Product' ? ' id="ld-product"' : ''}>\n${JSON.stringify(j, null, 2)}\n</script>`).join('\n    ')}
 </head>`;
 }
 
@@ -208,9 +208,12 @@ function paginaProducto(p) {
                     ${p.badge ? `<span class="seo-badge">${esc(p.badge)}</span>` : ''}
                     <h1>${esc(p.name)}</h1>
                     <p class="seo-lead">${esc(desc)}</p>
+                    <div class="seo-precio" id="precioVivo" data-sheet="${esc(p.sheetName || p.name)}">
+                        <span class="seo-precio-lbl">Precio</span><span class="seo-precio-consultar">Consultá el precio</span>
+                    </div>
                     <div class="seo-prod-cta">
                         <a class="seo-btn-primary" href="/index.html#producto-${p.id}"><i class="fas fa-store"></i> Ver y comprar en la tienda</a>
-                        <a class="seo-btn-wa" href="https://wa.me/${WA}?text=${waTxt}" target="_blank"><i class="fab fa-whatsapp"></i> Consultar precio</a>
+                        <a class="seo-btn-wa" href="https://wa.me/${WA}?text=${waTxt}" target="_blank"><i class="fab fa-whatsapp"></i> Consultar por WhatsApp</a>
                     </div>
                     <p class="seo-prod-nota"><i class="fas fa-truck"></i> Envíos a todo el país · <i class="fas fa-box"></i> Importador directo</p>
                 </div>
@@ -218,7 +221,8 @@ function paginaProducto(p) {
             ${specsHTML}
             ${relHTML}
         </div>
-    </main>` + footerCategorias(p.category);
+    </main>
+    <script src="/precio-seo.js" defer></script>` + footerCategorias(p.category);
 }
 
 // ── Página de CATEGORÍA ──
