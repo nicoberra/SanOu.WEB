@@ -20,7 +20,7 @@
 <body>
 
     <div class="pp-bar no-print" id="ppBar">
-        <button onclick="window.print()"><i></i>⬇ Descargar / Imprimir PDF</button>
+        <button id="btnPDF" onclick="descargarPDF()"><i></i>⬇ Descargar PDF</button>
         <button class="pp-bar-2" onclick="volver()">Volver</button>
     </div>
 
@@ -91,6 +91,7 @@
 
     <div class="pp-vacio" id="vacio" style="display:none">No se encontraron datos del presupuesto. Volvé a generarlo desde el carrito o el CRM.</div>
 
+    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
     <script src="catalogo-productos.js"></script>
     <script>
     // ── Mismos datos y cálculo que el cotizador del CRM ──
@@ -160,10 +161,42 @@
         if (envio > 0){ document.getElementById('filaEnvio').style.display=''; set('totEnvio', money(envio)); }
     }
 
+    let DATOS = null;
+    function hoyISO(){ const d=new Date(),p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+
+    // Descarga el PDF REAL (igual que el CRM): html2pdf con layout A4 fijo (clase "exportando"),
+    // así sale idéntico en la compu y en el celular (sin depender de window.print, que recortaba).
+    async function descargarPDF(){
+        const hoja = document.getElementById('hoja');
+        const cli = (DATOS && DATOS.cliente && DATOS.cliente.razon) ? DATOS.cliente.razon : 'SanOu';
+        const nombreArch = 'Cotizacion-' + (String(cli).replace(/[^\w\- ]/g,'').trim() || 'SanOu') + '-' + hoyISO() + '.pdf';
+        const btn = document.getElementById('btnPDF');
+        if (typeof html2pdf === 'undefined'){ try{ window.print(); }catch(e){} return; }
+        const txt = btn ? btn.textContent : '';
+        if (btn){ btn.disabled = true; btn.textContent = 'Generando PDF…'; }
+        document.body.classList.add('exportando');
+        try {
+            await html2pdf().set({
+                margin: [8, 8, 8, 8],
+                filename: nombreArch,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: hoja.scrollWidth },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            }).from(hoja).save();
+        } catch (e) {
+            try { window.print(); } catch(_){}
+        } finally {
+            document.body.classList.remove('exportando');
+            if (btn){ btn.disabled = false; btn.textContent = txt; }
+        }
+    }
+
     (function(){
         const d = leerDatos();
+        DATOS = d;
         if (!d || !(d.items||[]).length){ document.getElementById('vacio').style.display='block'; document.getElementById('ppBar').style.display='none'; return; }
-        function ir(){ pintar(d); document.getElementById('hoja').style.display=''; setTimeout(()=>{ try{ window.print(); }catch(e){} }, 500); }
+        function ir(){ pintar(d); document.getElementById('hoja').style.display=''; }
         if (window.SANOU_PRODUCTOS) ir();
         else { let t=0; const iv=setInterval(()=>{ if(window.SANOU_PRODUCTOS||++t>20){ clearInterval(iv); ir(); } }, 100); }
     })();
