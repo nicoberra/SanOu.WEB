@@ -4,19 +4,26 @@
 // ─────────────────────────────────────────────────────────────────
 
 // ─── CLAVE DE ACCESO ─────────────────────────────────────────────
-// Acá va la HUELLA (hash) de la clave, nunca la clave.
-//
-// Se usa PBKDF2 con 250.000 vueltas: para vos entrar es instantáneo,
-// pero para alguien que quiera adivinar la clave probando millones por
-// segundo, cada intento le cuesta 250.000 veces más. Eso convierte un
-// ataque de segundos en uno de años.
-//
-// Para cambiarla: abrí generar-clave.html, escribí tu clave nueva
-// y pegá acá la huella que te da.
-//
-// OJO: esto protege la CLAVE, no el contenido. Alguien técnico puede
-// leer esta página desde el código fuente sin pasar por el candado.
-const CLAVE_HASH = 'cee92583f674a5ef9fa78953f4d1483eb1aa1f9eeba27612ec72abb0063fd52a';
+// El hash de la clave NO vive en el frontend: se verifica en el backend (Apps Script) contra la
+// propiedad de script PANEL_PASS_HASH. Acá calculamos el hash de lo que se escribe y se lo
+// mandamos al servidor para que confirme si es correcto.
+// Para cambiar la clave: abrí generar-clave.html, generá la huella y pegala en la propiedad
+// PANEL_PASS_HASH del Apps Script (Configuración del proyecto → Propiedades de script).
+const COTIZ_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
+// Llamada JSONP al backend (evita CORS).
+function cotizApi(params) {
+    return new Promise((resolve, reject) => {
+        const cb = 'cotizcb_' + Date.now() + Math.floor(Math.random() * 1e6);
+        const qs = new URLSearchParams({ ...params, callback: cb, _: Date.now() });
+        const s = document.createElement('script');
+        const limpiar = () => { delete window[cb]; s.remove(); };
+        const to = setTimeout(() => { limpiar(); reject(new Error('timeout')); }, 20000);
+        window[cb] = (data) => { clearTimeout(to); limpiar(); resolve(data); };
+        s.onerror = () => { clearTimeout(to); limpiar(); reject(new Error('red')); };
+        s.src = COTIZ_URL + '?' + qs.toString();
+        document.body.appendChild(s);
+    });
+}
 
 const PBKDF2_VUELTAS = 250000;
 const PBKDF2_SAL = 'sanou::cotizador::v2';
@@ -63,16 +70,18 @@ async function probarClave() {
     const btn   = document.getElementById('claveBtn');
     const val   = input.value;
     if (!val.trim()) return;
-    if (CLAVE_HASH === 'PEGAR_AQUI_LA_HUELLA') {
-        err.textContent = 'Falta configurar la clave: abrí generar-clave.html y pegá la huella en cotizador.js.';
-        err.classList.add('on');
-        return;
-    }
     _verificando = true;
     if (btn) { btn.disabled = true; btn.textContent = 'Verificando…'; }
     try {
-        if (await huella(val) === CLAVE_HASH) {
+        const h = await huella(val);
+        let r = null;
+        try { r = await cotizApi({ action: 'panel_login', h: h }); } catch (e) {}
+        if (r && r.ok) {
             desbloquear();
+        } else if (r && r.error) {
+            err.textContent = r.error; err.classList.add('on');
+        } else if (!r) {
+            err.textContent = 'No se pudo verificar la clave (revisá la conexión).'; err.classList.add('on');
         } else {
             err.textContent = 'Clave incorrecta.';
             err.classList.add('on');

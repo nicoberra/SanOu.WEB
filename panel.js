@@ -6,7 +6,9 @@
 const CRM_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
 
 // ─── CLAVE DE ACCESO (misma que el cotizador) ───────────────────
-const CLAVE_HASH = 'cee92583f674a5ef9fa78953f4d1483eb1aa1f9eeba27612ec72abb0063fd52a';
+// El hash de la clave NO vive en el frontend: se verifica en el backend (Apps Script) contra la
+// propiedad de script PANEL_PASS_HASH. Acá solo calculamos el hash de lo que se escribe y se lo
+// mandamos al servidor para que diga si es correcto (así no se puede adivinar desde el código).
 const PBKDF2_VUELTAS = 250000;
 const PBKDF2_SAL = 'sanou::cotizador::v2';
 const DIAS_RECORDAR = 30;
@@ -52,7 +54,12 @@ async function probarClave() {
     if (!input.value.trim()) return;
     _verificando = true; btn.disabled = true; btn.textContent = 'Verificando…';
     try {
-        if (await huella(input.value) === CLAVE_HASH) desbloquear();
+        const h = await huella(input.value);
+        let r = null;
+        try { r = await crm({ action: 'panel_login', h: h }); } catch (e) {}
+        if (r && r.ok) { desbloquear(); }
+        else if (r && r.error) { err.textContent = r.error; err.classList.add('on'); }
+        else if (!r) { err.textContent = 'No se pudo verificar la clave (revisá la conexión).'; err.classList.add('on'); }
         else { err.textContent = 'Clave incorrecta.'; err.classList.add('on'); input.value = ''; input.focus(); }
     } finally { _verificando = false; btn.disabled = false; btn.textContent = 'Entrar'; }
 }
