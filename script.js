@@ -623,6 +623,22 @@ function saveCart() {
     catch(e) {}
 }
 
+// Re-sincroniza precio/stock de los ítems del carrito con los precios REALES ya cargados del Sheet.
+// El carrito guarda una copia del producto; sin esto, un ítem agregado antes de que cargaran los
+// precios (o restaurado del localStorage) quedaría con el precio viejo/placeholder.
+function syncCartPrices() {
+    if (!Array.isArray(cart) || !cart.length) return;
+    let changed = false;
+    cart.forEach(item => {
+        const prod = products.find(p => p.id === item.id);
+        if (!prod) return;
+        if (item.price !== prod.price) { item.price = prod.price; changed = true; }
+        item.oldPrice = prod.oldPrice;
+        item.inStock = prod.inStock;
+    });
+    if (changed) saveCart();
+}
+
 // ─── FORMATO ────────────────────────────────────────────────────
 function fmt(n) {
     return '$' + n.toLocaleString('es-AR');
@@ -1381,8 +1397,15 @@ function generarPresupuestoWeb(e) {
 function emitirPresupuesto({ nombre, telefono, email, empresa, cuit }) {
     if (cart.length === 0) return;
 
-    // Ítems con precio FINAL c/IVA (mismo criterio que el cotizador del CRM)
-    const items = cart.map(p => ({ nombre: p.name, cantidad: p.qty, precioFinal: p.price || 0 }));
+    // Ítems con precio FINAL c/IVA (mismo criterio que el cotizador del CRM).
+    // Tomamos el precio REAL vigente del producto (por id); si ya cargó el Sheet, nunca usa el
+    // placeholder viejo del carrito. Así el presupuesto no cotiza un precio equivocado.
+    syncCartPrices();
+    const items = cart.map(p => {
+        const prod = products.find(x => x.id === p.id);
+        const precio = (prod && prod.price > 0) ? prod.price : (p.price || 0);
+        return { nombre: p.name, cantidad: p.qty, precioFinal: precio };
+    });
     const total = items.reduce((s, i) => s + i.precioFinal * i.cantidad, 0);
     const numero = 'P-' + String(Date.now()).slice(-6);
     const hoy = new Date(); const vence = new Date(hoy); vence.setDate(vence.getDate() + 7);
@@ -2092,6 +2115,8 @@ async function loadFotosManifest() {
 
 // Cargar precios + manifest de fotos y luego dibujar (o refrescar si la red de seguridad ya dibujó).
 Promise.all([loadPricesFromSheet(), loadFotosManifest()]).finally(() => {
+    syncCartPrices();   // corrige precios viejos/placeholder del carrito con los reales del Sheet
+    if (typeof updateCartUI === 'function') updateCartUI();
     if (_catalogoDibujado) refrescarCatalogo();
     else dibujarCatalogo();
 });

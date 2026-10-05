@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════════════════════
 window.SANOU_PRODUCTOS = [
     // Pinzas
-    { id: 26, name: 'Pinza Hidráulica HHYJ-50', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–50 mm²', imgs: ['1.webp'], folder: 'HHYJ-50', catFolder: 'Crimpadoras',
+    { id: 26, name: 'Pinza Hidráulica HHYJ-50', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '6–50 mm²', imgs: ['1.webp'], folder: 'HHYJ-50', catFolder: 'Crimpadoras',
       desc: 'Pinza para indentar terminales de cobre con crimpado hexagonal. Diseño compacto y liviano.',
       specs: [
         { l: 'Rango de crimpado', v: '6–50 mm²' },
@@ -20,7 +20,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '400 × 130 × 50 mm' }
       ]
     },
-    { id: 1, name: 'Pinza Hidráulica HHY-70A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '6–70 mm²', imgs: 2, folder: 'HHY-70A', ext: 'jpeg', catFolder: 'Crimpadoras',
+    { id: 1, name: 'Pinza Hidráulica HHY-70A', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '6–70 mm²', imgs: 2, folder: 'HHY-70A', ext: 'jpeg', catFolder: 'Crimpadoras',
       instagram: 'https://www.instagram.com/reel/DVegLgtCTTj/',
       desc: 'Pinza hidráulica para indentar/engastar terminales. Incluye 7 matrices y maletín plástico de transporte.',
       specs: [
@@ -40,7 +40,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '355 × 173 × 83 mm' }
       ]
     },
-    { id: 2, name: 'Pinza Hidráulica HHY-120A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '10–120 mm²', imgs: 2, folder: 'HHY-120A', ext: 'jpeg', catFolder: 'Crimpadoras',
+    { id: 2, name: 'Pinza Hidráulica HHY-120A', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '10–120 mm²', imgs: 2, folder: 'HHY-120A', ext: 'jpeg', catFolder: 'Crimpadoras',
       instagram: 'https://www.instagram.com/reel/DZa4q0NpACl/',
       desc: 'Pinza hidráulica para indentar/engastar terminales y conectores. Incluye 8 matrices y maletín plástico.',
       specs: [
@@ -60,7 +60,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '430 × 190 × 90 mm' }
       ]
     },
-    { id: 3, name: 'Pinza Hidráulica HHY-300A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 1, folder: 'HHY-300A', ext: 'jpeg', catFolder: 'Crimpadoras',
+    { id: 3, name: 'Pinza Hidráulica HHY-300A', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 1, folder: 'HHY-300A', ext: 'jpeg', catFolder: 'Crimpadoras',
       instagram: 'https://www.instagram.com/reel/DVRfnj7iYuR/',
       desc: 'Pinza hidráulica para indentar/engastar terminales y conectores. Incluye 11 matrices y maletín plástico moldeado.',
       specs: [
@@ -80,7 +80,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '533 × 206 × 102 mm' }
       ]
     },
-    { id: 24, name: 'Pinza Hidráulica HHY-300 (con zafe)', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300 (con zafe)', ext: 'jpeg', catFolder: 'Crimpadoras',
+    { id: 24, name: 'Pinza Hidráulica HHY-300 (con zafe)', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300 (con zafe)', ext: 'jpeg', catFolder: 'Crimpadoras',
       instagram: 'https://www.instagram.com/reel/DX9xUiNJFbh/',
       desc: 'Pinza hidráulica para terminales con válvula de seguridad (zafe). Mayor fuerza y seguridad en el crimpado.',
       specs: [
@@ -100,7 +100,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '540 × 120 × 240 mm' }
       ]
     },
-    { id: 25, name: 'Pinza Hidráulica HHY-300CF + Bomba', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300CF + Bomba', ext: 'webp', catFolder: 'Crimpadoras',
+    { id: 25, name: 'Pinza Hidráulica HHY-300CF + Bomba', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '16–300 mm²', imgs: 3, folder: 'HHY-300CF + Bomba', ext: 'webp', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica con bomba manual incluida HHB-600A. Manguera 1.2 m y caja metálica de transporte.',
       specs: [
         { l: 'Rango de crimpado', v: '16–300 mm²' },
@@ -121,7 +121,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '490 × 260 × 130 mm' }
       ]
     },
-    { id: 27, name: 'Pinza Hidráulica HHY-400B con Zafe', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: ['1.png','2.webp','3.webp','4.jpeg'], folder: 'HHY-400B con zafe', catFolder: 'Crimpadoras',
+    { id: 27, name: 'Pinza Hidráulica HHY-400B con Zafe', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '16–400 mm²', imgs: ['1.png','2.webp','3.webp','4.jpeg'], folder: 'HHY-400B con zafe', catFolder: 'Crimpadoras',
       instagram: 'https://www.instagram.com/reel/DYcqYxAJZ3N/',
       desc: 'Pinza hidráulica para indentar terminales con zafe y sistema de seguridad CCD/CCG.',
       specs: [
@@ -140,7 +140,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '770 × 135 × 240 mm' }
       ]
     },
-    { id: 28, name: 'Pinza Hidráulica HHY-400A', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–400 mm²', imgs: 3, folder: 'HHY-400A', ext: 'jpeg', catFolder: 'Crimpadoras',
+    { id: 28, name: 'Pinza Hidráulica HHY-400A', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '16–400 mm²', imgs: 3, folder: 'HHY-400A', ext: 'jpeg', catFolder: 'Crimpadoras',
       desc: 'Pinza hidráulica de alta fuerza para indentar terminales. Incluye 12 matrices y maletín de transporte.',
       specs: [
         { l: 'Rango de crimpado', v: '16–400 mm²' },
@@ -158,7 +158,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '625 × 110 × 240 mm' }
       ]
     },
-    { id: 29, name: 'Pinza Hidráulica HHY-500 + Bomba', category: 'pinzas', price: 100000, icon: 'fa-scissors', badge: '16–500 mm²', imgs: 3, folder: 'HHY-500 + Bomba', ext: 'jpeg', catFolder: 'Crimpadoras',
+    { id: 29, name: 'Pinza Hidráulica HHY-500 + Bomba', category: 'pinzas', price: 0, icon: 'fa-scissors', badge: '16–500 mm²', imgs: 3, folder: 'HHY-500 + Bomba', ext: 'jpeg', catFolder: 'Crimpadoras',
       instagram: 'https://www.instagram.com/reel/DYC5EnHBxjz/',
       desc: 'Pinza hidráulica de máxima capacidad con bomba manual HHB-600A. Cabeza tipo yugo, caja metálica incluida.',
       specs: [
@@ -182,7 +182,7 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Dobladoras de caño
-    { id: 4, name: 'Dobladora de Caños HHW-2J', category: 'dobladoras', price: 100000, icon: 'fa-arrows-turn-right', badge: '1/2"–2"', imgs: 2, folder: 'HHW-2J', ext: 'webp', catFolder: 'Dobladoras',
+    { id: 4, name: 'Dobladora de Caños HHW-2J', category: 'dobladoras', price: 0, icon: 'fa-arrows-turn-right', badge: '1/2"–2"', imgs: 2, folder: 'HHW-2J', ext: 'webp', catFolder: 'Dobladoras',
       desc: 'Dobladora hidráulica de caños con trípode. Doblado en frío, no requiere precalentamiento. Incluye 6 zapatas.',
       specs: [
         { l: 'Rango de doblado', v: '1/2" – 2"' },
@@ -218,7 +218,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Tipo', v: 'Manual, con base rodante' }
       ]
     },
-    { id: 5, name: 'Dobladora de Caños HHW-3J', category: 'dobladoras', price: 100000, icon: 'fa-arrows-turn-right', badge: '1/2"–3"', imgs: 3, folder: 'HHW-3J', ext: 'webp', catFolder: 'Dobladoras',
+    { id: 5, name: 'Dobladora de Caños HHW-3J', category: 'dobladoras', price: 0, icon: 'fa-arrows-turn-right', badge: '1/2"–3"', imgs: 3, folder: 'HHW-3J', ext: 'webp', catFolder: 'Dobladoras',
       desc: 'Dobladora hidráulica de caños para paredes gruesas con trípode. Doblado en frío hasta 3". Incluye 8 zapatas.',
       specs: [
         { l: 'Rango de doblado', v: '1/2" – 3"' },
@@ -237,7 +237,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '94 × 40 × 21 cm' }
       ]
     },
-    { id: 44, name: 'Dobladora de Caños Manual HHW-25S', category: 'dobladoras', price: 100000, icon: 'fa-arrows-turn-right', badge: '10–25 mm', imgs: 3, folder: 'HHW25S', ext: 'webp', catFolder: 'Dobladoras',
+    { id: 44, name: 'Dobladora de Caños Manual HHW-25S', category: 'dobladoras', price: 0, icon: 'fa-arrows-turn-right', badge: '10–25 mm', imgs: 3, folder: 'HHW25S', ext: 'webp', catFolder: 'Dobladoras',
       desc: 'Dobladora manual de caños con 7 conformadores incluidos (10 a 25 mm). Flexión hasta 180°, resultados óptimos sin deformaciones ni ondulaciones. Matrices de acero casi irrompibles. Viene en maletín de plástico moldeado resistente. Aplicaciones universales: curvas en U, contracurvas, cuello de cisne y curvas de conexión en todos los niveles.',
       specs: [
         { l: 'Rango de doblado', v: '10 mm – 25 mm' },
@@ -263,7 +263,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: 'Maletín de plástico moldeado resistente' }
       ]
     },
-    { id: 6, name: 'Dobladora de Barras HHM-150W', category: 'dobladoras', price: 100000, icon: 'fa-arrows-turn-right', badge: 'Barras Cu/Al', imgs: 3, folder: 'HHM-150W', ext: 'webp', catFolder: 'Dobladoras',
+    { id: 6, name: 'Dobladora de Barras HHM-150W', category: 'dobladoras', price: 0, icon: 'fa-arrows-turn-right', badge: 'Barras Cu/Al', imgs: 3, folder: 'HHM-150W', ext: 'webp', catFolder: 'Dobladoras',
       desc: 'Dobladora hidráulica para barras planas de cobre/aluminio. Ideal para tableros eléctricos, celdas y puesta a tierra.',
       specs: [
         { l: 'Ancho máx. de barra', v: '150 mm' },
@@ -283,7 +283,7 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Corta hierro
-    { id: 7, name: 'Cortadora Hidráulica HHG-16', category: 'cortahierro', price: 100000, icon: 'fa-bolt', badge: 'hasta Ø16 mm', imgs: ['1.png','2.jpeg','3.webp'], folder: 'Cortadora de Varilla 16mm', catFolder: 'cortahierro',
+    { id: 7, name: 'Cortadora Hidráulica HHG-16', category: 'cortahierro', price: 0, icon: 'fa-bolt', badge: 'hasta Ø16 mm', imgs: ['1.png','2.jpeg','3.webp'], folder: 'Cortadora de Varilla 16mm', catFolder: 'cortahierro',
       instagram: 'https://www.instagram.com/reel/DV3kmFEDTG5/',
       desc: 'Cortadora hidráulica de varillas de acero. Corte limpio sin deformación. Compacta y liviana.',
       specs: [
@@ -298,7 +298,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Peso', v: '3,6 kg' }
       ]
     },
-    { id: 8, name: 'Cortadora Hidráulica HHG-22', category: 'cortahierro', price: 100000, icon: 'fa-bolt', badge: 'Ø4–22 mm', imgs: 1, folder: 'Cortadora de Varilla 22mm', ext: 'jpeg',
+    { id: 8, name: 'Cortadora Hidráulica HHG-22', category: 'cortahierro', price: 0, icon: 'fa-bolt', badge: 'Ø4–22 mm', imgs: 1, folder: 'Cortadora de Varilla 22mm', ext: 'jpeg',
       instagram: 'https://www.instagram.com/reel/DWEoY78hbu0/',
       desc: 'Cortadora hidráulica de mayor capacidad. Corta varillas de acero hasta Ø22mm sin esfuerzo.',
       specs: [
@@ -314,7 +314,7 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Mordazas de torno
-    { id: 10, name: 'Mordaza de Torno 80mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 80 mm', imgs: ['1.jpeg','2.png','5.webp'], folder: '80MM',
+    { id: 10, name: 'Mordaza de Torno 80mm', category: 'mordazas', price: 0, icon: 'fa-grip-vertical', badge: 'Ø 80 mm', imgs: ['1.jpeg','2.png','5.webp'], folder: '80MM',
       desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 80 mm' },
@@ -336,7 +336,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
-    { id: 11, name: 'Mordaza de Torno 100mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 100 mm', imgs: ['1.jpeg','2.webp'], folder: '100MM',
+    { id: 11, name: 'Mordaza de Torno 100mm', category: 'mordazas', price: 0, icon: 'fa-grip-vertical', badge: 'Ø 100 mm', imgs: ['1.jpeg','2.webp'], folder: '100MM',
       desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 100 mm' },
@@ -358,7 +358,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
-    { id: 12, name: 'Mordaza de Torno 125mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 125 mm', imgs: ['1.jpeg','2.webp'], folder: '125MM',
+    { id: 12, name: 'Mordaza de Torno 125mm', category: 'mordazas', price: 0, icon: 'fa-grip-vertical', badge: 'Ø 125 mm', imgs: ['1.jpeg','2.webp'], folder: '125MM',
       desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 125 mm' },
@@ -380,7 +380,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
-    { id: 35, name: 'Mordaza de Torno 160mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 160 mm', imgs: ['1.jpeg','2.jpg','3.jpg','4.webp'], folder: '160MM',
+    { id: 35, name: 'Mordaza de Torno 160mm', category: 'mordazas', price: 0, icon: 'fa-grip-vertical', badge: 'Ø 160 mm', imgs: ['1.jpeg','2.jpg','3.jpg','4.webp'], folder: '160MM',
       desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 160 mm' },
@@ -402,7 +402,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
-    { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: ['1.jpeg','2.webp'], folder: '200MM', lowStock: true,
+    { id: 36, name: 'Mordaza de Torno 200mm', category: 'mordazas', price: 0, icon: 'fa-grip-vertical', badge: 'Ø 200 mm', imgs: ['1.jpeg','2.webp'], folder: '200MM', lowStock: true,
       desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 200 mm' },
@@ -424,7 +424,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
-    { id: 37, name: 'Mordaza de Torno 250mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 250 mm', imgs: ['1.jpeg','2.webp'], folder: '250MM',
+    { id: 37, name: 'Mordaza de Torno 250mm', category: 'mordazas', price: 0, icon: 'fa-grip-vertical', badge: 'Ø 250 mm', imgs: ['1.jpeg','2.webp'], folder: '250MM',
       desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 250 mm' },
@@ -446,7 +446,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: '2 juegos de mordazas, manual de usuario, manija de accionamiento y bulones de fijación' }
       ]
     },
-    { id: 38, name: 'Mordaza de Torno 315mm', category: 'mordazas', price: 100000, icon: 'fa-grip-vertical', badge: 'Ø 315 mm', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: '315MM',
+    { id: 38, name: 'Mordaza de Torno 315mm', category: 'mordazas', price: 0, icon: 'fa-grip-vertical', badge: 'Ø 315 mm', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: '315MM',
       desc: 'Plato de 3 mordazas autocentrantes (con doble juego de mordazas) para torno paralelo mecánico o para cualquier máquina o dispositivo que requiera la toma de piezas cilíndricas.',
       specs: [
         { l: 'Diámetro exterior', v: 'Ø 315 mm' },
@@ -469,7 +469,7 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Bomba hidráulica
-    { id: 13, name: 'Bomba Hidráulica Manual HHB-700', category: 'bombas', price: 100000, icon: 'fa-droplet', badge: 'Manual 700 bar', imgs: 2, folder: 'HHB-700', ext: 'jpeg',
+    { id: 13, name: 'Bomba Hidráulica Manual HHB-700', category: 'bombas', price: 0, icon: 'fa-droplet', badge: 'Manual 700 bar', imgs: 2, folder: 'HHB-700', ext: 'jpeg',
       desc: 'Bomba hidráulica manual de alta presión. Manguera de 1.8m incluida con acople rápido R2 3/8". Ideal para cilindros y herramientas hidráulicas San Ou.',
       specs: [
         { l: 'Presión máx.', v: '700 bar' },
@@ -485,7 +485,7 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Sacabocados
-    { id: 16, name: 'Sacabocados Hidráulico HHK-8', category: 'sacabocados', price: 100000, icon: 'fa-bullseye', badge: 'Ø22–60 mm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'HHK-8',
+    { id: 16, name: 'Sacabocados Hidráulico HHK-8', category: 'sacabocados', price: 0, icon: 'fa-bullseye', badge: 'Ø22–60 mm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'HHK-8',
       instagram: 'https://www.instagram.com/reel/DW7BwTygYxn/',
       desc: 'Sacabocados hidráulico para chapas y tableros eléctricos. Incluye 6 matrices y llave.',
       specs: [
@@ -500,7 +500,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: '6 matrices + llave' }
       ]
     },
-    { id: 17, name: 'Sacabocados Hidráulico HHK-15', category: 'sacabocados', price: 100000, icon: 'fa-bullseye', badge: 'Ø63–114 mm', imgs: 3, folder: 'HHK-15', ext: 'webp',
+    { id: 17, name: 'Sacabocados Hidráulico HHK-15', category: 'sacabocados', price: 0, icon: 'fa-bullseye', badge: 'Ø63–114 mm', imgs: 3, folder: 'HHK-15', ext: 'webp',
       desc: 'Sacabocados hidráulico de mayor capacidad para chapas y tableros eléctricos. Incluye 6 matrices y llave.',
       specs: [
         { l: 'Rango de corte', v: 'Ø 63–114 mm' },
@@ -514,7 +514,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Incluye', v: '6 matrices + llave' }
       ]
     },
-    { id: 18, name: 'Sacabocados Hidráulico HHK-8C', category: 'sacabocados', price: 100000, icon: 'fa-bullseye', badge: 'Ø22–60 mm', imgs: 3, folder: 'Hhk-8c', ext: 'webp',
+    { id: 18, name: 'Sacabocados Hidráulico HHK-8C', category: 'sacabocados', price: 0, icon: 'fa-bullseye', badge: 'Ø22–60 mm', imgs: 3, folder: 'Hhk-8c', ext: 'webp',
       desc: 'Sacabocados hidráulico monoblock. Diseño compacto y robusto para tableros eléctricos.',
       specs: [
         { l: 'Rango de corte', v: 'Ø 22–60 mm' },
@@ -528,28 +528,28 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Cilindros hidráulicos telescópicos tipo pastilla (HHYG-D)
-    { id: 19, name: 'Cilindro Hidráulico HHYG-10D',  category: 'cilindros', price: 100000, icon: 'fa-gauge-high', badge: '10 Toneladas', imgs: 3, folder: 'HHYG-10D', ext: 'jpeg',
+    { id: 19, name: 'Cilindro Hidráulico HHYG-10D',  category: 'cilindros', price: 0, icon: 'fa-gauge-high', badge: '10 Toneladas', imgs: 3, folder: 'HHYG-10D', ext: 'jpeg',
       desc: 'Cilindro hidráulico telescópico tipo pastilla. Compacto y liviano, ideal para espacios reducidos. Bomba recomendada: HHB-700C.',
       specs: [{ l:'Capacidad', v:'10 Ton' }, { l:'Carrera', v:'25 mm' }, { l:'Altura cerrada', v:'45 mm' }],
       allSpecs: [{ l:'Capacidad', v:'10 Ton' }, { l:'Carrera', v:'25 mm' }, { l:'Altura cerrada', v:'45 mm' }, { l:'Cap. de aceite', v:'22 cc' }, { l:'Peso', v:'1,4 kg' }, { l:'Bomba recomendada', v:'HHB-700C' }] },
-    { id: 20, name: 'Cilindro Hidráulico HHYG-20D',  category: 'cilindros', price: 100000, icon: 'fa-gauge-high', badge: '20 Toneladas', imgs: ['1.jpg', '2.jpeg'], folder: 'HHYG-20D',
+    { id: 20, name: 'Cilindro Hidráulico HHYG-20D',  category: 'cilindros', price: 0, icon: 'fa-gauge-high', badge: '20 Toneladas', imgs: ['1.jpg', '2.jpeg'], folder: 'HHYG-20D',
       desc: 'Cilindro hidráulico telescópico tipo pastilla. Mayor capacidad de carga con diseño compacto. Bomba recomendada: HHB-700C.',
       specs: [{ l:'Capacidad', v:'20 Ton' }, { l:'Carrera', v:'26 mm' }, { l:'Altura cerrada', v:'52 mm' }],
       allSpecs: [{ l:'Capacidad', v:'20 Ton' }, { l:'Carrera', v:'26 mm' }, { l:'Altura cerrada', v:'52 mm' }, { l:'Cap. de aceite', v:'41 cc' }, { l:'Peso', v:'2,5 kg' }, { l:'Bomba recomendada', v:'HHB-700C' }] },
-    { id: 21, name: 'Cilindro Hidráulico HHYG-30D',  category: 'cilindros', price: 100000, icon: 'fa-gauge-high', badge: '30 Toneladas', imgs: 1, folder: 'HHYG-30D',
+    { id: 21, name: 'Cilindro Hidráulico HHYG-30D',  category: 'cilindros', price: 0, icon: 'fa-gauge-high', badge: '30 Toneladas', imgs: 1, folder: 'HHYG-30D',
       desc: 'Cilindro hidráulico telescópico tipo pastilla. Alta fuerza con estructura robusta de acero. Bomba recomendada: HHB-700C.',
       specs: [{ l:'Capacidad', v:'30 Ton' }, { l:'Carrera', v:'53 mm' }, { l:'Altura cerrada', v:'58 mm' }],
       allSpecs: [{ l:'Capacidad', v:'30 Ton' }, { l:'Carrera', v:'53 mm' }, { l:'Altura cerrada', v:'58 mm' }, { l:'Cap. de aceite', v:'67 cc' }, { l:'Peso', v:'4,1 kg' }, { l:'Bomba recomendada', v:'HHB-700C' }] },
-    { id: 22, name: 'Cilindro Hidráulico HHYG-50D',  category: 'cilindros', price: 100000, icon: 'fa-gauge-high', badge: '50 Toneladas', imgs: ['1.jpg', '2.jpeg'], folder: 'HHYG-50D',
+    { id: 22, name: 'Cilindro Hidráulico HHYG-50D',  category: 'cilindros', price: 0, icon: 'fa-gauge-high', badge: '50 Toneladas', imgs: ['1.jpg', '2.jpeg'], folder: 'HHYG-50D',
       desc: 'Cilindro hidráulico telescópico tipo pastilla. Para trabajos industriales de alta exigencia. Bomba recomendada: HHB-700C.',
       specs: [{ l:'Capacidad', v:'50 Ton' }, { l:'Carrera', v:'64 mm' }, { l:'Altura cerrada', v:'68 mm' }],
       allSpecs: [{ l:'Capacidad', v:'50 Ton' }, { l:'Carrera', v:'64 mm' }, { l:'Altura cerrada', v:'68 mm' }, { l:'Cap. de aceite', v:'113 cc' }, { l:'Peso', v:'6,4 kg' }, { l:'Bomba recomendada', v:'HHB-700C' }] },
-    { id: 23, name: 'Cilindro Hidráulico HHYG-100D', category: 'cilindros', price: 100000, icon: 'fa-gauge-high', badge: '100 Toneladas', imgs: ['1.jpg', '2.webp', '3.webp'], folder: 'HHYG-100D',
+    { id: 23, name: 'Cilindro Hidráulico HHYG-100D', category: 'cilindros', price: 0, icon: 'fa-gauge-high', badge: '100 Toneladas', imgs: ['1.jpg', '2.webp', '3.webp'], folder: 'HHYG-100D',
       desc: 'Cilindro hidráulico telescópico tipo pastilla. Máxima capacidad de la línea, para aplicaciones industriales pesadas. Bomba recomendada: HHB-700C.',
       specs: [{ l:'Capacidad', v:'100 Ton' }, { l:'Carrera', v:'68 mm' }, { l:'Altura cerrada', v:'88 mm' }],
       allSpecs: [{ l:'Capacidad', v:'100 Ton' }, { l:'Carrera', v:'68 mm' }, { l:'Altura cerrada', v:'88 mm' }, { l:'Cap. de aceite', v:'225 cc' }, { l:'Peso', v:'14,5 kg' }, { l:'Bomba recomendada', v:'HHB-700C' }] },
     // Cortadoras para barras de cobre/aluminio
-    { id: 30, name: 'Procesadora de Barras HHM-120HS', category: 'cortadoras', price: 100000, icon: 'fa-cut', badge: '3 en 1', imgs: 2, folder: '120HS', ext: 'webp', catFolder: 'cortadora para barras de cobrealuminio',
+    { id: 30, name: 'Procesadora de Barras HHM-120HS', category: 'cortadoras', price: 0, icon: 'fa-cut', badge: '3 en 1', imgs: 2, folder: '120HS', ext: 'webp', catFolder: 'cortadora para barras de cobrealuminio',
       desc: 'Procesadora hidráulica de barras de cobre/aluminio 3 en 1: corta, dobla y punzona cambiando el cabezal. Incluye 4 punzones.',
       specs: [
         { l: 'Capacidad de barra', v: '120 × 10 mm' },
@@ -567,7 +567,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Medidas de empaque', v: '63 × 27 × 29 cm' }
       ]
     },
-    { id: 31, name: 'Cortadora Hidráulica HHM-150VQ', category: 'cortadoras', price: 100000, icon: 'fa-cut', badge: '150×10 mm', imgs: 3, folder: 'HHM-150VQ', ext: 'webp', catFolder: 'cortadora para barras de cobrealuminio',
+    { id: 31, name: 'Cortadora Hidráulica HHM-150VQ', category: 'cortadoras', price: 0, icon: 'fa-cut', badge: '150×10 mm', imgs: 3, folder: 'HHM-150VQ', ext: 'webp', catFolder: 'cortadora para barras de cobrealuminio',
       desc: 'Cortadora hidráulica para barras planas de cobre/aluminio. Ideal para tableros eléctricos y puesta a tierra.',
       specs: [
         { l: 'Ancho máx. de barra', v: '150 mm' },
@@ -584,7 +584,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Presión de trabajo', v: '700 bar' }
       ]
     },
-    { id: 32, name: 'Cortadora Hidráulica HHM-150Q', category: 'cortadoras', price: 100000, icon: 'fa-cut', badge: '150×10 mm', imgs: 3, folder: 'HHM-150Q', ext: 'webp', catFolder: 'cortadora para barras de cobrealuminio',
+    { id: 32, name: 'Cortadora Hidráulica HHM-150Q', category: 'cortadoras', price: 0, icon: 'fa-cut', badge: '150×10 mm', imgs: 3, folder: 'HHM-150Q', ext: 'webp', catFolder: 'cortadora para barras de cobrealuminio',
       desc: 'Cortadora hidráulica compacta para barras planas de cobre/aluminio. Simple efecto con retorno por resorte.',
       specs: [
         { l: 'Ancho máx. de barra', v: '150 mm' },
@@ -604,7 +604,7 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Punzonadoras
-    { id: 33, name: 'Punzonadora Hidráulica HHM-60', category: 'punzonadoras', price: 100000, icon: 'fa-circle-dot', badge: '3/8"–3/4"', catFolder: 'Punzadoras', imgs: 2, folder: 'HHM-60', ext: 'webp',
+    { id: 33, name: 'Punzonadora Hidráulica HHM-60', category: 'punzonadoras', price: 0, icon: 'fa-circle-dot', badge: '3/8"–3/4"', catFolder: 'Punzadoras', imgs: 2, folder: 'HHM-60', ext: 'webp',
       desc: 'Punzonadora hidráulica para chapas de cobre y hierro. Punzona orificios de 3/8" a 3/4" sin necesidad de taladro.',
       specs: [
         { l: 'Rango de punzonado', v: '3/8" – 3/4"' },
@@ -619,7 +619,7 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Extractores hidráulicos
-    { id: 34, name: 'Extractor Hidráulico HHL-5', category: 'extractores', extraCategories: ['motores'], price: 100000, icon: 'fa-up-from-bracket', badge: '5 Toneladas', catFolder: 'Extractor hidraulico', imgs: 3, folder: 'HHL-5', ext: 'webp',
+    { id: 34, name: 'Extractor Hidráulico HHL-5', category: 'extractores', extraCategories: ['motores'], price: 0, icon: 'fa-up-from-bracket', badge: '5 Toneladas', catFolder: 'Extractor hidraulico', imgs: 3, folder: 'HHL-5', ext: 'webp',
       desc: 'Extractor hidráulico de rodamientos con bomba integrada. Funciona con 2 o 3 patas. Apertura regulable.',
       specs: [
         { l: 'Capacidad', v: '5 Ton' },
@@ -635,7 +635,7 @@ window.SANOU_PRODUCTOS = [
       ]
     },
     // Herramientas para vehículos
-    { id: 39, name: 'Multiplicador de Fuerza Torque Camión Tractor 7500 Nm', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '7500 Nm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Multiplicador De Fuerza Torque Camion Tractor 7500nm', catFolder: 'Herramientas para vehículos',
+    { id: 39, name: 'Multiplicador de Fuerza Torque Camión Tractor 7500 Nm', category: 'motores', price: 0, icon: 'fa-wrench', badge: '7500 Nm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Multiplicador De Fuerza Torque Camion Tractor 7500nm', catFolder: 'Herramientas para vehículos',
       desc: 'Multiplicador de torque manual para aflojar y ajustar tuercas de alta exigencia en camiones, tractores, colectivos y maquinaria pesada.',
       specs: [
         { l: 'Torque máximo', v: '7500 Nm' },
@@ -655,7 +655,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Presentación', v: 'Kit en maletín plástico' }
       ]
     },
-    { id: 40, name: 'Kit Extractor de Rulemanes Cepo Grande 75 mm a 105 mm 9 Pzas', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '75–105 mm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Kit Extractor De Rulemanes Cepo Grande 75 Mm A 105 Mm 9 Pzs', catFolder: 'Herramientas para vehículos',
+    { id: 40, name: 'Kit Extractor de Rulemanes Cepo Grande 75 mm a 105 mm 9 Pzas', category: 'motores', price: 0, icon: 'fa-wrench', badge: '75–105 mm', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Kit Extractor De Rulemanes Cepo Grande 75 Mm A 105 Mm 9 Pzs', catFolder: 'Herramientas para vehículos',
       desc: 'Kit extractor de rulemanes y rodamientos tipo cepo. Extrae rulemanes, poleas, engranajes y piezas ajustadas a presión. 9 piezas en maletín.',
       specs: [
         { l: 'Rango de apertura', v: '75 mm a 105 mm' },
@@ -676,7 +676,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Presentación', v: 'Kit en maletín plástico' }
       ]
     },
-    { id: 41, name: 'Extractor Rulemanes 3 Garras Kit Interior/Exterior', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '3 garras', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Extractor Rulemanes 3 Garras Interior exterior', catFolder: 'Herramientas para vehículos',
+    { id: 41, name: 'Extractor Rulemanes 3 Garras Kit Interior/Exterior', category: 'motores', price: 0, icon: 'fa-wrench', badge: '3 garras', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Extractor Rulemanes 3 Garras Interior exterior', catFolder: 'Herramientas para vehículos',
       desc: 'Kit extractor de rulemanes de 3 garras interior y exterior. Extrae rodamientos, bujes, poleas y piezas ajustadas a presión. Maletín plástico rojo.',
       specs: [
         { l: 'Tipo de agarre', v: '3 garras' },
@@ -692,7 +692,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Presentación', v: 'Maletín plástico rojo' }
       ]
     },
-    { id: 43, name: 'Juego Extractores de Rótulas Extremos Pitman Universal 5 Pz', sheetName: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '5 piezas', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', catFolder: 'Herramientas para vehículos',
+    { id: 43, name: 'Juego Extractores de Rótulas Extremos Pitman Universal 5 Pz', sheetName: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', category: 'motores', price: 0, icon: 'fa-wrench', badge: '5 piezas', imgs: ['1.jpeg','2.webp','3.webp'], folder: 'Juego Extractores De Rotulas Extremos Pitman Universal 5 Pz', catFolder: 'Herramientas para vehículos',
       desc: 'Juego extractor de rótulas, extremos y pitman universal. 5 piezas de metal para autos y camionetas. Modelo MK14050.',
       specs: [
         { l: 'Modelo', v: 'MK14050' },
@@ -708,7 +708,7 @@ window.SANOU_PRODUCTOS = [
         { l: 'Accesorios incluidos', v: '5 piezas' }
       ]
     },
-    { id: 42, name: 'Extractor de Inyectores Diesel', category: 'motores', price: 100000, icon: 'fa-wrench', badge: '24 piezas', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: 'Extractor De Inyectores Diesel', catFolder: 'Herramientas para vehículos',
+    { id: 42, name: 'Extractor de Inyectores Diesel', category: 'motores', price: 0, icon: 'fa-wrench', badge: '24 piezas', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: 'Extractor De Inyectores Diesel', catFolder: 'Herramientas para vehículos',
       desc: 'Extractor neumático de inyectores diésel de 24 piezas, construido en metal para uso intensivo en taller. Retira inyectores trabados en motores common rail sin martillo de inercia manual, con amplia compatibilidad (Bosch, Delphi, Denso, Siemens). Incluye maletín de transporte para tener todas las piezas organizadas.',
       specs: [
         { l: 'Cantidad de piezas', v: '24 piezas' },
