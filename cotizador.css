@@ -162,6 +162,12 @@ body:not(.bloqueado) .cot-lock { display: none; }
 .cot-tabla .col-n { text-align: center; color: var(--gris); }
 .cot-tabla .col-desc strong { display: block; font-weight: 700; }
 .cot-item-desc { display: block; font-size: 0.72rem; color: var(--gris); margin-top: 2px; }
+/* Aviso interno de falta de stock (no sale en el PDF: lleva la clase no-print) */
+.cot-stock-out {
+    display: inline-block; background: #ffe3e3; color: #c92a2a;
+    font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em;
+    padding: 2px 6px; border-radius: 5px; margin-left: 6px; vertical-align: middle;
+}
 .cot-tabla .col-cant, .cot-tabla .col-precio { width: 78px; }
 .cot-tabla .col-unit, .cot-tabla .col-sub { text-align: right; white-space: nowrap; }
 .cot-tabla .col-sub { font-weight: 700; position: relative; padding-right: 26px; }

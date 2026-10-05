@@ -198,6 +198,9 @@ function agregarItem(id) {
     if (items.some(i => i.id === id)) { alert('Ese producto ya está en la cotización.'); return; }
     const p = products.find(x => x.id === id);
     if (!p) return;
+    // Aviso de stock: en el CRM se puede cotizar un producto sin stock (ej. "a pedido"),
+    // pero que quede claro antes de agregarlo.
+    if (p.inStock === false && !confirm('⚠️ "' + p.name + '" está SIN STOCK.\n¿Querés agregarlo igual a la cotización?')) return;
     items.push({ id, cantidad: 1, precioFinal: p.price > 0 ? p.price : 0 });
     renderItems();
 }
@@ -232,7 +235,8 @@ function renderSelector() {
         html += `<optgroup label="${CAT_NAMES[cat]}">`;
         lista.forEach(p => {
             const precio = p.price > 0 ? ' — ' + money(p.price) : ' — (sin precio)';
-            html += `<option value="${p.id}">${p.name}${precio}</option>`;
+            const sinStock = p.inStock === false ? ' ⛔ SIN STOCK' : '';
+            html += `<option value="${p.id}">${p.name}${precio}${sinStock}</option>`;
         });
         html += '</optgroup>';
     });
@@ -254,7 +258,7 @@ function renderItems() {
             return `<tr>
                 <td class="col-n">${i + 1}</td>
                 <td class="col-desc">
-                    <strong>${p.name}</strong>
+                    <strong>${p.name}</strong>${p.inStock === false ? ' <span class="cot-stock-out no-print">SIN STOCK</span>' : ''}
                     <span class="cot-item-desc">${(p.specs || []).map(s => s.l + ': ' + s.v).join(' · ')}</span>
                 </td>
                 <td class="col-cant" data-label="Cantidad"><input type="number" min="1" inputmode="numeric" value="${it.cantidad}" onchange="cambiarCantidad(${it.id}, this.value)"></td>

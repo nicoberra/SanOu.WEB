@@ -977,11 +977,12 @@ function openModal(id) {
                 ${p.instagram ? `<a class="btn-ig-video" href="${p.instagram}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Ver video en Instagram</a>` : ''}
                 <div class="specs-table modal-specs">${specsRows(p.allSpecs || p.specs)}</div>
                 ${p.price > 0 ? `<div class="product-price-bar"><span class="price-label">Precio</span><div class="price-values">${p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="price-amount">${fmt(p.price)}</span></div></div>` : '<div class="modal-consultar">Consultar precio por WhatsApp</div>'}
+                ${stockChipHTML(p)}
                 <div class="modal-buttons">
-                    <button class="btn-add-cart" onclick="addToCart(${p.id}); closeModal()">
+                    <button class="btn-add-cart" onclick="addToCart(${p.id}); closeModal()" ${p.inStock === false ? 'disabled' : ''}>
                         Agregar al carrito
                     </button>
-                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})">
+                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
                         Compra rápida
                     </button>
                 </div>
@@ -1225,6 +1226,12 @@ function searchProducts(query) {
 // ─── CARRITO ─────────────────────────────────────────────────────
 function addToCart(id) {
     const product = products.find(p => p.id === id);
+    // No se puede agregar un producto sin stock (vale para la grilla, el modal y la compra rápida).
+    if (product && product.inStock === false) {
+        if (typeof showToast === 'function') showToast('Ese producto está sin stock. Reingreso en ~90 días.');
+        else alert('Ese producto está sin stock por el momento.');
+        return;
+    }
     if (product) sanouTrack('carrito', product.name);
     // GA4 — agregar al carrito
     if (typeof gtag !== 'undefined') {
