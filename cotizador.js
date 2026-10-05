@@ -352,18 +352,45 @@ function elegirClienteCotizador(id) {
 }
 function guardarCotizacionEnCRM() {
     try {
-        const cliente = (document.getElementById('cliNombre').value || '').trim();
+        const val = id => { const e = document.getElementById(id); return (e && e.value || '').trim(); };
+        const cliente = val('cliNombre');
         if (!cliente || !items.length) return; // sin cliente/ítems no guardamos
         const detalle = items.map(it => {
             const p = products.find(x => x.id === it.id);
             return it.cantidad + 'x ' + (p ? p.name : 'producto');
         }).join(', ');
         const total = calcularTotales().total;
-        const tel = (document.getElementById('cliContacto').value || '').replace(/[^\d]/g, '');
+        const tel = val('cliContacto').replace(/[^\d]/g, '');
+
+        // Datos COMPLETOS del presupuesto (misma forma que usa presupuesto.html) para poder
+        // REABRIR el PDF igual desde el panel. Prefijo 'cot|' = generado desde el CRM.
+        const fE = val('fechaEmision'), fV = val('fechaVence');
+        const datos = {
+            numero: 'C-' + String(Date.now()).slice(-6),
+            fechaEmision: fE ? fmtFecha(fE) : '',
+            fechaVence:   fV ? fmtFecha(fV) : '',
+            cliente: {
+                razon:    cliente,
+                cuit:     val('cliCuit'),
+                condIva:  val('cliCondIva'),
+                contacto: val('cliContacto'),
+                dom:      val('cliDom')
+            },
+            items: items.map(it => {
+                const pr = products.find(x => x.id === it.id);
+                return { nombre: pr ? pr.name : 'producto', cantidad: it.cantidad, precioFinal: it.precioFinal };
+            }),
+            envio: envio || 0,
+            obs: val('obs'),
+            condPago: val('condPago'),
+            condEntrega: val('condEntrega')
+        };
+
         const p = {
             action: 'add', tab: 'Cotizaciones',
             cliente: cliente, telefono: tel, detalle: detalle,
-            monto: String(Math.round(total)), estado: 'Abierta'
+            monto: String(Math.round(total)), estado: 'Abierta',
+            notas: 'cot|' + JSON.stringify(datos)   // datos completos para reabrir el PDF desde el panel
         };
         if (_cotClienteId) p.clienteid = _cotClienteId;   // atar al cliente elegido (ID permanente)
         fetch(CRM_COTIZ_URL + '?' + new URLSearchParams(p).toString(), { mode: 'no-cors' });

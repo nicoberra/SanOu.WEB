@@ -254,12 +254,19 @@ function filtrarCotizaciones() {
     pintarCotizaciones(!q ? cotizaciones : cotizaciones.filter(c => (c.cliente + ' ' + c.detalle + ' ' + c.telefono).toLowerCase().includes(q)));
 }
 function esCotWeb(c) { return String(c.notas || '').startsWith('web|'); }
+// Datos completos del presupuesto si se guardaron (web con 'web|' o CRM con 'cot|'); si no, null.
+function datosReabrir(c) {
+    const n = String(c.notas || '');
+    if (n.startsWith('web|') || n.startsWith('cot|')) { try { return JSON.parse(n.slice(4)); } catch (e) {} }
+    return null;
+}
 function pintarCotizaciones(lista) {
     const cont = document.getElementById('listaCot'); if (!cont) return;
     lista = [...lista].sort((a, b) => (parseFechaCRM(b.fecha) || 0) - (parseFechaCRM(a.fecha) || 0));  // nuevas arriba
     if (!lista.length) { cont.innerHTML = `<div class="panel-vacio-chico">Todavía no hay presupuestos.</div>`; return; }
     cont.innerHTML = lista.map(c => {
         const web = esCotWeb(c);
+        const reabrible = datosReabrir(c);   // tiene datos completos → se puede reabrir el PDF
         // Si la cotización no guardó teléfono, lo buscamos en los usuarios por nombre.
         const tel = c.telefono || telDeCliente(c.cliente);
         const wa = waLink(tel, `¡Hola ${(c.cliente || '').split(' ')[0]}! Te escribo de San Ou 🔧 por tu presupuesto.`);
@@ -275,7 +282,7 @@ function pintarCotizaciones(lista) {
                 ${tel ? `<span><i class="fas fa-phone"></i> ${esc(tel)}</span>` : ''}
             </div>
             <div class="rec-acciones">
-                ${web ? `<button class="cli-btn cli-verpdf" onclick="verPresupuestoWeb('${c.id}')"><i class="fas fa-file-arrow-down"></i> Ver PDF</button>` : ''}
+                ${reabrible ? `<button class="cli-btn cli-verpdf" onclick="verPresupuestoWeb('${c.id}')"><i class="fas fa-file-arrow-down"></i> Ver PDF</button>` : ''}
                 <button class="cli-btn cli-topedido" onclick="pasarCotizacionAPedido('${c.id}')"><i class="fas fa-box"></i> A pedido</button>
                 ${wa ? `<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>` : ''}
                 <button class="cli-btn cli-del" onclick="borrarCotizacion('${c.id}')"><i class="fas fa-trash"></i></button>
@@ -285,8 +292,9 @@ function pintarCotizaciones(lista) {
 }
 function verPresupuestoWeb(id) {
     const c = cotizaciones.find(x => x.id === id); if (!c) return;
+    const datos = datosReabrir(c);   // funciona para presupuestos de la web ('web|') y del CRM ('cot|')
+    if (!datos) { alert('Este presupuesto no tiene datos guardados para reabrir (es de los viejos).'); return; }
     try {
-        const datos = JSON.parse(String(c.notas).slice(4)); // saca el prefijo 'web|'
         localStorage.setItem('sanou_presupuesto', JSON.stringify(datos));
         window.open('presupuesto.html', '_blank');
     } catch (e) { alert('No se pudo abrir el presupuesto (datos incompletos).'); }
