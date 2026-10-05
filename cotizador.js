@@ -386,11 +386,16 @@ async function descargarPDF() {
     if (btn) { btn.disabled = true; btn.textContent = 'Generando PDF…'; }
     document.body.classList.add('exportando');
     try {
+        // Medir con el layout de export aplicado y pasarle a html2canvas el alto/ancho COMPLETOS,
+        // si no capturaba solo el alto del viewport y cortaba el pie (sobre todo en el celular).
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const W = hoja.scrollWidth, H = hoja.scrollHeight;
         await html2pdf().set({
             margin: [8, 8, 8, 8],
             filename: nombreArch,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: hoja.scrollWidth },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff',
+                width: W, height: H, windowWidth: W, windowHeight: H, scrollX: 0, scrollY: 0 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
         }).from(hoja).save();
