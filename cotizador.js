@@ -47,7 +47,8 @@ function accesoVigente() {
         // así, si ya entraste al panel, el cotizador se abre sin pedir clave de nuevo.
         const c = parseInt(localStorage.getItem('sanou_cotiz_ok')  || '0', 10);
         const p = parseInt(localStorage.getItem('sanou_panel_ok') || '0', 10);
-        return c > Date.now() || p > Date.now();
+        // Además de la sesión, requiere tener guardada la clave (hash) para autorizar el backend.
+        return (c > Date.now() || p > Date.now()) && !!localStorage.getItem('sanou_auth');
     } catch (e) { return false; }
 }
 
@@ -77,6 +78,7 @@ async function probarClave() {
         let r = null;
         try { r = await cotizApi({ action: 'panel_login', h: h }); } catch (e) {}
         if (r && r.ok) {
+            try { localStorage.setItem('sanou_auth', h); } catch (e) {}
             desbloquear();
         } else if (r && r.error) {
             err.textContent = r.error; err.classList.add('on');
@@ -312,7 +314,8 @@ function crmJSONP(params) {
     return new Promise((resolve, reject) => {
         const cb = 'cotcb_' + Date.now() + Math.floor(Math.random() * 1000);
         const s = document.createElement('script');
-        const q = new URLSearchParams(Object.assign({}, params, { callback: cb })).toString();
+        let _auth = ''; try { _auth = localStorage.getItem('sanou_auth') || ''; } catch (e) {}
+        const q = new URLSearchParams(Object.assign({}, params, { auth: _auth, callback: cb })).toString();
         window[cb] = (data) => { resolve(data); try { delete window[cb]; } catch (e) {} s.remove(); };
         s.onerror = () => { try { delete window[cb]; } catch (e) {} s.remove(); reject('red'); };
         s.src = CRM_COTIZ_URL + '?' + q;

@@ -22,7 +22,9 @@ async function huella(txt) {
     return [...new Uint8Array(bits)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 function accesoVigente() {
-    try { return parseInt(localStorage.getItem('sanou_panel_ok') || '0', 10) > Date.now(); }
+    // Requiere sesión vigente Y tener guardada la clave (hash) para autorizar las llamadas al
+    // backend. Si falta el hash (sesión vieja de antes de este cambio), pide la clave de nuevo.
+    try { return parseInt(localStorage.getItem('sanou_panel_ok') || '0', 10) > Date.now() && !!localStorage.getItem('sanou_auth'); }
     catch (e) { return false; }
 }
 function desbloquear() {
@@ -31,7 +33,7 @@ function desbloquear() {
     navegar('panel');
 }
 function cerrarSesionPanel() {
-    try { localStorage.removeItem('sanou_panel_ok'); } catch (e) {}
+    try { localStorage.removeItem('sanou_panel_ok'); localStorage.removeItem('sanou_auth'); } catch (e) {}
     location.reload();
 }
 // Actualiza el CRM sin cerrar/abrir la app. Borra el cache local de datos para forzar traer
@@ -57,7 +59,7 @@ async function probarClave() {
         const h = await huella(input.value);
         let r = null;
         try { r = await crm({ action: 'panel_login', h: h }); } catch (e) {}
-        if (r && r.ok) { desbloquear(); }
+        if (r && r.ok) { try { localStorage.setItem('sanou_auth', h); } catch (e) {} desbloquear(); }
         else if (r && r.error) { err.textContent = r.error; err.classList.add('on'); }
         else if (!r) { err.textContent = 'No se pudo verificar la clave (revisá la conexión).'; err.classList.add('on'); }
         else { err.textContent = 'Clave incorrecta.'; err.classList.add('on'); input.value = ''; input.focus(); }
@@ -68,7 +70,8 @@ async function probarClave() {
 function crm(params) {
     return new Promise((resolve, reject) => {
         const cb = 'crmcb_' + Date.now() + Math.floor(Math.random() * 1e6);
-        const qs = new URLSearchParams({ ...params, callback: cb, _: Date.now() });
+        let _auth = ''; try { _auth = localStorage.getItem('sanou_auth') || ''; } catch (e) {}
+        const qs = new URLSearchParams({ ...params, auth: _auth, callback: cb, _: Date.now() });
         const s = document.createElement('script');
         const limpiar = () => { delete window[cb]; s.remove(); };
         const to = setTimeout(() => { limpiar(); reject(new Error('timeout')); }, 20000);
