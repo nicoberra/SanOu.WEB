@@ -5107,3 +5107,107 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 96%);
             mask-image: linear-gradient(to bottom, #000 62%, transparent 96%);
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   BANNER DE LA GUÍA — versión premium (2026-10-07)
+   La HHY-120A avanza y gira con el scroll, se encienden las medidas (6–70 / 10–120 / 16–300 mm²)
+   y una luz recorre el borde. Movimiento en guia-banner.js (sin librerías).
+   Estado sin JS / movimiento reducido = herramienta quieta en su lugar.
+   ═════════════════════════════════════════════════════════════════════ */
+.guia-banner--premium {
+    --p: .5;
+    position: relative; isolation: isolate; overflow: hidden;
+    display: grid; grid-template-columns: 1fr; align-items: center;
+    min-height: 270px; padding: 36px 44px; margin: 8px 0 32px;
+    border-radius: 24px; border: 1px solid rgba(255,215,0,0.22);
+    background:
+        radial-gradient(120% 150% at 82% 50%, rgba(255,215,0,0.12), transparent 55%),
+        linear-gradient(100deg, #17150b 0%, #0f0f0f 62%);
+    transition: border-color .3s ease, box-shadow .3s ease;
+}
+.guia-banner--premium:hover {
+    transform: none;
+    border-color: rgba(255,215,0,0.5);
+    box-shadow: 0 30px 70px -36px rgba(255,215,0,0.4);
+}
+/* Luz que recorre el borde, atada al scroll (--p la actualiza guia-banner.js) */
+.guia-banner--premium::before {
+    content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    border-radius: inherit; padding: 1px;
+    background: linear-gradient(100deg,
+        transparent calc(var(--p) * 130% - 40%),
+        rgba(255,215,0,0.95) calc(var(--p) * 130% - 15%),
+        transparent calc(var(--p) * 130% + 10%));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+}
+.guia-banner--premium .guia-banner-text {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 0;
+    max-width: 50%;
+}
+.guia-banner--premium .guia-banner-kicker {
+    color: var(--yellow); font-size: .72rem; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.guia-banner--premium .guia-banner-text strong {
+    font-size: clamp(1.35rem, 2.3vw, 1.95rem); line-height: 1.15; margin-bottom: 8px;
+}
+.guia-banner--premium .guia-banner-text > span:not(.guia-banner-kicker):not(.guia-banner-btn) { font-size: .95rem; }
+
+.guia-sizes { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 24px; padding: 0; }
+.guia-size {
+    display: flex; flex-direction: column; gap: 1px;
+    padding: 10px 14px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.03);
+    transition: border-color .45s ease, background-color .45s ease, transform .45s var(--ease-out), box-shadow .45s ease;
+}
+.guia-size b { color: var(--white); font-size: .98rem; font-weight: 800; transition: color .45s ease; }
+.guia-size small { color: var(--gray); font-size: .72rem; font-weight: 700; letter-spacing: .5px; }
+.guia-size.is-on {
+    border-color: rgba(255,215,0,0.7); background: rgba(255,215,0,0.10);
+    transform: translateY(-2px); box-shadow: 0 12px 26px -16px rgba(255,215,0,0.7);
+}
+.guia-size.is-on b { color: var(--yellow); }
+
+.guia-banner--premium .guia-banner-btn {
+    color: #111; font-size: .92rem; padding: 12px 22px;
+    transition: transform .2s var(--ease-out), box-shadow .2s ease;
+}
+.guia-banner--premium .guia-banner-btn i { transition: transform .25s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+    .guia-banner--premium:hover .guia-banner-btn { box-shadow: 0 10px 24px -10px rgba(255,215,0,0.7); }
+    .guia-banner--premium:hover .guia-banner-btn i { transform: translateX(4px); }
+}
+
+/* Escenario de la herramienta (derecha en desktop) */
+.guia-stage { position: absolute; z-index: 0; top: 0; bottom: 0; right: 0; width: 56%; pointer-events: none; }
+.guia-stage-glow {
+    position: absolute; left: 50%; top: 50%; width: 72%; aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(255,215,0,0.24), transparent 65%);
+    filter: blur(12px);
+}
+.guia-tool {
+    position: absolute; left: 50%; top: 50%;
+    width: min(520px, 94%); height: auto; max-width: none;
+    transform: translate(-50%, -50%) rotate(-6deg);
+    filter: drop-shadow(0 28px 30px rgba(0,0,0,0.65));
+    will-change: transform;
+}
+.guia-stage-floor {
+    position: absolute; left: 22%; right: 12%; bottom: 12%; height: 26px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.7), transparent 70%);
+    filter: blur(6px);
+}
+
+/* Celular: la herramienta arriba, el texto abajo */
+@media (max-width: 760px) {
+    .guia-banner--premium { padding: 0 20px 24px; min-height: 0; border-radius: 20px; }
+    .guia-banner--premium .guia-banner-text { max-width: none; }
+    .guia-stage { position: relative; order: -1; width: auto; height: 190px; margin: 0 -20px 4px; }
+    .guia-tool { width: min(360px, 88%); }
+    .guia-banner--premium .guia-banner-btn { width: 100%; justify-content: center; }
+}
+/* fin BANNER DE LA GUÍA */

@@ -515,15 +515,25 @@
                     <i class="fas fa-scale-balanced"></i> Comparar herramientas
                 </button>
             </div>
-            <a href="guia-crimpadoras-hidraulicas.html" class="guia-banner" id="guiaBanner" target="_blank" rel="noopener">
+            <!-- Banner de la guía: la HHY-120A avanza y gira con el scroll y se encienden las medidas (guia-banner.js).
+                 Sin JS o con "reducir movimiento": queda quieta en su lugar y todo se ve igual. -->
+            <a href="guia-crimpadoras-hidraulicas.html" class="guia-banner guia-banner--premium" id="guiaBanner" target="_blank" rel="noopener">
                 <div class="guia-banner-text">
-                    <span class="guia-banner-icon">🔧</span>
-                    <div>
-                        <strong>¿No sabés qué crimpadora comprar?</strong>
-                        <span>Leé nuestra guía y elegí la correcta según tu cable (mm²).</span>
-                    </div>
+                    <span class="guia-banner-kicker">Guía de compra</span>
+                    <strong>¿No sabés qué crimpadora comprar?</strong>
+                    <span>Leé nuestra guía y elegí la correcta según tu cable (mm²).</span>
+                    <ul class="guia-sizes" aria-label="Rangos de cable por modelo">
+                        <li class="guia-size"><b>6–70 mm²</b><small>HHY-70A</small></li>
+                        <li class="guia-size"><b>10–120 mm²</b><small>HHY-120A</small></li>
+                        <li class="guia-size"><b>16–300 mm²</b><small>HHY-300A</small></li>
+                    </ul>
+                    <span class="guia-banner-btn">Ver la guía <i class="fas fa-arrow-right"></i></span>
                 </div>
-                <span class="guia-banner-btn">Ver la guía <i class="fas fa-arrow-right"></i></span>
+                <div class="guia-stage" aria-hidden="true">
+                    <span class="guia-stage-glow"></span>
+                    <img src="guia-crimpadora-120a.webp" alt="" class="guia-tool" width="900" height="553" loading="lazy" decoding="async">
+                    <span class="guia-stage-floor"></span>
+                </div>
             </a>
             <div class="products-grid" id="productsGrid"></div>
             <div class="ver-mas-wrap" id="verMasWrap" style="display:none;">
@@ -990,6 +1000,7 @@
     <script src="script.js"></script>
     <script src="mejoras-ui.js"></script>
     <script src="crimp-story.js" defer></script>
+    <script src="guia-banner.js" defer></script>
     <!-- Registro del Service Worker (PWA instalable). No cambia el funcionamiento con internet. -->
     <script>
       if ('serviceWorker' in navigator) {
