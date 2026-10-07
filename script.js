@@ -726,6 +726,25 @@ function _baseLoaded(img){
     if (j.fpos) { img.style.objectPosition = j.fpos; img.style.transformOrigin = j.fpos; }
     if (j.fzoom) img.style.setProperty('--fzoom', j.fzoom);
 }
+// Encuadre de las fotos de CATEGORÍA: cada categoría muestra la foto de un producto.
+// Reusamos el encuadre (fpos = qué parte se ve / fzoom = acercamiento) que se edita en el CRM
+// con "Encuadre foto" de ese producto. Si algún día se edita aparte, una entrada "cat:<slug>"
+// en recortes.json tiene prioridad. Las categorías con foto compuesta (mordazas, motores, otros)
+// no tienen producto y quedan centradas.
+const CAT_FOTO_FOLDER = {
+    pinzas: 'HHY-70A', dobladoras: 'HHW-2J', cortahierro: 'Cortadora de Varilla 22mm',
+    bombas: 'HHB-700', sacabocados: 'HHK-8', cilindros: 'HHYG-10D',
+    cortadoras: '120HS', extractores: 'HHL-5', punzonadoras: 'HHM-60'
+};
+function aplicarEncuadreCategorias(){
+    document.querySelectorAll('.category-card[data-cat]').forEach(card => {
+        const cat = card.getAttribute('data-cat');
+        const j = RECORTE_JSON['cat:' + cat] || RECORTE_JSON[CAT_FOTO_FOLDER[cat]];
+        if (!j) return;
+        if (j.fpos)  card.style.backgroundPosition = j.fpos;
+        if (j.fzoom && j.fzoom > 1) card.style.backgroundSize = Math.round(j.fzoom * 100) + '%';
+    });
+}
 // Trae recortes.json (lo que Nicolás editó en el CRM) y reaplica a lo ya cargado (recortes 3D + fotos).
 (function cargarRecortesJSON(){
     fetch('recortes.json?_=' + Date.now())
@@ -734,6 +753,7 @@ function _baseLoaded(img){
             RECORTE_JSON = j || {};
             document.querySelectorAll('.prod-pop.pop-ok').forEach(_popLoaded);
             document.querySelectorAll('.prod-base').forEach(_baseLoaded);
+            aplicarEncuadreCategorias();
         })
         .catch(() => {});
 })();
