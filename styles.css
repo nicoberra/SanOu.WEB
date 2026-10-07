@@ -2176,6 +2176,18 @@ section { padding: 90px 0; }
         object-position: 50% 50% !important;
     }
 }
+/* Cortadora de Varilla 22mm (HHG-22): corte AL RAS en el borde de abajo (como la Tijera),
+   para que la parte de abajo quede cortada derecha y no con el corte redondeado + hueco.
+   En destacados Y en la grilla de productos. Es no destructivo: solo recorta lo que se sale
+   por debajo del marco; la escala/posición se sigue ajustando desde el recorte del CRM. */
+.feat-card[data-folder="Cortadora de Varilla 22mm"].tiene-pop:hover .feat-card-media,
+.feat-card[data-folder="Cortadora de Varilla 22mm"].tiene-pop .feat-card-media {
+    clip-path: inset(-150% -150% 0 -150% round 18px);
+}
+.product-card.tiene-pop:hover .product-media:has(img.prod-pop[data-folder="Cortadora de Varilla 22mm"]),
+.product-card.tiene-pop .product-media:has(img.prod-pop[data-folder="Cortadora de Varilla 22mm"]) {
+    clip-path: inset(-150% -150% 0 -150% round 12px);
+}
 /* Flechas del carrusel de destacados */
 .featured-marquee-wrap { position: relative; }
 .feat-nav {
@@ -5094,4 +5106,79 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 .crimp-tool {
     -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 96%);
             mask-image: linear-gradient(to bottom, #000 62%, transparent 96%);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   CATEGORÍAS EN 3D (2026-10-07): el producto sobresale del recuadro.
+   Solo las 6 categorías que tienen recorte transparente (las otras quedan planas).
+   ═════════════════════════════════════════════════════════════════════ */
+.category-card[data-cat="pinzas"],
+.category-card[data-cat="dobladoras"],
+.category-card[data-cat="cortahierro"],
+.category-card[data-cat="bombas"],
+.category-card[data-cat="cortadoras"],
+.category-card[data-cat="extractores"] { overflow: visible; }
+
+.category-card[data-cat="pinzas"]::after,
+.category-card[data-cat="dobladoras"]::after,
+.category-card[data-cat="cortahierro"]::after,
+.category-card[data-cat="bombas"]::after,
+.category-card[data-cat="cortadoras"]::after,
+.category-card[data-cat="extractores"]::after {
+    content: "";
+    position: absolute;
+    left: 6%; right: 6%; bottom: 42px; top: -22%;
+    background-repeat: no-repeat; background-position: center bottom; background-size: contain;
+    filter: drop-shadow(0 12px 16px rgba(0,0,0,0.55));
+    opacity: 0; transform: translateY(10px) scale(0.9); transform-origin: center bottom;
+    transition: opacity 0.25s ease, transform 0.32s cubic-bezier(0.2,0.8,0.25,1);
+    z-index: 4; pointer-events: none;
+}
+.category-card[data-cat="pinzas"]::after      { background-image: url("recortes/HHY-70A.png"); }
+.category-card[data-cat="dobladoras"]::after  { background-image: url("recortes/HHW-2J.png"); }
+.category-card[data-cat="cortahierro"]::after { background-image: url("recortes/Cortadora de Varilla 22mm.png"); }
+.category-card[data-cat="bombas"]::after      { background-image: url("recortes/HHB-700.png"); }
+.category-card[data-cat="cortadoras"]::after  { background-image: url("recortes/120HS.png"); }
+.category-card[data-cat="extractores"]::after { background-image: url("recortes/HHL-5.png"); }
+
+/* El rótulo siempre por encima del producto, para que se lea */
+.category-card h3 { z-index: 6; }
+
+/* Desktop: aparece al pasar el mouse; la foto de fondo se oscurece para que resalte */
+@media (hover: hover) and (pointer: fine) {
+    .category-card[data-cat="pinzas"]:hover::after,
+    .category-card[data-cat="dobladoras"]:hover::after,
+    .category-card[data-cat="cortahierro"]:hover::after,
+    .category-card[data-cat="bombas"]:hover::after,
+    .category-card[data-cat="cortadoras"]:hover::after,
+    .category-card[data-cat="extractores"]:hover::after { opacity: 1; transform: translateY(0) scale(1); }
+
+    .category-card[data-cat="pinzas"]:hover::before,
+    .category-card[data-cat="dobladoras"]:hover::before,
+    .category-card[data-cat="cortahierro"]:hover::before,
+    .category-card[data-cat="bombas"]:hover::before,
+    .category-card[data-cat="cortadoras"]:hover::before,
+    .category-card[data-cat="extractores"]:hover::before {
+        background: linear-gradient(to top, rgba(8,8,8,0.80) 0%, rgba(8,8,8,0.92) 100%);
+    }
+}
+/* Celular (sin hover): el producto queda siempre un poco sobresalido, sobre fondo oscuro */
+@media (hover: none) {
+    .category-card[data-cat="pinzas"]::after,
+    .category-card[data-cat="dobladoras"]::after,
+    .category-card[data-cat="cortahierro"]::after,
+    .category-card[data-cat="bombas"]::after,
+    .category-card[data-cat="cortadoras"]::after,
+    .category-card[data-cat="extractores"]::after { opacity: 1; transform: none; top: -8%; }
+
+    .category-card[data-cat="pinzas"]::before,
+    .category-card[data-cat="dobladoras"]::before,
+    .category-card[data-cat="cortahierro"]::before,
+    .category-card[data-cat="bombas"]::before,
+    .category-card[data-cat="cortadoras"]::before,
+    .category-card[data-cat="extractores"]::before {
+        background: linear-gradient(to top, rgba(8,8,8,0.78) 0%, rgba(8,8,8,0.90) 100%);
+    }
+    /* más aire arriba de cada fila para que el producto no tape la fila de arriba */
+    .categories-grid { row-gap: 32px; }
 }
