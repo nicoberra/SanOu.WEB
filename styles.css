@@ -4922,12 +4922,15 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
    mantiene su tamaño original (180×365), que es como el cliente lo quiere. */
 @media (max-width: 768px) {
     .hero-content > .hero-logo { display: none; }
+    /* En celu se oculta el botón "Consultar ahora" del hero para dar lugar al teléfono grande.
+       Siguen el botón "Ver productos" y el botón flotante de WhatsApp (abajo a la derecha). */
+    .hero-content .btn-wa-hero { display: none; }
 }
 @media (max-width: 480px) {
-    .hero { padding-top: 12px; }
-    .hero-inner { gap: 16px; }
-    .hero-slogan-block { margin-bottom: 12px; }
-    .hero-sub { margin-bottom: 18px; }
+    .hero { padding-top: 4px; padding-bottom: 24px; }
+    .hero-inner { gap: 6px; }
+    .hero-slogan-block { margin-top: 2px; margin-bottom: 6px; }
+    .hero-sub { margin-top: 0; margin-bottom: 8px; }
 }
 
 /* Movimiento reducido (opción de accesibilidad del sistema): sin loops, sin desplazamientos */
