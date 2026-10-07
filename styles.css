@@ -5083,3 +5083,10 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
    "clip" oculta el desborde igual pero sin crear contenedor de scroll. */
 @supports (overflow: clip) { body { overflow-x: clip; } }
 /* fin CÓMO SE CRIMPA */
+
+/* Crimpadora de la sección "Cómo se crimpa": HHY-300A (modelo con stock). El recorte es un
+   primer plano y los mangos se cortan abajo: se desvanecen hacia el fondo negro. */
+.crimp-tool {
+    -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 96%);
+            mask-image: linear-gradient(to bottom, #000 62%, transparent 96%);
+}
