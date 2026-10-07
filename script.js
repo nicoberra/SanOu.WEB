@@ -792,11 +792,13 @@ function cardMedia(p) {
     // En el celular (sin hover) el recorte se muestra SIEMPRE → se carga directo (src).
     // En la compu se carga en segundo plano/al pasar el mouse (data-pop).
     const _rec = `recortes/${encodeURIComponent(folder)}.png`;
-    const _srcAttr = _sinHover() ? `src="${_rec}"` : `data-pop="${_rec}"`;
-    const pop = `<img class="prod-pop" alt="" aria-hidden="true" data-folder="${String(folder).replace(/"/g,'&quot;')}" ${_srcAttr} onload="_popLoaded(this)" onerror="this.remove()">`;
+    // FD_PNG_ALRAS: el recorte se muestra SIEMPRE (como en destacados), al ras izquierda+abajo.
+    const _alras = (typeof FD_PNG_ALRAS !== 'undefined') && FD_PNG_ALRAS.indexOf(folder) !== -1;
+    const _srcAttr = (_alras || _sinHover()) ? `src="${_rec}"` : `data-pop="${_rec}"`;
+    const pop = `<img class="prod-pop${_alras ? ' prod-pop-alras' : ''}" alt="" aria-hidden="true" data-folder="${String(folder).replace(/"/g,'&quot;')}" ${_srcAttr} onload="_popLoaded(this)" onerror="this.remove()">`;
     if (imgs.length > 0) {
         const fdata = `data-folder="${String(folder).replace(/"/g,'&quot;')}"`;
-        return `<div class="product-media"><img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
+        return `<div class="product-media${_alras ? ' product-media-alras' : ''}"><img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
     }
     return `<div class="product-media product-media-icon"><i class="fas ${p.icon}"></i></div>`;
 }

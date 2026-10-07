@@ -5270,3 +5270,26 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     .fd-btn { padding: 10px; font-size: .85rem; }
     .fd-head { margin-bottom: 20px; }
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   FD_PNG_ALRAS en la GRILLA de productos: el recorte PNG se ve SIEMPRE,
+   al ras IZQUIERDA + ABAJO, cortado (igual que en destacados). No sobresale.
+   ═════════════════════════════════════════════════════════════════════ */
+.product-media-alras,
+.product-card.tiene-pop .product-media-alras,
+.product-card.tiene-pop:hover .product-media-alras { overflow: hidden !important; background: #fff; }
+.product-media-alras img.prod-base,
+.product-card.tiene-pop:hover .product-media-alras img.prod-base,
+.product-card.tiene-pop .product-media-alras img.prod-base { opacity: 0 !important; }
+.product-media-alras img.prod-pop-alras,
+.product-card.tiene-pop:hover .product-media-alras img.prod-pop-alras,
+.product-card.tiene-pop .product-media-alras img.prod-pop-alras {
+    opacity: 1 !important;
+    position: absolute; inset: auto; top: 0; left: 0; right: auto; bottom: auto;
+    width: auto; height: 112%;
+    object-fit: contain; object-position: left top;
+    transform: none !important; filter: none; z-index: 3;
+}
+@media (hover: hover) and (pointer: fine) {
+    .product-card.tiene-pop:hover .product-media-alras img.prod-pop-alras { transform: scale(1.04) !important; transform-origin: left top; }
+}
