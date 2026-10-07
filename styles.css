@@ -5237,6 +5237,16 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 .fd-card:focus-within { border-color: rgba(255,215,0,.4); }
 .fd-media { background: #fff; aspect-ratio: 1 / 1; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 16px; overflow: hidden; }
 .fd-media img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; transition: transform .4s var(--ease-out, ease); }
+/* Recorte PNG cortado AL RAS abajo (parece que el producto continúa por debajo de la línea). */
+.fd-media.fd-media-png { align-items: flex-start; justify-content: center; padding: 10px 10px 0; }
+.fd-media.fd-media-png img.fd-png {
+    max-width: none; max-height: none; width: 92%; height: auto;
+    object-fit: contain; align-self: flex-start;
+    transition: transform .4s var(--ease-out, ease);
+}
+@media (hover: hover) and (pointer: fine) {
+    .fd-card:hover .fd-media.fd-media-png img.fd-png { transform: scale(1.04); transform-origin: center top; }
+}
 .fd-icon { font-size: 3rem; color: #999; }
 .fd-info { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .fd-cat { color: var(--gray); font-size: .72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }

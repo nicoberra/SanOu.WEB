@@ -1659,19 +1659,31 @@ function renderFeatured() {
     if (!items.length) { grid.innerHTML = ''; return; }
     grid.innerHTML = items.map(featuredCardHTML).join('');
 }
+// Folders que en DESTACADOS usan el recorte PNG (fondo blanco) con la base cortada al ras abajo
+// (parece que el producto continúa por debajo de la línea). Se puede sumar más productos acá.
+const FD_PNG_ALRAS = ['Tijera Manual Hasta Hhd-500 Mm'];
+
 function featuredCardHTML(p) {
     const isFav = getFavs().includes(p.id);
     const cat = (CAT_NAMES[p.category] || '');
     const folder = p.folder || p.name;
     const fdata = `data-folder="${String(folder).replace(/"/g, '&quot;')}"`;
     const imgs = getImgs(p);
-    const media = imgs.length
-        ? `<img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} fd-icon\\'></i>'">`
-        : `<i class="fas ${p.icon} fd-icon"></i>`;
+    let mediaBlock;
+    if (FD_PNG_ALRAS.includes(folder) && imgs.length) {
+        // Recorte PNG sobre blanco, cortado al ras en el borde de abajo del recuadro.
+        const rec = `recortes/${encodeURIComponent(folder)}.png`;
+        mediaBlock = `<div class="fd-media fd-media-png" ${fdata}><img class="fd-png" src="${rec}" alt="${p.name}" loading="lazy" onerror="this.src='${imgs[0]}'; this.classList.remove('fd-png'); this.parentElement.classList.remove('fd-media-png')"></div>`;
+    } else {
+        const inner = imgs.length
+            ? `<img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} fd-icon\\'></i>'">`
+            : `<i class="fas ${p.icon} fd-icon"></i>`;
+        mediaBlock = `<div class="fd-media">${inner}</div>`;
+    }
     const spec = p.badge ? `<span class="fd-spec">${p.badge}</span>` : '';
     return `<div class="fd-card" onclick="openModal(${p.id})" style="cursor:pointer">
         <button class="fav-icon-btn${isFav ? ' active' : ''}" data-id="${p.id}" onclick="event.stopPropagation(); toggleFav(${p.id})" title="Guardar en favoritos"><i class="fas fa-heart"></i></button>
-        <div class="fd-media">${media}</div>
+        ${mediaBlock}
         <div class="fd-info">
             <span class="fd-cat">${cat}</span>
             <h3 class="fd-name">${p.name}</h3>
