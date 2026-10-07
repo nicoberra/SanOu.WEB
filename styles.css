@@ -4836,3 +4836,115 @@ h1.hero-slogan-block { margin-top: 0; }
     transition: background 0.2s;
 }
 .cuenta-logout:hover { background: rgba(255,80,80,0.1); }
+
+/* ═════════════════════════════════════════════════════════════════════
+   MEJORAS UI (2026-10) — bloque agregado al final, se puede quitar entero.
+   Movimiento: curvas y duraciones de la skill ui-animation. Solo transform/opacity.
+   ═════════════════════════════════════════════════════════════════════ */
+:root {
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-press: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Foco visible al navegar con teclado (antes no se veía dónde estabas) */
+a:focus-visible, button:focus-visible, summary:focus-visible, [role="button"]:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: 3px;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: 1px;
+}
+
+/* Botones: respuesta inmediata al apretar y sin demora de 300ms en celu */
+button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action: manipulation; }
+.btn-add-cart { transition: background 0.2s, transform 0.16s var(--ease-press); }
+.btn-primary:active, .btn-wa-hero:active, .btn-add-cart:active:not(:disabled), .btn-enviar-compra:active,
+.btn-vaciar:active, .btn-cta-pedido:active, .ecb-btn:active, .header-search-btn:active, .pp-submit:active,
+.btn-ver-mas:active, .wa-canal-btn:active, .btn-wa-secundario:active {
+    transform: scale(0.97);
+    transition-duration: 0s;
+}
+
+/* Categorías: transición solo de lo que cambia (antes "all") + mismo efecto con teclado */
+.category-card { transition: transform 0.3s var(--ease-out), border-color 0.3s, box-shadow 0.3s; }
+.category-card:focus-visible {
+    border-color: var(--yellow);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 35px rgba(255,215,0,0.2);
+}
+
+/* Carrito: se desliza con transform (más fluido en celulares que mover "right") */
+.cart-sidebar {
+    right: 0;
+    transform: translateX(calc(100% + 4px));
+    transition: transform 0.42s var(--ease-drawer);
+}
+.cart-sidebar.active { transform: none; }
+@media (max-width: 768px) { .cart-sidebar { right: 0; } }
+
+/* Modal de producto: entra con un leve zoom además del fade */
+.modal {
+    transform: translate(-50%, -48%) scale(0.97);
+    transition: opacity 0.28s var(--ease-out), transform 0.32s var(--ease-out);
+}
+.modal.active { transform: translate(-50%, -50%) scale(1); }
+
+/* FAQ: la respuesta aparece suave al abrir */
+.faq-item[open] > p { animation: sanouFaqIn 0.3s var(--ease-out); }
+@keyframes sanouFaqIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (hover: hover) and (pointer: fine) {
+    .faq-item summary { transition: color 0.2s; }
+    .faq-item summary:hover { color: var(--yellow); }
+}
+
+/* Hero: mientras carga el video, la pantalla del iPhone muestra el logo con un brillo
+   (antes quedaba negra). Se oculta apenas el video empieza a reproducirse. */
+.iphone-screen::before, .iphone-screen::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+.iphone-screen::before { inset: 0; background: #0f0f0f url("sticker.webp") center / 62% auto no-repeat; }
+.iphone-screen::after {
+    top: 0; bottom: 0; left: -100%; width: 300%;
+    background: linear-gradient(100deg, transparent 42%, rgba(255,215,0,0.10) 50%, transparent 58%);
+    animation: sanouShimmer 1.6s linear infinite;
+}
+@keyframes sanouShimmer { from { transform: translateX(-33%); } to { transform: translateX(33%); } }
+.iphone-screen.video-listo::before, .iphone-screen.video-listo::after { opacity: 0; animation: none; }
+
+/* Hero en celular: el logo grande se repetía justo debajo del logo del header y empujaba
+   los botones fuera de la pantalla. Se oculta en celu y el teléfono queda un poco más chico. */
+@media (max-width: 768px) {
+    .hero-content > .hero-logo { display: none; }
+}
+@media (max-width: 480px) {
+    .hero { padding-top: 12px; }
+    .hero-inner { gap: 16px; }
+    .iphone { width: 145px; height: 295px; border-radius: 32px; }
+    .iphone-screen { border-radius: 28px; }
+    .iphone-notch { width: 56px; height: 16px; }
+    .hero-slogan-block { margin-bottom: 12px; }
+    .hero-sub { margin-bottom: 18px; }
+}
+
+/* Movimiento reducido (opción de accesibilidad del sistema): sin loops, sin desplazamientos */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        animation-delay: 0s !important;
+    }
+    .why-us-item, .feature-card, .review-card, .about-split, .cta-pedido-inner, .ubicacion-card,
+    .mail-card, .leave-review-cta, .category-card, .product-card, .iphone {
+        transform: none !important;
+    }
+    .modal, .modal.active { transform: translate(-50%, -50%) !important; }
+    .cart-sidebar { transition-duration: 0.01ms; }
+    .iphone-screen::after { display: none; }
+}
