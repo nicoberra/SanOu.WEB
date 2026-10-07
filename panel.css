@@ -625,3 +625,37 @@ body:not(.bloqueado) .panel-lock{display:none}
     .prod-btns{margin-top:7px}
     .prod-btns .prod-fotos-btn{padding:9px 6px;font-size:.76rem}
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   MEJORAS UI CRM (2026-10) — bloque agregado al final, se puede quitar entero.
+   Herramienta de trabajo: todo rápido (≤250ms) y discreto. Solo transform/opacity/color.
+   ═════════════════════════════════════════════════════════════════════ */
+/* Foco visible al usar teclado */
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 2px solid var(--am); outline-offset: 2px; }
+
+/* Pantalla de acceso: entra suave; con clave incorrecta la caja "niega" con una sacudida */
+.panel-lock-caja { animation: crmCajaIn .32s cubic-bezier(0.22,1,0.36,1) both; }
+@keyframes crmCajaIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.panel-lock-caja.sacudir { animation: crmSacudir .36s cubic-bezier(0.36,0.07,0.19,0.97); }
+@keyframes crmSacudir {
+    10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); }
+}
+.panel-lock-err.on { animation: crmFadeIn .2s ease; }
+
+/* Navegación: el botón activo cambia de color suave y responde al apretar */
+.panel-nav-btn { transition: background-color .18s ease, color .18s ease, border-color .18s ease, transform .12s cubic-bezier(0.25,0.46,0.45,0.94); }
+.panel-nav-btn:active, .panel-btn-add:active, .cli-btn:active, .enc-guardar:active, .pd-nuevo-cli:active,
+.prod-fotos-btn:active, .panel-lock-caja button:active:not(:disabled), .panel-refrescar:active, .panel-salir:active {
+    transform: scale(.96);
+    transition-duration: 0s;
+}
+
+/* Al cambiar de sección, el contenido aparece con un fade corto (sin desplazar nada) */
+.panel-main.crm-entra { animation: crmFadeIn .18s ease; }
+@keyframes crmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .panel-lock-caja, .panel-lock-caja.sacudir { animation: none; }
+    .panel-modal, .panel-modal.active { transition: opacity .15s; }
+}
