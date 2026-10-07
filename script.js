@@ -1650,35 +1650,35 @@ function getDestacados() {
 function featuredPrev() { if (featuredCount > 0) featuredGo((featuredCurrent - 1 + featuredCount) % featuredCount); }
 function featuredNext() { if (featuredCount > 0) featuredGo((featuredCurrent + 1) % featuredCount); }
 
-// Destacados: carrusel continuo (foto en recuadro + nombre) que se desliza de derecha a izquierda.
+// Destacados: grilla limpia de tarjetas (foto en recuadro blanco + categoría + nombre + spec + botón).
 function renderFeatured() {
-    const track = document.getElementById('featuredTrack');
-    if (!track) return;
-
+    const grid = document.getElementById('featuredGrid');
+    if (!grid) return;
     const items = getDestacados();
     featuredCount = items.length;
-    if (!items.length) { track.innerHTML = ''; return; }
-
-    const cardHTML = (p) => {
-        const imgs = getImgs(p);
-        const folder = p.folder || p.name;
-        const fdata = `data-folder="${String(folder).replace(/"/g,'&quot;')}"`;
-        // Recorte 3D (mismo sistema que la grilla): al pasar el mouse / en el celu, la herramienta sobresale.
-        const rec = `recortes/${encodeURIComponent(folder)}.png`;
-        const srcAttr = _sinHover() ? `src="${rec}"` : `data-pop="${rec}"`;
-        const pop = `<img class="prod-pop" alt="" aria-hidden="true" ${fdata} ${srcAttr} onload="_popLoaded(this)" onerror="this.remove()">`;
-        const media = imgs.length
-            ? `<img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} feat-card-icon\\'></i>'">${pop}`
-            : `<i class="fas ${p.icon} feat-card-icon"></i>`;
-        return `<div class="feat-card" ${fdata} onclick="openModal(${p.id})">
-            <div class="feat-card-media">${media}</div>
-            <div class="feat-card-name">${p.name}</div>
-        </div>`;
-    };
-    // Duplicamos la lista para que el desplazamiento sea continuo (loop sin cortes).
-    const uno = items.map(cardHTML).join('');
-    track.innerHTML = uno + uno;
-    initFeaturedMarquee();   // auto-scroll por JS (anda en compu y celu) + swipe con el dedo
+    if (!items.length) { grid.innerHTML = ''; return; }
+    grid.innerHTML = items.map(featuredCardHTML).join('');
+}
+function featuredCardHTML(p) {
+    const isFav = getFavs().includes(p.id);
+    const cat = (CAT_NAMES[p.category] || '');
+    const folder = p.folder || p.name;
+    const fdata = `data-folder="${String(folder).replace(/"/g, '&quot;')}"`;
+    const imgs = getImgs(p);
+    const media = imgs.length
+        ? `<img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.innerHTML='<i class=\\'fas ${p.icon} fd-icon\\'></i>'">`
+        : `<i class="fas ${p.icon} fd-icon"></i>`;
+    const spec = p.badge ? `<span class="fd-spec">${p.badge}</span>` : '';
+    return `<div class="fd-card" onclick="openModal(${p.id})" style="cursor:pointer">
+        <button class="fav-icon-btn${isFav ? ' active' : ''}" data-id="${p.id}" onclick="event.stopPropagation(); toggleFav(${p.id})" title="Guardar en favoritos"><i class="fas fa-heart"></i></button>
+        <div class="fd-media">${media}</div>
+        <div class="fd-info">
+            <span class="fd-cat">${cat}</span>
+            <h3 class="fd-name">${p.name}</h3>
+            ${spec}
+            <button class="fd-btn" onclick="event.stopPropagation(); openModal(${p.id})">Ver producto <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>`;
 }
 
 // Carrusel de destacados: se mueve solo (auto), y en el celular se puede deslizar con el dedo.
