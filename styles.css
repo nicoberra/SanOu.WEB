@@ -4949,3 +4949,38 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     .cart-sidebar { transition-duration: 0.01ms; }
     .iphone-screen::after { display: none; }
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   PULIDO SKILLS (2026-10-07) — review-animations / fixing-motion-performance
+   Sin "transition: all" y sin animar propiedades de layout (width/right/left).
+   No cambia ningún tamaño ni posición final: solo cómo se llega a ellos.
+   ═════════════════════════════════════════════════════════════════════ */
+.btn-trabajá, .qty-btn, .btn-wa-hero, .featured-arrow, .about-icon-card,
+.footer-social-icons a, .btn-share-modal, .btn-fav-modal {
+    transition: color .22s ease, background-color .22s ease, border-color .22s ease,
+                box-shadow .22s ease, transform .22s var(--ease-out), opacity .22s ease;
+}
+.product-card { transition: transform .3s var(--ease-out), box-shadow .3s ease, border-color .3s ease; }
+.featured-dot { transition: background-color .25s ease, border-color .25s ease, transform .25s var(--ease-out); }
+
+/* Subrayado del menú: se dibuja con scaleX en vez de animar width */
+.nav-link::after { width: 100%; transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease-out); }
+.nav-link:hover::after, .nav-link:focus-visible::after { transform: scaleX(1); }
+
+/* Brillo del botón principal: se desplaza con transform en vez de animar left */
+.btn-primary::before { transition: transform .6s ease; }
+.btn-primary:hover::before { left: -120%; transform: translateX(417%) skewX(-20deg); }
+
+/* Paneles de pedidos, favoritos y cuenta: se deslizan con transform (como el carrito) */
+.orders-panel, .fav-panel, .cuenta-panel {
+    right: 0;
+    transform: translateX(calc(100% + 4px));
+    transition: transform .42s var(--ease-drawer);
+}
+.orders-panel.active, .fav-panel.active, .cuenta-panel.active { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .orders-panel, .fav-panel, .cuenta-panel { transition-duration: .01ms; }
+    .btn-primary::before { display: none; }
+}
+/* fin PULIDO SKILLS */
