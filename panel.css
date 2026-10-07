@@ -149,7 +149,7 @@ body:not(.bloqueado) .panel-lock{display:none}
 /* ── Toggle Mis clientes / Clientes web ── */
 .cli-tabs{display:flex;gap:8px;margin-bottom:14px}
 .cli-tab{flex:1;background:var(--neg2);border:1px solid var(--linea);color:var(--gris2);border-radius:10px;
-    padding:11px;font-size:.85rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
+    padding:11px;font-size:.85rem;font-weight:700;font-family:inherit;cursor:pointer;transition:color .2s,background-color .2s,border-color .2s,transform .2s}
 .cli-tab span{opacity:.7;font-weight:600}
 .cli-tab.active{background:var(--am);color:var(--neg);border-color:var(--am)}
 .cli-ped-badge{display:inline-flex;align-items:center;gap:4px;margin-left:8px;background:rgba(255,212,0,.15);
