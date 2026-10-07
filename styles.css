@@ -897,11 +897,8 @@ section { padding: 90px 0; }
 
 /* ── CATEGORIES ── */
 .categories {
-    background: var(--black-2);
-    background-image: url('fondo-categorias.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    /* Fondo gris bien oscuro casi negro (antes había una foto de banner) */
+    background: linear-gradient(180deg, #171717 0%, #0f0f0f 100%);
     position: relative;
     padding: 80px 0;
 }
@@ -909,7 +906,7 @@ section { padding: 90px 0; }
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: transparent;
     z-index: 0;
 }
 .categories .container {
@@ -4899,23 +4896,30 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     .faq-item summary:hover { color: var(--yellow); }
 }
 
-/* Hero: mientras carga el video, la pantalla del iPhone muestra el logo con un brillo
-   (antes quedaba negra). Se oculta apenas el video empieza a reproducirse. */
+/* Hero: mientras carga el video, la pantalla del iPhone muestra un fondo oscuro con la
+   tuerca de San Ou GIRANDO (como "cargando…"). Apenas el video está listo, el loader se
+   desvanece y aparece el video (antes se veía el video "arrancando" de golpe / negro). */
 .iphone-screen::before, .iphone-screen::after {
     content: "";
     position: absolute;
-    z-index: 2;
     pointer-events: none;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.45s ease;
 }
-.iphone-screen::before { inset: 0; background: #0f0f0f url("sticker.webp") center / 62% auto no-repeat; }
+/* Fondo oscuro que tapa el video hasta que esté listo */
+.iphone-screen::before { inset: 0; background: #0e0e0e; z-index: 2; }
+/* Tuerca girando, centrada en la pantalla */
 .iphone-screen::after {
-    top: 0; bottom: 0; left: -100%; width: 300%;
-    background: linear-gradient(100deg, transparent 42%, rgba(255,215,0,0.10) 50%, transparent 58%);
-    animation: sanouShimmer 1.6s linear infinite;
+    top: 50%; left: 50%;
+    width: 46%; aspect-ratio: 1 / 1;
+    transform: translate(-50%, -50%) rotate(0deg);
+    background: url("tuerca-icon.png") center / contain no-repeat;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.55));
+    animation: sanouTuercaSpin 1.15s linear infinite;
+    z-index: 3;
 }
-@keyframes sanouShimmer { from { transform: translateX(-33%); } to { transform: translateX(33%); } }
-.iphone-screen.video-listo::before, .iphone-screen.video-listo::after { opacity: 0; animation: none; }
+@keyframes sanouTuercaSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+/* Video listo: se desvanecen el fondo y la tuerca, queda el video */
+.iphone-screen.video-listo::before, .iphone-screen.video-listo::after { opacity: 0; }
 
 /* Hero en celular: el logo grande se repetía justo debajo del logo del header y empujaba
    los botones fuera de la pantalla. Se oculta en celu (eso libera espacio). El teléfono
@@ -4947,7 +4951,8 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     }
     .modal, .modal.active { transform: translate(-50%, -50%) !important; }
     .cart-sidebar { transition-duration: 0.01ms; }
-    .iphone-screen::after { display: none; }
+    /* La tuerca del loader queda quieta (sin girar), pero visible */
+    .iphone-screen::after { animation: none; }
 }
 
 /* ═════════════════════════════════════════════════════════════════════
