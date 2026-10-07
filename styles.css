@@ -4984,3 +4984,102 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     .btn-primary::before { display: none; }
 }
 /* fin PULIDO SKILLS */
+
+/* ═════════════════════════════════════════════════════════════════════
+   CÓMO SE CRIMPA — storytelling con scroll (2026-10-07)
+   Desktop: la crimpadora queda fija (sticky) mientras pasan los pasos; crimp-story.js
+   agrega la clase .crimp-js y anima con GSAP (scrub). Sin JS: lista normal, todo visible.
+   ═════════════════════════════════════════════════════════════════════ */
+.crimp-story {
+    position: relative;
+    padding: 90px 0 80px;
+    background:
+        radial-gradient(ellipse at 22% 40%, rgba(255,215,0,0.07) 0%, transparent 55%),
+        var(--black);
+    overflow: clip;
+}
+.crimp-story-head { text-align: center; max-width: 720px; margin: 0 auto 56px; }
+.crimp-eyebrow {
+    display: inline-block; margin-bottom: 10px;
+    color: var(--yellow); font-weight: 800; font-size: .78rem; letter-spacing: 2.5px; text-transform: uppercase;
+}
+.crimp-story-sub { color: var(--gray-light); font-size: 1.02rem; line-height: 1.6; margin-top: 14px; }
+
+.crimp-story-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
+.crimp-visual { display: flex; justify-content: center; }
+.crimp-visual-inner {
+    position: relative; width: min(320px, 80vw); aspect-ratio: 3 / 4;
+    display: grid; place-items: center;
+}
+.crimp-glow {
+    position: absolute; inset: 12% 8%;
+    background: radial-gradient(circle, rgba(255,215,0,0.32) 0%, rgba(255,215,0,0.08) 45%, transparent 70%);
+    filter: blur(18px); border-radius: 50%; opacity: .7;
+}
+.crimp-tool {
+    position: relative; height: min(300px, 60vw); width: auto; max-width: none;
+    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.6));
+    will-change: transform;
+}
+.crimp-counter {
+    position: absolute; left: 0; bottom: -6px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 2px; color: var(--gray);
+}
+.crimp-counter-num { color: var(--yellow); font-size: 2.2rem; vertical-align: -4px; }
+.crimp-progress {
+    position: absolute; left: 0; right: 0; bottom: -18px; height: 2px;
+    background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+}
+.crimp-progress-bar {
+    display: block; height: 100%; width: 100%; background: var(--yellow);
+    transform: scaleX(1); transform-origin: left;
+}
+
+.crimp-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.crimp-step {
+    position: relative; padding: 22px 22px 22px 78px;
+    background: var(--black-2); border: 1px solid rgba(255,255,255,0.06); border-radius: 18px;
+    transition: opacity .45s var(--ease-out), border-color .45s ease, transform .45s var(--ease-out);
+}
+.crimp-step-num {
+    position: absolute; left: 22px; top: 18px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; line-height: 1; color: var(--yellow);
+    transition: color .45s ease;
+}
+.crimp-step h3 { color: var(--white); font-size: 1.12rem; font-weight: 800; margin-bottom: 6px; }
+.crimp-step p { color: var(--gray-light); font-size: .95rem; line-height: 1.6; }
+
+.crimp-story-cta { display: flex; flex-wrap: wrap; gap: 14px 24px; justify-content: center; align-items: center; margin-top: 48px; }
+.crimp-guide-link { color: var(--gray-light); font-weight: 700; text-decoration: none; display: inline-flex; gap: 8px; align-items: center; transition: color .2s ease; }
+.crimp-guide-link:hover { color: var(--yellow); }
+
+/* Desktop: herramienta fija + pasos largos que se recorren con el scroll */
+@media (min-width: 900px) {
+    .crimp-story { padding: 120px 0 100px; }
+    .crimp-story-grid { grid-template-columns: minmax(300px, 0.9fr) 1.1fr; gap: 64px; align-items: start; }
+    .crimp-visual { position: sticky; top: calc(50vh - 260px); height: 520px; align-items: center; }
+    .crimp-visual-inner { width: 380px; }
+    .crimp-tool { height: min(440px, 56vh); }
+    .crimp-steps { gap: 0; padding: 18vh 0 22vh; }
+    .crimp-step {
+        min-height: 46vh; display: flex; flex-direction: column; justify-content: center;
+        background: transparent; border: 0; border-left: 2px solid rgba(255,255,255,0.08);
+        border-radius: 0; padding: 0 0 0 96px;
+    }
+    .crimp-step-num { left: 28px; top: 50%; transform: translateY(-50%); font-size: 3.2rem; }
+    .crimp-step h3 { font-size: 1.7rem; }
+    .crimp-step p { font-size: 1.05rem; max-width: 460px; }
+    /* Con JS: solo el paso activo a pleno */
+    .crimp-js .crimp-step { opacity: .28; }
+    .crimp-js .crimp-step .crimp-step-num { color: var(--gray); }
+    .crimp-js .crimp-step.is-active { opacity: 1; border-left-color: var(--yellow); }
+    .crimp-js .crimp-step.is-active .crimp-step-num { color: var(--yellow); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .crimp-step, .crimp-step-num { transition: none; }
+}
+/* body tenía overflow-x:hidden: eso lo vuelve contenedor de scroll y anula position:sticky.
+   "clip" oculta el desborde igual pero sin crear contenedor de scroll. */
+@supports (overflow: clip) { body { overflow-x: clip; } }
+/* fin CÓMO SE CRIMPA */
