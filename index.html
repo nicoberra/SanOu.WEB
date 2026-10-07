@@ -427,6 +427,64 @@
         </div>
     </section>
 
+    <!-- CÓMO SE CRIMPA: storytelling con scroll (contenido de guia-como-crimpar-cables.html).
+         Sin JS o con "reducir movimiento" se ve como una lista normal. Animación: crimp-story.js -->
+    <section class="crimp-story" id="como-se-crimpa" aria-labelledby="crimp-story-title">
+        <div class="container">
+            <div class="crimp-story-head">
+                <span class="crimp-eyebrow">Paso a paso</span>
+                <h2 class="section-title" id="crimp-story-title">Cómo se crimpa un cable grueso</h2>
+                <p class="crimp-story-sub">Un buen crimpado no se ve, pero se nota: es la diferencia entre una conexión que dura años y una que se afloja. Así se hace con una crimpadora hidráulica.</p>
+            </div>
+            <div class="crimp-story-grid">
+                <div class="crimp-visual" aria-hidden="true">
+                    <div class="crimp-visual-inner">
+                        <div class="crimp-glow"></div>
+                        <img src="crimpadora-historia.webp" alt="" class="crimp-tool" width="318" height="773" loading="lazy" decoding="async">
+                        <div class="crimp-counter"><span class="crimp-counter-num">01</span> / 06</div>
+                        <div class="crimp-progress"><span class="crimp-progress-bar"></span></div>
+                    </div>
+                </div>
+                <ol class="crimp-steps">
+                    <li class="crimp-step is-active">
+                        <span class="crimp-step-num" aria-hidden="true">01</span>
+                        <h3>Elegí el terminal correcto</h3>
+                        <p>Tiene que coincidir con la sección del cable (por ejemplo, 50 mm²) y con el material. Uno más grande deja juego; uno más chico no entra bien.</p>
+                    </li>
+                    <li class="crimp-step">
+                        <span class="crimp-step-num" aria-hidden="true">02</span>
+                        <h3>Pelá el cable a la medida</h3>
+                        <p>Al largo del tubo del terminal. Ni de menos (queda cobre sin sujetar) ni de más (queda cobre expuesto).</p>
+                    </li>
+                    <li class="crimp-step">
+                        <span class="crimp-step-num" aria-hidden="true">03</span>
+                        <h3>Insertá el cable hasta el fondo</h3>
+                        <p>Derecho, sin hilos sueltos, hasta el tope del terminal.</p>
+                    </li>
+                    <li class="crimp-step">
+                        <span class="crimp-step-num" aria-hidden="true">04</span>
+                        <h3>Poné la matriz que corresponde</h3>
+                        <p>El dado de la sección de tu cable. Define el tamaño del crimpado hexagonal.</p>
+                    </li>
+                    <li class="crimp-step">
+                        <span class="crimp-step-num" aria-hidden="true">05</span>
+                        <h3>Crimpá hasta el final</h3>
+                        <p>Accioná la crimpadora hasta que llegue al tope, o zafe si el modelo lo tiene. No sueltes antes de la presión final.</p>
+                    </li>
+                    <li class="crimp-step">
+                        <span class="crimp-step-num" aria-hidden="true">06</span>
+                        <h3>Verificá</h3>
+                        <p>Tiene que quedar hexagonal, parejo y firme. Tirá suave del terminal: no se tiene que mover.</p>
+                    </li>
+                </ol>
+            </div>
+            <div class="crimp-story-cta">
+                <a href="#productos" class="btn-primary" onclick="filterProducts('pinzas'); return false;">Ver crimpadoras <i class="fas fa-arrow-right"></i></a>
+                <a href="guia-como-crimpar-cables.html" class="crimp-guide-link">Leer la guía completa <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
+
     <!-- PRODUCTS -->
     <section class="products" id="productos">
         <div class="container">
@@ -931,6 +989,7 @@
     <script src="catalogo-productos.js"></script>
     <script src="script.js"></script>
     <script src="mejoras-ui.js"></script>
+    <script src="crimp-story.js" defer></script>
     <!-- Registro del Service Worker (PWA instalable). No cambia el funcionamiento con internet. -->
     <script>
       if ('serviceWorker' in navigator) {
