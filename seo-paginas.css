@@ -80,3 +80,10 @@
     .seo-producto { grid-template-columns: 1fr; gap: 22px; }
     .seo-cat-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
 }
+
+/* MEJORAS UI (2026-10): foco visible con teclado y respeto por "reducir movimiento" */
+a:focus-visible, button:focus-visible { outline: 2px solid #FFD700; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
