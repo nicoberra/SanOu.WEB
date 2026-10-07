@@ -98,7 +98,7 @@ function header() {
     </div>
     <header class="header">
         <div class="container">
-            <a href="/index.html" class="logo-img-link"><img src="/sticker.png" alt="San Ou" class="header-logo"></a>
+            <a href="/index.html" class="logo-img-link"><img src="/sticker.webp" alt="San Ou" class="header-logo"></a>
             <nav class="nav">
                 <a href="/index.html#inicio" class="nav-link">Inicio</a>
                 <a href="/index.html#productos" class="nav-link">Productos</a>
