@@ -3433,9 +3433,9 @@ section { padding: 90px 0; }
     .hero-inner { grid-template-columns: 1fr; gap: 24px; min-height: unset; justify-items: center; }
     .iphone-wrap { order: 1; }
     .hero-content { order: 2; width: 100%; }
-    .iphone { width: 180px; height: 365px; border-radius: 36px; }
-    .iphone-notch { width: 65px; height: 18px; }
-    .iphone-screen { border-radius: 32px; }
+    .iphone { width: 235px; height: 477px; border-radius: 44px; }
+    .iphone-notch { width: 84px; height: 23px; }
+    .iphone-screen { border-radius: 39px; }
     .hero-logo { width: min(260px, 70%); margin: 0 auto 16px; }
     .hero-buttons { flex-direction: column; align-items: center; width: 100%; }
     .btn-primary, .btn-wa-hero { width: 100%; justify-content: center; }
