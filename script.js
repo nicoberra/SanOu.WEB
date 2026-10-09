@@ -1038,7 +1038,19 @@ function filterProducts(filter) {
     document.getElementById('searchInput').value = '';
     toggleGuiaBanner(filter);
     renderProducts(filter, true); // con filtro: mostrar TODOS, sin botón "Ver más"
-    document.getElementById('productos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    irAProductos();
+}
+
+// Lleva a la grilla de productos de forma CONFIABLE. El scroll suave se trababa al atravesar
+// la sección "Cómo se crimpa" (pinned) y no llegaba. Hacemos un salto directo con el offset del
+// header fijo. Respeta "reducir movimiento".
+function irAProductos() {
+    const el = document.getElementById('productos');
+    if (!el) return;
+    const headerH = 90; // alto aprox. del header fijo (igual que scroll-padding-top)
+    const y = el.getBoundingClientRect().top + window.pageYOffset - headerH;
+    try { window.scrollTo({ top: y, behavior: 'instant' }); }
+    catch (e) { window.scrollTo(0, y); }
 }
 
 // Abrir/cerrar reseñas largas de Google
@@ -1242,7 +1254,7 @@ function searchProducts(query) {
             </div>
         `).join('');
     }
-    document.getElementById('productos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    irAProductos();
 }
 
 // ─── CARRITO ─────────────────────────────────────────────────────
