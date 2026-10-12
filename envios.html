@@ -21,6 +21,57 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Zonas de envío (simulador informativo) ── */
+        .ze-wrap { margin: 8px 0; }
+        .ze-wrap > p { color: var(--gray-light); }
+        .ze-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 18px 0 12px; }
+        .ze-card {
+            --zc: #999; position: relative; text-align: left; cursor: pointer; color: #fff;
+            background: var(--black-3, #1E1E1E); border: 1px solid rgba(255,255,255,.08);
+            border-left: 4px solid var(--zc); border-radius: 14px; padding: 14px 14px 13px; font-family: inherit;
+            transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+        }
+        @media (hover: hover) and (pointer: fine) { .ze-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,.45); } }
+        .ze-card-name { display: block; font-weight: 800; font-size: .95rem; line-height: 1.2; }
+        .ze-card-price { display: block; margin-top: 7px; font-weight: 800; font-size: 1.18rem; color: var(--zc); }
+        .ze-card-check { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--zc); color: #fff; font-size: .68rem; opacity: 0; transform: scale(.5); transition: opacity .18s, transform .18s; }
+        .ze-card[aria-pressed="true"] { border-color: var(--zc); box-shadow: 0 0 0 1px var(--zc) inset; }
+        .ze-card[aria-pressed="true"] .ze-card-check { opacity: 1; transform: scale(1); }
+
+        .ze-partidos { background: var(--black-2, #141414); border: 1px solid rgba(255,255,255,.07); border-radius: 12px; padding: 14px 16px; margin: 0 0 14px; }
+        .ze-partidos h4 { margin: 0 0 10px; font-size: .95rem; }
+        .ze-partidos ul { margin: 0; padding-left: 18px; columns: 2; column-gap: 24px; }
+        .ze-partidos li { color: var(--gray-light); margin-bottom: 5px; break-inside: avoid; }
+
+        .ze-interior { color: var(--gray-light); background: rgba(255,215,0,.06); border: 1px dashed rgba(255,215,0,.35); border-radius: 10px; padding: 11px 14px; margin: 6px 0 14px; }
+        .ze-interior i { color: var(--yellow); margin-right: 4px; }
+
+        .ze-map-toggle { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--yellow); border: 1.5px solid rgba(255,215,0,.5); border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: .95rem; transition: background .18s; }
+        .ze-map-toggle:hover { background: rgba(255,215,0,.08); }
+        .ze-map-box { margin-top: 14px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); }
+        .ze-map-img { display: block; width: 100%; height: auto; }
+
+        .ze-sim { margin-top: 24px; background: var(--black-2, #141414); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 18px; }
+        .ze-sim h3 { margin: 0 0 14px; }
+        .ze-field { margin-bottom: 13px; }
+        .ze-field label { display: block; font-weight: 700; margin-bottom: 6px; color: #fff; font-size: .9rem; }
+        .ze-field select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.14); background: var(--black-3, #1E1E1E); color: #fff; font-size: 1rem; font-family: inherit; }
+        .ze-retiro { display: inline-flex; align-items: center; gap: 9px; color: var(--gray-light); cursor: pointer; margin: 2px 0 4px; font-size: .92rem; }
+        .ze-retiro input { width: 17px; height: 17px; accent-color: var(--yellow); }
+        .ze-card:focus-visible, .ze-field select:focus-visible, .ze-map-toggle:focus-visible, .ze-retiro input:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+        .ze-result { margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: rgba(255,215,0,.08); border: 1px solid rgba(255,215,0,.3); color: #fff; font-weight: 700; font-size: 1.05rem; line-height: 1.4; }
+        .ze-result .ze-result-cost { color: var(--yellow); }
+
+        @media (max-width: 640px) {
+            .ze-cards { grid-template-columns: repeat(2, 1fr); }
+            .ze-partidos ul { columns: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .ze-card, .ze-card-check { transition: none; }
+            .ze-card:hover { transform: none; }
+        }
+    </style>
 </head>
 <body>
     <!-- Top Bar -->
@@ -70,6 +121,37 @@
                     <li>Los plazos de entrega dependen de la empresa de transporte y el destino.</li>
                 </ul>
 
+                <h2><i class="fas fa-map-location-dot" style="color:var(--yellow);margin-right:8px;"></i>Zonas de envío a domicilio (CABA y GBA)</h2>
+                <div class="ze-wrap" aria-labelledby="ze-title">
+                    <p id="ze-title">Para Capital y Gran Buenos Aires tenemos un costo de envío fijo según la zona. Tocá tu zona para ver los partidos, o usá el simulador para calcular tu envío.</p>
+
+                    <div class="ze-cards" id="zeCards"></div>
+                    <div class="ze-partidos" id="zePartidos" hidden></div>
+
+                    <p class="ze-interior"><i class="fas fa-truck-fast"></i> <strong>Interior del país:</strong> envío por Vía Cargo — costo a coordinar según destino.</p>
+
+                    <button type="button" class="ze-map-toggle" id="zeMapToggle" aria-expanded="false" aria-controls="zeMapBox">
+                        <i class="fas fa-map"></i> Ver mapa de zonas
+                    </button>
+                    <div class="ze-map-box" id="zeMapBox" hidden>
+                        <img src="img/mapa-zonas-envio.webp" width="2400" height="2160" loading="lazy" decoding="async" alt="Mapa de zonas de envío de Capital y Gran Buenos Aires" class="ze-map-img">
+                    </div>
+
+                    <div class="ze-sim">
+                        <h3><i class="fas fa-calculator" style="color:var(--yellow);margin-right:8px;"></i>Calculá tu envío</h3>
+                        <div class="ze-field">
+                            <label for="zeProvincia">Provincia</label>
+                            <select id="zeProvincia"></select>
+                        </div>
+                        <div class="ze-field" id="zePartidoField" hidden>
+                            <label for="zePartido">Elegí tu partido</label>
+                            <select id="zePartido"></select>
+                        </div>
+                        <label class="ze-retiro"><input type="checkbox" id="zeRetiro"> Retiro en el local (sin cargo)</label>
+                        <div class="ze-result" id="zeResult" role="status" aria-live="polite" hidden></div>
+                    </div>
+                </div>
+
                 <h2><i class="fas fa-credit-card" style="color:var(--yellow);margin-right:8px;"></i>Formas de pago</h2>
                 <p>Acordamos la forma de pago de manera personalizada por WhatsApp al confirmar el pedido. Consultanos las opciones disponibles.</p>
 
@@ -98,6 +180,102 @@
     <a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Me%20gustaría%20hacer%20una%20consulta." target="_blank" class="wa-float">
         <i class="fab fa-whatsapp"></i>
     </a>
+
+    <!-- Zonas de envío: datos (editables en un solo lugar) + simulador informativo -->
+    <script>
+    (function () {
+        const ZONAS_ENVIO = [
+            { id: 'capital', nombre: 'Capital (CABA)', precio: 5500, color: '#FFD700',
+              partidos: ['Toda la Ciudad Autónoma de Buenos Aires (todos los barrios)'] },
+            { id: 'gba1', nombre: 'GBA 1', precio: 7000, color: '#25D366',
+              partidos: ['Avellaneda','General San Martín','Hurlingham','Ituzaingó','La Matanza Norte (San Justo, Ramos Mejía, Lomas del Mirador, Isidro Casanova, Tapiales)','Lanús','Lomas de Zamora','Morón','San Fernando','San Isidro','Tres de Febrero','Vicente López'] },
+            { id: 'gba2', nombre: 'GBA 2', precio: 9000, color: '#777777',
+              partidos: ['Almirante Brown','Berazategui','Esteban Echeverría','Ezeiza','Florencio Varela','José C. Paz','La Matanza Sur (Laferrere, González Catán, Virrey del Pino)','Malvinas Argentinas','Merlo','Moreno','Quilmes','San Miguel','Tigre'] },
+            { id: 'gba3', nombre: 'GBA 3', precio: 15000, color: '#E53935',
+              partidos: ['Berisso','Cañuelas','Ensenada','Escobar (Garín, Maschwitz)','General Rodríguez','La Plata','Marcos Paz','Pilar (Derqui, Villa Rosa)','Presidente Perón (Guernica)','San Vicente'] }
+        ];
+        const INTERIOR = ['Catamarca','Chaco','Chubut','Córdoba','Corrientes','Entre Ríos','Formosa','Jujuy','La Pampa','La Rioja','Mendoza','Misiones','Neuquén','Río Negro','Salta','San Juan','San Luis','Santa Cruz','Santa Fe','Santiago del Estero','Tierra del Fuego','Tucumán'];
+        const fmt = n => '$ ' + Number(n).toLocaleString('es-AR');
+        const gba = ZONAS_ENVIO.filter(z => z.id !== 'capital');
+        const capital = ZONAS_ENVIO.find(z => z.id === 'capital');
+
+        // Tarjetas de zonas
+        const cards = document.getElementById('zeCards');
+        const partidosBox = document.getElementById('zePartidos');
+        if (cards) {
+            cards.innerHTML = ZONAS_ENVIO.map(z =>
+                `<button type="button" class="ze-card" data-zona="${z.id}" aria-pressed="false" style="--zc:${z.color}">
+                    <span class="ze-card-check"><i class="fas fa-check"></i></span>
+                    <span class="ze-card-name">${z.nombre}</span>
+                    <span class="ze-card-price">${fmt(z.precio)}</span>
+                </button>`).join('');
+            let abierta = null;
+            cards.addEventListener('click', e => {
+                const btn = e.target.closest('.ze-card'); if (!btn) return;
+                const id = btn.dataset.zona, z = ZONAS_ENVIO.find(x => x.id === id);
+                const cerrar = (abierta === id);
+                cards.querySelectorAll('.ze-card').forEach(c => c.setAttribute('aria-pressed', (c === btn && !cerrar) ? 'true' : 'false'));
+                if (cerrar) { partidosBox.hidden = true; abierta = null; return; }
+                abierta = id;
+                partidosBox.innerHTML = `<h4 style="color:${z.color}">${z.nombre} · ${fmt(z.precio)}</h4><ul>${z.partidos.map(p => `<li>${p}</li>`).join('')}</ul>`;
+                partidosBox.hidden = false;
+            });
+        }
+
+        // Mapa (mostrar/ocultar)
+        const mapToggle = document.getElementById('zeMapToggle');
+        const mapBox = document.getElementById('zeMapBox');
+        if (mapToggle && mapBox) {
+            mapToggle.addEventListener('click', () => {
+                const abrir = mapBox.hidden;
+                mapBox.hidden = !abrir;
+                mapToggle.setAttribute('aria-expanded', String(abrir));
+                mapToggle.innerHTML = abrir ? '<i class="fas fa-map"></i> Ocultar mapa' : '<i class="fas fa-map"></i> Ver mapa de zonas';
+            });
+        }
+
+        // Simulador
+        const prov = document.getElementById('zeProvincia');
+        const partidoField = document.getElementById('zePartidoField');
+        const partidoSel = document.getElementById('zePartido');
+        const retiro = document.getElementById('zeRetiro');
+        const result = document.getElementById('zeResult');
+        if (prov) {
+            prov.innerHTML = '<option value="">Elegí tu provincia…</option>'
+                + '<option value="CABA">Ciudad de Buenos Aires (CABA)</option>'
+                + '<option value="BA">Buenos Aires (GBA)</option>'
+                + '<optgroup label="Resto del país">' + INTERIOR.map(p => `<option value="interior">${p}</option>`).join('') + '</optgroup>';
+            partidoSel.innerHTML = '<option value="">Elegí tu partido…</option>'
+                + gba.map(z => `<optgroup label="${z.nombre} · ${fmt(z.precio)}">${z.partidos.map((p, i) => `<option value="${z.id}|${i}">${p}</option>`).join('')}</optgroup>`).join('');
+
+            const mostrar = html => { result.innerHTML = html; result.hidden = false; };
+            const calcular = () => {
+                if (retiro.checked) { mostrar('<i class="fas fa-store"></i> Retiro en el local: <span class="ze-result-cost">sin cargo</span>.'); return; }
+                const v = prov.value;
+                if (!v) { result.hidden = true; return; }
+                if (v === 'CABA') { mostrar(`Envío a <strong>Capital (CABA)</strong>: <span class="ze-result-cost">${fmt(capital.precio)}</span>.`); return; }
+                if (v === 'interior') { mostrar('<i class="fas fa-truck-fast"></i> Envío al <strong>interior</strong> por <strong>Vía Cargo</strong>: <span class="ze-result-cost">a coordinar</span>.'); return; }
+                if (v === 'BA') {
+                    const pv = partidoSel.value;
+                    if (!pv) { mostrar('Elegí tu <strong>partido</strong> para ver el costo.'); return; }
+                    const [zid, idx] = pv.split('|');
+                    const z = ZONAS_ENVIO.find(x => x.id === zid);
+                    mostrar(`Envío a <strong>${z.partidos[+idx]}</strong> · ${z.nombre}: <span class="ze-result-cost">${fmt(z.precio)}</span>.`);
+                }
+            };
+            prov.addEventListener('change', () => {
+                partidoField.hidden = (prov.value !== 'BA');
+                if (prov.value !== 'BA') partidoSel.value = '';
+                calcular();
+            });
+            partidoSel.addEventListener('change', calcular);
+            retiro.addEventListener('change', () => {
+                prov.disabled = retiro.checked; partidoSel.disabled = retiro.checked;
+                calcular();
+            });
+        }
+    })();
+    </script>
 
     <script>
         window.addEventListener('scroll', () => {

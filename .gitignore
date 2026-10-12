@@ -2,3 +2,9 @@
 apps-script-crm.gs
 apps-script-clientes.gs
 sync-fotos.ps1
+
+# Mapa de zonas: datos geograficos pesados y archivos generados (se regeneran con mapa.py + armar.py)
+mapa-editable/geo/
+mapa-editable/mapa.html
+mapa-editable/mapa-base.svg
+mapa-editable/*.png
