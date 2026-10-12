@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VLTJZZW8JF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-VLTJZZW8JF');
+    </script>
+    <!-- End Google Analytics -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="tuerca-icon.png">
+    <link rel="apple-touch-icon" href="tuerca-icon.png">
+    <title>Tu pago — San Ou</title>
+    <meta name="robots" content="noindex, follow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .pago-page { min-height: 100vh; min-height: 100dvh; background: var(--black); display: flex; align-items: center; justify-content: center; padding: 40px 24px; text-align: center; }
+        .pago-card { max-width: 540px; width: 100%; background: var(--black-2); border: 1px solid rgba(255,215,0,0.2); border-radius: 24px; padding: 56px 40px; }
+        .pago-logo { height: 70px; margin-bottom: 28px; }
+        .pago-icono { width: 84px; height: 84px; margin: 0 auto 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.4rem; animation: pop 0.4s ease; }
+        .pago-icono--ok   { background: rgba(37,211,102,0.12); border: 2px solid #25D366; color: #25D366; }
+        .pago-icono--wait { background: rgba(255,215,0,0.10);  border: 2px solid var(--yellow); color: var(--yellow); }
+        .pago-icono--err  { background: rgba(229,57,53,0.12);  border: 2px solid #E53935; color: #E53935; }
+        .pago-icono--load { background: rgba(0,158,227,0.10);  border: 2px solid #009EE3; color: #009EE3; }
+        @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .pago-icono { animation: none; } }
+        .pago-card h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.6rem; letter-spacing: 2px; color: var(--white); line-height: 1.1; margin-bottom: 14px; }
+        .pago-card p { color: var(--gray-light); font-size: 1rem; line-height: 1.7; margin-bottom: 28px; }
+        .pago-card p strong { color: var(--yellow); }
+        .pago-detalle { background: var(--black-3); border-radius: 14px; padding: 14px 18px; margin: -8px 0 26px; font-size: 0.9rem; color: var(--gray-light); text-align: left; display: grid; gap: 6px; }
+        .pago-detalle span b { color: var(--white); }
+        .pago-btns { display: flex; flex-direction: column; gap: 12px; }
+        .pago-btn-wa { background: #25D366; color: #fff; border: none; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s; }
+        .pago-btn-wa:hover { opacity: 0.9; }
+        .pago-btn-home { background: var(--black-3); color: var(--gray-light); border: 1px solid rgba(255,255,255,0.1); padding: 13px; border-radius: 12px; font-size: 0.92rem; font-weight: 700; text-decoration: none; transition: border-color 0.2s, color 0.2s; }
+        .pago-btn-home:hover { border-color: var(--yellow); color: var(--yellow); }
+        .pago-btn-retry { background: var(--yellow); color: var(--black); border: none; padding: 15px; border-radius: 12px; font-size: 1rem; font-weight: 900; text-decoration: none; }
+        @media (max-width: 600px) { .pago-card { padding: 40px 24px; } .pago-card h1 { font-size: 2.1rem; } }
+    </style>
+</head>
+<body>
+    <div class="pago-page">
+        <div class="pago-card" id="pagoCard">
+            <img src="sticker.webp" alt="San Ou" class="pago-logo">
+            <div class="pago-icono pago-icono--load" id="pagoIcono"><i class="fas fa-circle-notch fa-spin"></i></div>
+            <h1 id="pagoTitulo">Verificando tu pago…</h1>
+            <p id="pagoTexto">Un segundo, estamos confirmando la operación con Mercado Pago.</p>
+            <div class="pago-detalle" id="pagoDetalle" style="display:none"></div>
+            <div class="pago-btns" id="pagoBtns"></div>
+        </div>
+    </div>
+    <script>
+    (function () {
+        // Misma implementación del Apps Script que usa la web (script.js → CLIENTES_URL).
+        const CRM_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
+        const WA = 'https://wa.me/5491131751517?text=';
+        const q = new URLSearchParams(location.search);
+        const paymentId = (q.get('payment_id') || q.get('collection_id') || '').replace(/\D/g, '');
+        const statusUrl = (q.get('status') || q.get('collection_status') || '').toLowerCase();
+        const fmt = n => '$' + Number(n || 0).toLocaleString('es-AR');
+        const el = id => document.getElementById(id);
+
+        function jsonp(params) {
+            return new Promise((resolve, reject) => {
+                const cb = 'cb_' + Date.now() + Math.floor(Math.random() * 1e5);
+                const s = document.createElement('script');
+                const to = setTimeout(() => { limpiar(); reject(new Error('timeout')); }, 15000);
+                function limpiar() { clearTimeout(to); try { delete window[cb]; } catch (e) { window[cb] = undefined; } s.remove(); }
+                window[cb] = d => { limpiar(); resolve(d); };
+                s.onerror = () => { limpiar(); reject(new Error('network')); };
+                s.src = CRM_URL + '?' + new URLSearchParams(Object.assign({}, params, { callback: cb, _: Date.now() })).toString();
+                document.body.appendChild(s);
+            });
+        }
+        function pintar(tipo, icono, titulo, texto, detalle, btns) {
+            el('pagoIcono').className = 'pago-icono pago-icono--' + tipo;
+            el('pagoIcono').innerHTML = '<i class="fas ' + icono + '"></i>';
+            el('pagoTitulo').textContent = titulo;
+            el('pagoTexto').innerHTML = texto;
+            const d = el('pagoDetalle');
+            if (detalle && detalle.length) { d.innerHTML = detalle.map(x => '<span>' + x + '</span>').join(''); d.style.display = 'grid'; }
+            else d.style.display = 'none';
+            el('pagoBtns').innerHTML = btns.join('');
+        }
+        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const btnHome = '<a href="index.html" class="pago-btn-home">← Volver a la tienda</a>';
+        const btnWa = (msg) => '<a href="' + WA + encodeURIComponent(msg) + '" target="_blank" class="pago-btn-wa"><i class="fab fa-whatsapp"></i> Escribinos por WhatsApp</a>';
+
+        function aprobado(r) {
+            try { localStorage.removeItem('sanou_cart'); } catch (e) {}
+            if (typeof gtag !== 'undefined') gtag('event', 'purchase', { transaction_id: String(r.pedido || paymentId), currency: 'ARS', value: r.monto || 0 });
+            pintar('ok', 'fa-check', '¡Pago aprobado!',
+                'Gracias' + (r.nombre ? ', <strong>' + esc(r.nombre.split(' ')[0]) + '</strong>' : '') + '. Ya registramos tu pedido y te escribimos por WhatsApp para coordinar la <strong>entrega o el retiro</strong>.',
+                ['<span>Operación Mercado Pago: <b>#' + esc(paymentId) + '</b></span>', '<span>Importe: <b>' + fmt(r.monto) + '</b></span>'],
+                [btnWa('Hola San Ou! Acabo de pagar el pedido #' + paymentId + ' por la web.'), btnHome]);
+        }
+        function pendiente(r) {
+            try { localStorage.removeItem('sanou_cart'); } catch (e) {}
+            pintar('wait', 'fa-clock', 'Pago pendiente',
+                'Mercado Pago está procesando tu pago (puede demorar unos minutos, o hasta 2 días hábiles si pagás en efectivo). <strong>Te avisamos por WhatsApp apenas se acredite.</strong>',
+                ['<span>Operación Mercado Pago: <b>#' + esc(paymentId) + '</b></span>', r && r.monto ? '<span>Importe: <b>' + fmt(r.monto) + '</b></span>' : ''],
+                [btnWa('Hola San Ou! Mi pago #' + paymentId + ' quedó pendiente, ¿me confirman cuando se acredite?'), btnHome]);
+        }
+        function rechazado(detalle) {
+            const motivos = { cc_rejected_insufficient_amount: 'la tarjeta no tiene fondos suficientes', cc_rejected_bad_filled_security_code: 'el código de seguridad es incorrecto',
+                cc_rejected_bad_filled_date: 'la fecha de vencimiento es incorrecta', cc_rejected_high_risk: 'fue rechazado por seguridad', cc_rejected_call_for_authorize: 'tenés que autorizarlo con tu banco' };
+            pintar('err', 'fa-xmark', 'No se pudo cobrar',
+                'El pago no se completó' + (motivos[detalle] ? ' (' + motivos[detalle] + ')' : '') + '. <strong>No se te cobró nada.</strong> Tu carrito sigue guardado: podés probar con otro medio de pago o pedir presupuesto.',
+                [],
+                ['<a href="index.html#productos" class="pago-btn-retry"><i class="fas fa-rotate-right"></i> Volver a intentar</a>', btnWa('Hola San Ou! Intenté pagar por la web y me rechazó el pago. ¿Me ayudan?'), btnHome]);
+        }
+        function sinVerificar() {
+            pintar('wait', 'fa-question', 'No pudimos verificar el pago',
+                'Si Mercado Pago te mostró el pago como aprobado, quedate tranquilo: <strong>lo tenemos registrado</strong>. Escribinos con el número de operación y lo confirmamos al toque.',
+                paymentId ? ['<span>Operación Mercado Pago: <b>#' + esc(paymentId) + '</b></span>'] : [],
+                [btnWa('Hola San Ou! Pagué por la web (operación #' + paymentId + ') y la página no pudo verificarlo.'), btnHome]);
+        }
+
+        if (!paymentId) {
+            if (statusUrl === 'failure' || statusUrl === 'rejected') rechazado('');
+            else sinVerificar();
+            return;
+        }
+        jsonp({ action: 'mp_estado', tab: 'Clientes', payment_id: paymentId }).then(r => {
+            if (!r || !r.ok) { sinVerificar(); return; }
+            if (r.status === 'approved') aprobado(r);
+            else if (r.status === 'pending' || r.status === 'in_process' || r.status === 'authorized') pendiente(r);
+            else rechazado(r.detail || '');
+        }).catch(() => {
+            // Sin respuesta del backend: nos guiamos por lo que dice la URL de vuelta.
+            if (statusUrl === 'approved') aprobado({ monto: 0, nombre: '' });
+            else if (statusUrl === 'pending' || statusUrl === 'in_process') pendiente(null);
+            else if (statusUrl === 'rejected' || statusUrl === 'failure') rechazado('');
+            else sinVerificar();
+        });
+    })();
+    </script>
+</body>
+</html>

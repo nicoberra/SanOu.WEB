@@ -1420,6 +1420,96 @@ function cerrarPresupuesto() {
     document.getElementById('ppModal').classList.remove('active');
     document.body.style.overflow = '';
 }
+// ─── PAGO ONLINE — Mercado Pago (Checkout Pro) ──────────────────
+// La web solo manda qué productos y cuántos; los precios los pone el backend con la planilla real.
+const MP_ZONAS = { retiro: 0, capital: 5500, gba1: 7000, gba2: 9000, gba3: 15000, interior: 0 };
+function mpItemsCarrito() {
+    syncCartPrices();
+    return cart.map(p => {
+        const prod = products.find(x => x.id === p.id);
+        return { nombre: (prod && (prod.sheetName || prod.name)) || p.name, qty: p.qty,
+                 precio: (prod && prod.price > 0) ? prod.price : (p.price || 0), inStock: !(prod && prod.inStock === false) };
+    });
+}
+function abrirPagoMP() {
+    if (cart.length === 0) { alert('Agregá al menos un producto al carrito.'); return; }
+    const items = mpItemsCarrito();
+    const sinPrecio = items.filter(i => !(i.precio > 0)).map(i => i.nombre);
+    if (sinPrecio.length) {
+        const msg = 'Estos productos no tienen precio para pagar online: ' + sinPrecio.join(', ') + '. Pedí presupuesto o consultanos por WhatsApp.';
+        if (typeof showToast === 'function') showToast(msg); else alert(msg);
+        return;
+    }
+    const set = (id, v) => { const e = document.getElementById(id); if (e && v && !e.value) e.value = v; };
+    set('mpNombre',   localStorage.getItem('kl_name'));
+    set('mpEmail',    localStorage.getItem('kl_email'));
+    set('mpTelefono', localStorage.getItem('kl_phone'));
+    mpMensaje('');
+    mpActualizarResumen();
+    document.getElementById('mpOverlay').classList.add('active');
+    document.getElementById('mpModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (typeof gtag !== 'undefined') gtag('event', 'begin_checkout', { currency: 'ARS', value: items.reduce((s, i) => s + i.precio * i.qty, 0) });
+}
+function cerrarPagoMP() {
+    document.getElementById('mpOverlay').classList.remove('active');
+    document.getElementById('mpModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+function mpMensaje(texto, tipo) {
+    const el = document.getElementById('mpEstadoMsg'); if (!el) return;
+    el.textContent = texto || '';
+    el.className = 'mp-estado' + (tipo ? ' mp-estado--' + tipo : '');
+}
+function mpActualizarResumen() {
+    const el = document.getElementById('mpResumen'); if (!el) return;
+    const items = mpItemsCarrito();
+    const subtotal = items.reduce((s, i) => s + i.precio * i.qty, 0);
+    const zona = (document.getElementById('mpZona') || {}).value || 'retiro';
+    const envio = MP_ZONAS[zona] || 0;
+    const filas = items.map(i => `<div class="mp-fila"><span>${i.qty}x ${i.nombre}</span><b>${fmt(i.precio * i.qty)}</b></div>`).join('');
+    const envioTxt = zona === 'interior' ? 'a coordinar' : (envio ? fmt(envio) : 'sin cargo');
+    el.innerHTML = filas +
+        `<div class="mp-fila"><span>Envío</span><b>${envioTxt}</b></div>` +
+        `<div class="mp-fila mp-fila--total"><span>Total a pagar</span><b>${fmt(subtotal + envio)}</b></div>`;
+}
+async function confirmarPagoMP(e) {
+    e.preventDefault();
+    if (cart.length === 0) return;
+    const nombre   = document.getElementById('mpNombre').value.trim();
+    const telefono = document.getElementById('mpTelefono').value.trim();
+    const email    = document.getElementById('mpEmail').value.trim();
+    const zona     = document.getElementById('mpZona').value;
+    if (!nombre || !telefono || !email) return;
+    const btn = document.getElementById('mpSubmit');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Preparando el pago…';
+    mpMensaje('Conectando con Mercado Pago…', 'cargando');
+    const items = mpItemsCarrito().map(i => ({ nombre: i.nombre, qty: i.qty }));
+    // recordar identidad (igual que el presupuesto) y guardar el lead
+    localStorage.setItem('kl_email', email); localStorage.setItem('kl_name', nombre); localStorage.setItem('kl_phone', telefono);
+    guardarClienteEnSheet({ nombre, email, telefono, empresa: '', origen: 'pago web' });
+    try {
+        const r = await crmJsonp({
+            action: 'mp_preferencia', tab: 'Clientes',
+            items: JSON.stringify(items), zona, nombre, email, telefono,
+            cid: sanouCid(telefono + '|' + JSON.stringify(items) + '|' + zona)
+        });
+        if (r && r.ok && r.init_point) {
+            sanouTrack('compra', cart.map(i => `${i.qty}x ${i.name}`).join(', '), { monto: r.total, contacto: [nombre, email].filter(Boolean).join(' · ') });
+            _compraHecha = true;
+            try { localStorage.setItem('sanou_mp_ref', r.ref || ''); } catch (err) {}
+            mpMensaje('Te llevamos a Mercado Pago…', 'cargando');
+            window.location.href = r.init_point;   // siempre init_point (no existe sandbox)
+            return;
+        }
+        const err = (r && r.error) || '';
+        mpMensaje(/desconocida|No autorizado/i.test(err) ? 'Los pagos online todavía no están habilitados. Pedí presupuesto o escribinos por WhatsApp.'
+                  : (err || 'No pudimos iniciar el pago. Probá de nuevo o escribinos por WhatsApp.'), 'error');
+    } catch (err) {
+        mpMensaje('No pudimos conectar con Mercado Pago. Revisá tu conexión y probá de nuevo.', 'error');
+    }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Ir a pagar';
+}
 function _ddmmaaaa(f) { return String(f.getDate()).padStart(2,'0') + '/' + String(f.getMonth()+1).padStart(2,'0') + '/' + f.getFullYear(); }
 
 function generarPresupuestoWeb(e) {

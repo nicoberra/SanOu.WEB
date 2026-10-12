@@ -5298,3 +5298,50 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 @media (max-width: 768px) {
     .header-search-row .btn-trabajá { display: none; }
 }
+
+/* ══════════ PAGO ONLINE — Mercado Pago (Checkout Pro) ══════════ */
+.btn-mp-pagar {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    background: #009EE3;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-weight: 900;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background 0.2s, transform 0.2s;
+}
+.btn-mp-pagar:hover { background: #0084c2; transform: scale(1.02); }
+.btn-mp-pagar:active { transform: scale(0.98); }
+.pp-body select, .pp-body .mp-label { font-family: inherit; }
+.pp-body .mp-label { color: var(--gray-light); font-size: 0.82rem; font-weight: 700; margin: 4px 0 -4px; }
+.pp-body select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--black-3);
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+.pp-body select:focus { outline: none; border-color: var(--yellow); }
+.mp-zonas-link { color: var(--gray-light); font-size: 0.8rem; text-decoration: underline; text-underline-offset: 3px; margin-top: -4px; }
+.mp-zonas-link:hover { color: var(--yellow); }
+.mp-resumen { background: var(--black-3); border-radius: 12px; padding: 10px 14px; display: grid; gap: 6px; }
+.mp-fila { display: flex; justify-content: space-between; gap: 12px; color: var(--gray-light); font-size: 0.88rem; }
+.mp-fila b { color: var(--white); font-weight: 700; white-space: nowrap; }
+.mp-fila--total { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 2px; color: var(--white); font-weight: 800; }
+.mp-fila--total b { color: var(--yellow); font-size: 1.05rem; }
+.mp-estado { display: none; font-size: 0.88rem; line-height: 1.45; padding: 10px 12px; border-radius: 10px; }
+.mp-estado--cargando { display: block; background: rgba(0,158,227,0.12); color: #7fd1f5; }
+.mp-estado--error { display: block; background: rgba(229,57,53,0.14); color: #ff8a86; }
+.mp-submit { background: #009EE3 !important; color: #fff !important; }
+.mp-submit:hover { background: #0084c2 !important; }
+.mp-submit:disabled { opacity: 0.7; cursor: wait; }
+@media (prefers-reduced-motion: reduce) {
+    .btn-mp-pagar, .btn-mp-pagar:hover, .btn-mp-pagar:active { transition: none; transform: none; }
+}

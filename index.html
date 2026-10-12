@@ -172,6 +172,7 @@
                 <button class="btn-vaciar" onclick="clearCart()">Vaciar</button>
                 <button class="btn-enviar-compra" onclick="pedirPresupuesto()">Pedir presupuesto</button>
             </div>
+            <button class="btn-mp-pagar" id="btnMpPagar" onclick="abrirPagoMP()" data-mp-checkout-cta="checkout-pro"><i class="fas fa-lock"></i> Pagar con Mercado Pago</button>
             <button class="btn-wa-secundario" onclick="checkoutWhatsApp()"><i class="fab fa-whatsapp"></i> Consultar por WhatsApp</button>
         </div>
     </aside>
@@ -193,6 +194,37 @@
                 <input type="text"  id="ppCuit"     placeholder="CUIT (opcional)" inputmode="numeric">
                 <button type="submit" class="pp-submit" id="ppSubmit"><i class="fas fa-file-arrow-down"></i> Descargar presupuesto</button>
                 <span class="pp-legal">Tus datos son solo para contactarte. No los compartimos.</span>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: pagar con Mercado Pago (Checkout Pro) -->
+    <div class="pp-overlay" id="mpOverlay" onclick="cerrarPagoMP()"></div>
+    <div class="pp-modal" id="mpModal" role="dialog" aria-labelledby="mpTitulo" aria-modal="true">
+        <div class="pp-head">
+            <h3 id="mpTitulo">Pagar con Mercado Pago</h3>
+            <button class="pp-close" onclick="cerrarPagoMP()" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pp-body">
+            <p class="pp-intro">Completá tus datos, elegí cómo lo recibís y pagá en el sitio seguro de Mercado Pago: tarjetas, cuotas o dinero en cuenta.</p>
+            <form onsubmit="confirmarPagoMP(event)" id="mpForm">
+                <input type="text"  id="mpNombre"   placeholder="Nombre y apellido *" required autocomplete="name">
+                <input type="tel"   id="mpTelefono" placeholder="Teléfono / WhatsApp *" required autocomplete="tel" inputmode="tel">
+                <input type="email" id="mpEmail"    placeholder="Email *" required autocomplete="email">
+                <label class="mp-label" for="mpZona">¿Cómo lo recibís?</label>
+                <select id="mpZona" onchange="mpActualizarResumen()">
+                    <option value="retiro">Retiro en San Ou — sin cargo</option>
+                    <option value="capital">Envío a Capital (CABA) — $5.500</option>
+                    <option value="gba1">Envío a GBA 1 — $7.000</option>
+                    <option value="gba2">Envío a GBA 2 — $9.000</option>
+                    <option value="gba3">Envío a GBA 3 — $15.000</option>
+                    <option value="interior">Interior del país — Vía Cargo, se coordina aparte</option>
+                </select>
+                <a class="mp-zonas-link" href="envios.html" target="_blank">¿Qué partidos entran en cada zona?</a>
+                <div class="mp-resumen" id="mpResumen" aria-live="polite"></div>
+                <div class="mp-estado" id="mpEstadoMsg" role="status" aria-live="polite"></div>
+                <button type="submit" class="pp-submit mp-submit" id="mpSubmit"><i class="fas fa-lock"></i> Ir a pagar</button>
+                <span class="pp-legal">Te redirigimos a Mercado Pago. No vemos ni guardamos los datos de tu tarjeta.</span>
             </form>
         </div>
     </div>
