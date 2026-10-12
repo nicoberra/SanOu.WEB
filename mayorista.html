@@ -426,10 +426,24 @@
             });
         }
 
+        // Copia local de la última lista vista (hasta 7 días): se muestra al instante y, si el
+        // backend tarda o falla, la página sigue mostrando precios en vez de quedar vacía.
+        const MAY_CACHE = 'sanou_may_cache';
+        let cacheRows = null;
+        try {
+            const c = JSON.parse(localStorage.getItem(MAY_CACHE) || 'null');
+            if (c && Array.isArray(c.rows) && c.rows.length && Date.now() - c.t < 7 * 24 * 3600e3) cacheRows = c.rows;
+        } catch (e) {}
         fetch('recortes.json?_=' + Date.now()).then(r => r.ok ? r.json() : {}).then(j => { RECORTES = j || {}; }).catch(() => {})
             .finally(() => {
+                if (cacheRows) render(cacheRows);
                 jsonp(CRM_URL + '?action=mayorista_list').then(d => {
-                    render(d && d.ok ? d.rows : null);
+                    if (d && d.ok && Array.isArray(d.rows)) {
+                        try { localStorage.setItem(MAY_CACHE, JSON.stringify({ t: Date.now(), rows: d.rows })); } catch (e) {}
+                        render(d.rows);
+                    } else if (!cacheRows) {
+                        render(null);
+                    }
                 });
             });
     })();

@@ -386,14 +386,21 @@ function guardarCotizacionEnCRM() {
             condEntrega: val('condEntrega')
         };
 
+        // cid: id idempotente (mismo contenido en la misma hora → misma fila, sin duplicar).
+        let h = 5381; const base = tel + '|' + detalle + '|' + Math.round(total);
+        for (let i = 0; i < base.length; i++) h = ((h * 33) ^ base.charCodeAt(i)) >>> 0;
         const p = {
             action: 'add', tab: 'Cotizaciones',
+            cid: 'c' + h.toString(36) + Math.floor(Date.now() / 3600000).toString(36),
             cliente: cliente, telefono: tel, detalle: detalle,
             monto: String(Math.round(total)), estado: 'Abierta',
             notas: 'cot|' + JSON.stringify(datos)   // datos completos para reabrir el PDF desde el panel
         };
         if (_cotClienteId) p.clienteid = _cotClienteId;   // atar al cliente elegido (ID permanente)
-        fetch(CRM_COTIZ_URL + '?' + new URLSearchParams(p).toString(), { mode: 'no-cors' });
+        const url = CRM_COTIZ_URL + '?' + new URLSearchParams(p).toString();
+        // Si falla la red, se reintenta una vez a los 3 s (el cid evita duplicar).
+        fetch(url, { mode: 'no-cors', keepalive: true })
+            .catch(() => setTimeout(() => { fetch(url, { mode: 'no-cors', keepalive: true }).catch(() => {}); }, 3000));
     } catch (e) { /* silencioso */ }
 }
 

@@ -1332,6 +1332,7 @@ function updateCartUI() {
     const countEl  = document.getElementById('cartCount');
     const totalEl  = document.getElementById('cartTotal');
     const totalRow = document.getElementById('cartTotalRow');
+    if (!countEl || !itemsEl || !totalEl) return;   // páginas sin carrito (cotizar.html)
 
     countEl.textContent = count;
 
@@ -1485,20 +1486,32 @@ function emitirPresupuesto({ nombre, telefono, email, empresa, cuit }) {
     // abrir el presupuesto (misma plantilla que el CRM) → se descarga/imprime como PDF
     window.open('presupuesto.html', '_blank');
 }
+// Id idempotente: el mismo contenido en la misma hora da el mismo id, así un doble clic o un
+// reintento no crean dos cotizaciones (el backend devuelve la que ya existe).
+function sanouCid(str) {
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
+    return 'c' + h.toString(36) + Math.floor(Date.now() / 3600000).toString(36);
+}
 function guardarCotizacionWeb(d) {
     if (!CLIENTES_URL) return;
     try {
         const detalle = (d.datos.items || []).map(i => `${i.cantidad}x ${i.nombre}`).join(', ');
+        const telefono = (d.datos.cliente.contacto || '').replace(/[^\d]/g, '');
         const params = new URLSearchParams({
             action: 'add', tab: 'Cotizaciones',
+            cid:      sanouCid(telefono + '|' + detalle + '|' + Math.round(d.total)),
             cliente:  (d.datos.cliente.razon || '').split(' — ')[0],
-            telefono: (d.datos.cliente.contacto || '').replace(/[^\d]/g, ''),
+            telefono: telefono,
             detalle:  detalle,
             monto:    String(Math.round(d.total)),
             estado:   'Abierta',
             notas:    'web|' + JSON.stringify(d.datos)   // datos completos para reabrir el mismo PDF desde el CRM
         });
-        fetch(CLIENTES_URL + '?' + params.toString(), { mode: 'no-cors' });
+        const url = CLIENTES_URL + '?' + params.toString();
+        // Si falla la red, se reintenta una vez a los 3 s (gracias al cid no se duplica).
+        fetch(url, { mode: 'no-cors', keepalive: true })
+            .catch(() => setTimeout(() => { fetch(url, { mode: 'no-cors', keepalive: true }).catch(() => {}); }, 3000));
     } catch (e) { /* silencioso */ }
 }
 
