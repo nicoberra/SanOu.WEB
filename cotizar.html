@@ -36,7 +36,7 @@
         <div class="cot-campo">
             <label>Agregar producto</label>
             <select id="selectorProducto" onchange="agregarItem(this.value); this.value='';"></select>
-            <small id="avisoPrecios">Cargando precios…</small>
+            <small id="avisoPrecios" role="status"><span class="aviso-skel" aria-label="Cargando precios"></span></small>
         </div>
 
         <div class="cot-campo">

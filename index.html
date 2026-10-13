@@ -173,9 +173,7 @@
             <button class="cart-close" onclick="closeCart()">Cerrar</button>
         </div>
         <div class="cart-items" id="cartItems">
-            <div class="cart-empty">
-                <p>Todavía no agregaste productos.</p>
-            </div>
+            <div class="cart-empty cart-empty-estado"><i class="fas fa-cart-shopping" aria-hidden="true"></i><p><strong>Tu carrito está vacío</strong>Sumá herramientas y armá tu presupuesto en un minuto.</p><button type="button" class="cart-empty-btn" onclick="closeCart(); irAProductos();">Ver productos</button></div>
         </div>
         <div class="cart-footer">
             <div class="cart-total-row" id="cartTotalRow" style="display:none">

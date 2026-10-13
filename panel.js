@@ -138,6 +138,23 @@ async function crmW(params) {
     return r;
 }
 
+// ─── ESTADOS DE LA INTERFAZ (cargando / vacío / error) ──────────
+// Cargando: skeleton con la forma del contenido (aparece recién a los 300 ms para no parpadear).
+function skel(tipo) {
+    const n = tipo === 'chico' ? 2 : 4;
+    if (tipo === 'fotos') return `<div class="skel skel-fotos" role="status" aria-label="Cargando">${'<span class="skel-b skel-cuadro"></span>'.repeat(4)}</div>`;
+    if (tipo === 'tablero') return `<div class="skel skel-tablero" role="status" aria-label="Cargando">${'<span class="skel-b skel-tarjeta"></span>'.repeat(4)}<span class="skel-b skel-ancho"></span><span class="skel-b skel-ancho"></span></div>`;
+    return `<div class="skel" role="status" aria-label="Cargando">${('<div class="skel-fila"><span class="skel-b skel-l1"></span><span class="skel-b skel-l2"></span></div>').repeat(n)}</div>`;
+}
+// Vacío: ícono + qué va acá + la acción siguiente.
+function vacio(icono, titulo, texto, boton, accion) {
+    return `<div class="estado-vacio"><i class="fas ${icono}" aria-hidden="true"></i><h4>${titulo}</h4>${texto ? `<p>${texto}</p>` : ''}${boton ? `<button class="panel-btn-add" onclick="${accion}">${boton}</button>` : ''}</div>`;
+}
+// Error: mensaje claro + Reintentar.
+function errorCarga(texto, accion) {
+    return `<div class="panel-error"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> ${texto}<br><button class="panel-reintentar" onclick="${accion}"><i class="fas fa-rotate"></i> Reintentar</button></div>`;
+}
+
 // ─── ESTADO / NAVEGACIÓN ────────────────────────────────────────
 let seccionActual = 'clientes';
 let clientes = [];
@@ -182,7 +199,7 @@ function hidratarCache(){
 async function renderDashboard(){
     const hayDatos = clientes.length || pedidos.length || seguimientos.length || cotizaciones.length;
     if (hayDatos) pintarDashboard();     // instantáneo con lo que haya en memoria/caché
-    else document.getElementById('vista').innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando panel…</div>`;
+    else document.getElementById('vista').innerHTML = skel('tablero');
     // refrescar los 4 en paralelo y repintar
     await Promise.all([ensureClientes(stale('clientes')), ensurePedidos(stale('pedidos')), ensureSeguimientos(stale('seguimientos')), ensureCotizaciones(stale('cotizaciones'))]);
     if (seccionActual === 'panel') pintarDashboard();
@@ -295,15 +312,15 @@ async function renderCotizador() {
                 <input type="text" id="buscarCot" placeholder="Buscar presupuesto…" oninput="filtrarCotizaciones()"></div>
             <button class="panel-btn-add" onclick="window.open('cotizar.html','_blank')"><i class="fas fa-plus"></i> Nuevo presupuesto</button>
         </div>
-        <div class="panel-lista" id="listaCot">${cotizaciones.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
+        <div class="panel-lista" id="listaCot">${cotizaciones.length ? '' : skel()}</div>`;
     if (cotizaciones.length) pintarCotizaciones(cotizaciones);
     // Cargar usuarios (si falta) para poder resolver el WhatsApp por nombre.
-    ensureClientes().then(() => { if (seccionActual === 'cotizaciones') pintarCotizaciones(cotizaciones); });
+    ensureClientes().then(() => { if (seccionActual === 'cotizaciones' && (_cotCargadas || cotizaciones.length)) pintarCotizaciones(cotizaciones); });
     try {
         const r = await crm({ action: 'list', tab: 'Cotizaciones' });
         if (r && r.ok && r.rows) { cotizaciones = r.rows; cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
         if (seccionActual === 'cotizaciones') pintarCotizaciones(cotizaciones);
-    } catch (e) { if (!cotizaciones.length) document.getElementById('listaCot').innerHTML = `<div class="panel-error">No se pudieron cargar los presupuestos.</div>`; }
+    } catch (e) { if (!cotizaciones.length) document.getElementById('listaCot').innerHTML = errorCarga('No se pudieron cargar los presupuestos. Revisá tu conexión.', 'renderCotizador()'); }
 }
 function filtrarCotizaciones() {
     const q = (document.getElementById('buscarCot').value || '').toLowerCase().trim();
@@ -319,7 +336,7 @@ function datosReabrir(c) {
 function pintarCotizaciones(lista) {
     const cont = document.getElementById('listaCot'); if (!cont) return;
     lista = [...lista].sort((a, b) => (parseFechaCRM(b.fecha) || 0) - (parseFechaCRM(a.fecha) || 0));  // nuevas arriba
-    if (!lista.length) { cont.innerHTML = `<div class="panel-vacio-chico">Todavía no hay presupuestos.</div>`; return; }
+    if (!lista.length) { cont.innerHTML = vacio('fa-file-invoice-dollar', 'Todavía no hay presupuestos', 'Los que armes en el cotizador o pidan desde la web aparecen acá.', '<i class="fas fa-plus"></i> Nueva cotización', "window.open('cotizar.html','_blank')"); return; }
     cont.innerHTML = lista.map(c => {
         const web = esCotWeb(c);
         const reabrible = datosReabrir(c);   // tiene datos completos → se puede reabrir el PDF
@@ -369,7 +386,7 @@ async function renderMarketing(){
     const v = document.getElementById('vista');
     const cache = _marketingData || cacheGet('marketing');
     if (cache) pintarMarketing(cache);
-    else v.innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>`;
+    else v.innerHTML = skel('tablero');
     try {
         // Reintenta hasta 3 veces: un bache de 4G ya no rompe la sección.
         let data = null;
@@ -484,7 +501,7 @@ const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov'
 
 async function renderFacturacion(){
     const v = document.getElementById('vista');
-    v.innerHTML = `<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando facturación…</div>`;
+    v.innerHTML = skel('tablero');
     await ensurePedidos();
     await Promise.all([ensureProductosPrecios(), ensureDolar()]);   // costos + dólar para el beneficio
     if (seccionActual !== 'facturacion') return;
@@ -720,7 +737,7 @@ async function renderClientes() {
             </div>
             <button class="panel-btn-add" onclick="abrirFormCliente()"><i class="fas fa-plus"></i> Nuevo usuario</button>
         </div>
-        <div class="panel-lista" id="listaClientes">${clientes.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
+        <div class="panel-lista" id="listaClientes">${clientes.length ? '' : skel()}</div>`;
     document.querySelectorAll('.cli-tab').forEach(b => b.classList.toggle('active', b.dataset.v === vistaClientes));
     if (clientes.length) { actualizarContadores(); filtrarClientes(); }   // pintar al instante desde caché/memoria
     try {
@@ -736,7 +753,7 @@ async function renderClientes() {
         ensurePedidos().then(() => { if (seccionActual === 'clientes') filtrarClientes(); }); // sumar contador de pedidos
     } catch (e) {
         if (!clientes.length) document.getElementById('listaClientes').innerHTML =
-            `<div class="panel-error">No se pudieron cargar los usuarios. Revisá tu conexión.</div>`;
+            errorCarga('No se pudieron cargar los usuarios. Revisá tu conexión.', 'renderClientes()');
     }
 }
 
@@ -765,9 +782,11 @@ function pintarClientes(lista) {
     const cont = document.getElementById('listaClientes');
     if (!cont) return;
     if (!lista.length) {
-        cont.innerHTML = `<div class="panel-vacio-chico">${vistaClientes === 'web'
-            ? 'Todavía no se registró nadie desde la web.'
-            : 'No hay usuarios cargados. Agregá el primero con "Nuevo usuario".'}</div>`;
+        const qCli = (document.getElementById('buscarCli') || {}).value;
+        cont.innerHTML = qCli ? vacio('fa-magnifying-glass', 'Sin resultados', 'Probá con otro nombre, empresa o teléfono.')
+            : vistaClientes === 'web'
+            ? vacio('fa-globe', 'Todavía no se registró nadie desde la web', 'Cuando alguien cree su cuenta o pida presupuesto en sanou.com.ar, aparece acá.')
+            : vacio('fa-user-plus', 'No hay usuarios cargados', 'Cargá tu primer cliente para seguir sus pedidos y presupuestos.', '<i class="fas fa-plus"></i> Nuevo usuario', 'abrirFormCliente()');
         return;
     }
     // Por fecha: el más reciente arriba y el más antiguo al final.
@@ -821,7 +840,7 @@ async function verCliente(id) {
             <button class="cli-btn cli-del" onclick="cerrarModal(); borrarCliente('${c.id}')" title="Eliminar usuario"><i class="fas fa-trash"></i></button>
         </div>
         <h4 class="ficha-tit">Historial</h4>
-        <div id="fichaHist" class="ficha-hist"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>`;
+        <div id="fichaHist" class="ficha-hist">${skel('chico')}</div>`;
     abrirModal();
     await ensurePedidos();
     await ensureCotizaciones();
@@ -987,8 +1006,8 @@ async function renderProductos() {
         </div>
         <p class="prod-ayuda">Precio, stock, destacado y costo en USD. Se guarda al instante. El costo se convierte a pesos al dólar actual.</p>
         <div class="prod-cats" id="prodCats"></div>
-        <div class="panel-lista" id="listaProd">${productos.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando productos…</div>'}</div>`;
-    ensureDolar().then(()=>{ pintarBarraDolar(); if(seccionActual==='productos') filtrarProductos(); });
+        <div class="panel-lista" id="listaProd">${productos.length ? '' : skel()}</div>`;
+    ensureDolar().then(()=>{ pintarBarraDolar(); if(seccionActual==='productos' && productos.length) filtrarProductos(); });
     ensurePedidos().then(()=>{ if(seccionActual==='productos' && productos.length) filtrarProductos(); });   // para "X vendidos"
     if (productos.length) { renderProdCats(); filtrarProductos(); }   // instantáneo desde caché/memoria
     try {
@@ -1069,7 +1088,7 @@ function pintarProductos(lista, q) {
     const cont = document.getElementById('listaProd');
     if (!cont) return;
     if (!lista.length) {
-        cont.innerHTML = `<div class="panel-vacio-chico">${q ? 'Sin resultados.' : 'No hay productos en la planilla.'}</div>`;
+        cont.innerHTML = q ? vacio('fa-magnifying-glass', 'Sin resultados', 'Probá con otro nombre o modelo.') : vacio('fa-box-open', 'No hay productos en la planilla', 'Los productos salen de la planilla de precios. Si acabás de cargarlos, recargá.', '<i class="fas fa-rotate"></i> Recargar', 'renderProductos()');
         return;
     }
     const ventas = ventasPorProducto();
@@ -1215,7 +1234,7 @@ function abrirFotos(nombre){
             </label>
             <div class="fotos-tip"><i class="fas fa-hand-pointer"></i> Mantené apretada una foto y arrastrala para cambiar el orden. La <b>★ Principal</b> es la que se ve primero.</div>
             <div class="fotos-msg" id="fotosMsg"></div>
-            <div class="fotos-grid" id="fotosGrid"><div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div></div>
+            <div class="fotos-grid" id="fotosGrid">${skel('fotos')}</div>
         </div>`;
     abrirModal();
     cargarFotos();
@@ -1609,9 +1628,9 @@ async function renderMayorista(){
         </div>
         <p class="prod-ayuda">Precios mayoristas (se guardan en tu planilla, la que mandás a clientes). El costo sale de Productos, al dólar actual.</p>
         <div class="prod-cats" id="mayCats"></div>
-        <div class="panel-lista" id="listaMay">${mayorista.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
+        <div class="panel-lista" id="listaMay">${mayorista.length ? '' : skel()}</div>`;
     // Dólar + costos (desde Productos) para mostrar costo USD / pesos y ganancia.
-    Promise.all([ensureDolar(), ensureProductosPrecios()]).then(()=>{ if(seccionActual==='mayorista'){ pintarBarraDolar(); filtrarMayorista(); } });
+    Promise.all([ensureDolar(), ensureProductosPrecios()]).then(()=>{ if(seccionActual==='mayorista'){ pintarBarraDolar(); if(_mayoristaCargado || mayorista.length) filtrarMayorista(); } });
     if (mayorista.length) { renderMayCats(); filtrarMayorista(); }
     if (_mayoristaCargado && !stale('mayorista')) return;   // recién traído: no re-descargar
     try {
@@ -1642,7 +1661,7 @@ function filtrarMayorista(){
 }
 function pintarMayorista(lista, q){
     const cont = document.getElementById('listaMay'); if(!cont) return;
-    if(!lista.length){ cont.innerHTML = `<div class="panel-vacio-chico">${q ? 'Sin resultados.' : 'No hay productos.'}</div>`; return; }
+    if(!lista.length){ cont.innerHTML = q ? vacio('fa-magnifying-glass', 'Sin resultados', 'Probá con otro nombre o modelo.') : vacio('fa-boxes-stacked', 'La lista mayorista está vacía', 'Cargá productos en la planilla mayorista y recargá.', '<i class="fas fa-rotate"></i> Recargar', 'renderMayorista()'); return; }
     cont.innerHTML = lista.map(m => {
         return `
         <div class="prod-card" id="may-${m.row}">
@@ -1756,7 +1775,7 @@ async function renderEstadisticas(){
     const v = document.getElementById('vista');
     const cache = _statsData || cacheGet('stats');
     if (cache) _statsData = cache;
-    v.innerHTML = `<div id="statsWrap">${_statsData ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando estadísticas…</div>'}</div>`;
+    v.innerHTML = `<div id="statsWrap">${_statsData ? '' : skel('tablero')}</div>`;
     ensurePedidos().then(()=>{ if(seccionActual==='estadisticas' && _statsData) pintarEstadisticas(); });
     if (_statsData) pintarEstadisticas();
     if (_statsCargado && !stale('stats')) return;
@@ -1932,15 +1951,15 @@ async function renderPedidos(){
                 <input type="text" id="buscarPed" placeholder="Buscar por usuario, detalle…" oninput="filtrarPedidos()"></div>
             <button class="panel-btn-add" onclick="abrirFormPedido()"><i class="fas fa-plus"></i> Nuevo pedido</button>
         </div>
-        <div class="panel-lista" id="listaPed">${pedidos.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
+        <div class="panel-lista" id="listaPed">${pedidos.length ? '' : skel()}</div>`;
     if (pedidos.length) pintarPedidos(pedidos);              // instantáneo desde caché/memoria
     // Costos + dólar en segundo plano: al llegar, repintar con la ganancia.
-    Promise.all([ensureProductosPrecios(), ensureDolar()]).then(()=>{ if(seccionActual==='pedidos') pintarPedidos(pedidos); });
+    Promise.all([ensureProductosPrecios(), ensureDolar()]).then(()=>{ if(seccionActual==='pedidos' && (_pedidosCargados || pedidos.length)) pintarPedidos(pedidos); });
     try {
         const r = await crm({ action:'list', tab:'Pedidos' });
         if (r&&r.ok&&r.rows){ pedidos = r.rows; cacheSet('pedidos',pedidos); _pedidosCargados=true; }
         if (seccionActual==='pedidos') pintarPedidos(pedidos);
-    } catch(e){ if(!pedidos.length) document.getElementById('listaPed').innerHTML = `<div class="panel-error">No se pudieron cargar los pedidos.</div>`; }
+    } catch(e){ if(!pedidos.length) document.getElementById('listaPed').innerHTML = errorCarga('No se pudieron cargar los pedidos. Revisá tu conexión.', 'renderPedidos()'); }
 }
 // Mensaje de WhatsApp según el estado del pedido.
 function msgPedido(p){
@@ -1955,7 +1974,7 @@ function filtrarPedidos(){
 }
 function pintarPedidos(lista){
     const cont=document.getElementById('listaPed'); if(!cont) return;
-    if(!lista.length){ cont.innerHTML=`<div class="panel-vacio-chico">No hay pedidos todavía.</div>`; return; }
+    if(!lista.length){ const qP=(document.getElementById('buscarPed')||{}).value; cont.innerHTML = qP ? vacio('fa-magnifying-glass','Sin resultados','Probá con otro cliente, producto o estado.') : vacio('fa-cart-shopping','Todavía no hay pedidos','Cargá un pedido para seguir la entrega, el cobro y la ganancia.','<i class="fas fa-plus"></i> Nuevo pedido','abrirFormPedido()'); return; }
     // Pendientes siempre arriba y, dentro de cada grupo, por fecha: el más reciente
     // primero y el más antiguo al final.
     lista = [...lista].sort((a,b)=>{
@@ -2263,7 +2282,7 @@ async function renderSeguimientos(){
                 <input type="text" id="buscarSeg" placeholder="Buscar seguimiento…" oninput="filtrarSeguimientos()"></div>
             <button class="panel-btn-add" onclick="abrirFormSeguimiento()"><i class="fas fa-plus"></i> Nuevo seguimiento</button>
         </div>
-        <div class="panel-lista" id="listaSeg">${seguimientos.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>'}</div>`;
+        <div class="panel-lista" id="listaSeg">${seguimientos.length ? '' : skel()}</div>`;
     const ordenar = () => seguimientos.sort((a,b)=>(a.objetivo||'9999').localeCompare(b.objetivo||'9999'));
     if (seguimientos.length) { ordenar(); pintarSeguimientos(seguimientos); }   // instantáneo
     try {
@@ -2272,7 +2291,7 @@ async function renderSeguimientos(){
         if (seccionActual!=='seguimientos') return;
         ordenar();
         pintarSeguimientos(seguimientos);
-    } catch(e){ if(!seguimientos.length) document.getElementById('listaSeg').innerHTML = `<div class="panel-error">No se pudieron cargar los seguimientos.</div>`; }
+    } catch(e){ if(!seguimientos.length) document.getElementById('listaSeg').innerHTML = errorCarga('No se pudieron cargar los seguimientos. Revisá tu conexión.', 'renderSeguimientos()'); }
 }
 function filtrarSeguimientos(){
     const q=(document.getElementById('buscarSeg').value||'').toLowerCase().trim();
@@ -2289,7 +2308,7 @@ function esVencido(s){
 }
 function pintarSeguimientos(lista){
     const cont=document.getElementById('listaSeg'); if(!cont) return;
-    if(!lista.length){ cont.innerHTML=`<div class="panel-vacio-chico">No hay seguimientos. Agregá un recordatorio.</div>`; return; }
+    if(!lista.length){ cont.innerHTML = vacio('fa-bell','No hay seguimientos','Agendá un recordatorio para volver a escribirle a un cliente.','<i class="fas fa-plus"></i> Nuevo seguimiento','abrirFormSeguimiento()'); return; }
     cont.innerHTML = lista.map(s=>{
         const wa = waLink(s.telefono, `¡Hola ${s.cliente||''}! Te escribo de San Ou 🔧.`);
         const venc = esVencido(s);

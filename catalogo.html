@@ -64,6 +64,11 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
 .dl-btn.web{background:#0D0D0D;color:#fff}
 /* LOADING */
 .cat-loading{text-align:center;padding:60px 20px;color:#777;font-size:0.95rem}
+.cat-skel{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:30px 20px;opacity:0;animation:catSkelIn .2s ease .3s forwards}
+.cat-skel span{height:240px;border-radius:14px;background:linear-gradient(90deg,#eee 0%,#f6f6f6 50%,#eee 100%);background-size:200% 100%;animation:catSkelBrillo 1.3s ease-in-out infinite}
+@keyframes catSkelIn{to{opacity:1}}
+@keyframes catSkelBrillo{from{background-position:100% 0}to{background-position:-100% 0}}
+@media (prefers-reduced-motion: reduce){.cat-skel{animation:none;opacity:1}.cat-skel span{animation:none}}
 /* MOBILE */
 @media(max-width:640px){
     .cover{padding:40px 16px;min-height:auto}
@@ -135,7 +140,7 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
     </div>
 </div>
 
-<div id="catBody"><div class="cat-loading">Cargando catálogo…</div></div>
+<div id="catBody"><div class="cat-skel" role="status" aria-label="Cargando catálogo"><span></span><span></span><span></span><span></span></div></div>
 
 <div class="cat-footer"><b>San Ou</b> — Herramientas hidráulicas profesionales &nbsp;|&nbsp; sanou.com.ar &nbsp;|&nbsp; +54 9 11 3175-1517</div>
 

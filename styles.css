@@ -5358,3 +5358,32 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     margin-bottom: 10px;
 }
 @media (max-width: 480px) { .hero-slogan-kw { font-size: 0.6rem; letter-spacing: 0.6px; margin-bottom: 6px; white-space: nowrap; } }
+
+/* ═════════ ESTADOS VACÍOS DE LA TIENDA (2026-10): ícono + texto + acción ═════════ */
+.tienda-vacio{grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--gray);display:flex;flex-direction:column;align-items:center;gap:8px}
+.tienda-vacio > i{font-size:2rem;color:var(--yellow);opacity:.6;margin-bottom:4px}
+.tienda-vacio h4{color:var(--white);font-size:1.1rem;font-weight:800}
+.tienda-vacio p{max-width:420px;line-height:1.5;font-size:.92rem}
+.tienda-vacio-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.tienda-vacio-btns button,.tienda-vacio-btns a{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:12px;font-weight:800;font-size:.9rem;border:0;cursor:pointer;text-decoration:none;transition:transform .12s cubic-bezier(0.25,0.46,0.45,0.94)}
+.tienda-vacio-btns button{background:var(--yellow);color:var(--black)}
+.tienda-vacio-btns a{background:var(--green);color:#fff}
+.tienda-vacio-btns button:active,.tienda-vacio-btns a:active{transform:scale(.96);transition-duration:0s}
+.tienda-vacio-btns button:focus-visible,.tienda-vacio-btns a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.tienda-vacio-btns button,.tienda-vacio-btns a{transition:none}}
+
+/* Carrito vacío con acción + aviso de precios del cotizador (estados, 2026-10) */
+.cart-empty-estado{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:26px 18px}
+.cart-empty-estado > i{font-size:1.7rem;color:var(--yellow);opacity:.6}
+.cart-empty-estado p{margin:0;line-height:1.45}
+.cart-empty-estado strong{display:block;color:var(--white);font-size:.98rem;margin-bottom:2px}
+.cart-empty-btn{margin-top:6px;background:var(--yellow);color:var(--black);border:0;border-radius:12px;padding:10px 18px;font-weight:800;font-size:.88rem;cursor:pointer;transition:transform .12s cubic-bezier(0.25,0.46,0.45,0.94)}
+.cart-empty-btn:active{transform:scale(.96);transition-duration:0s}
+.cart-empty-btn:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.aviso-skel{display:inline-block;vertical-align:middle;width:150px;height:10px;border-radius:6px;background:linear-gradient(90deg,#2a2a2a 0%,#3a3a3a 50%,#2a2a2a 100%);background-size:200% 100%;animation:avisoSkel 1.3s ease-in-out infinite}
+@keyframes avisoSkel{from{background-position:100% 0}to{background-position:-100% 0}}
+.aviso-error{color:#ff8a86}
+.aviso-reintentar{background:none;border:1px solid var(--yellow);color:var(--yellow);border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700;cursor:pointer;margin-left:6px}
+.aviso-reintentar:active{transform:scale(.96)}
+.aviso-reintentar:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.aviso-skel{animation:none}.cart-empty-btn{transition:none}}

@@ -39,6 +39,9 @@ for (const [ancho, alto, nombre] of [[390, 844, 'celular'], [1440, 900, 'compu']
     try {
       const resp = await page.goto(BASE + url, { waitUntil: 'load', timeout: 30000 });
       await page.waitForTimeout(1500);
+      // Scroll hasta abajo y vuelta: muchos errores solo aparecen en los listeners de scroll.
+      await page.evaluate(async () => { for (let y = 0; y <= document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise(r => setTimeout(r, 30)); } window.scrollTo(0, 0); });
+      await page.waitForTimeout(300);
       if (!resp || resp.status() >= 400) errores.push('HTTP ' + (resp && resp.status()));
       const scrollX = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
       if (scrollX) errores.push('scroll horizontal');

@@ -126,6 +126,21 @@
         }
         .may-wa:hover { opacity: .88; }
         .may-loading { text-align: center; color: var(--gray); padding: 60px 0; font-size: .95rem; }
+        /* Estados: cargando (skeleton), vacío y error con acción */
+        .may-skel { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; padding: 10px 0 40px; opacity: 0; animation: maySkelIn .2s ease .3s forwards; }
+        .may-skel span { height: 150px; border-radius: 18px; background: linear-gradient(90deg, #1a1a1a 0%, #262626 50%, #1a1a1a 100%); background-size: 200% 100%; animation: maySkelBrillo 1.3s ease-in-out infinite; }
+        @keyframes maySkelIn { to { opacity: 1; } }
+        @keyframes maySkelBrillo { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+        .may-estado { text-align: center; padding: 50px 20px 60px; color: var(--gray); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .may-estado > i { font-size: 2rem; color: var(--yellow); opacity: .6; margin-bottom: 4px; }
+        .may-estado h4 { color: #fff; font-size: 1.1rem; }
+        .may-estado-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+        .may-estado-btns button, .may-estado-btns a { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: .9rem; border: 0; cursor: pointer; text-decoration: none; transition: transform .12s cubic-bezier(0.25,0.46,0.45,0.94); }
+        .may-estado-btns button { background: var(--yellow); color: #111; }
+        .may-estado-btns a { background: #25D366; color: #fff; }
+        .may-estado-btns button:active, .may-estado-btns a:active { transform: scale(.96); transition-duration: 0s; }
+        .may-estado-btns button:focus-visible, .may-estado-btns a:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { .may-skel { animation: none; opacity: 1; } .may-skel span { animation: none; } }
         .may-cta {
             margin: 56px auto 0; max-width: 680px; text-align: center;
             background: var(--black-2); border: 1px solid rgba(255,215,0,.2); border-radius: 18px; padding: 34px 26px;
@@ -221,7 +236,7 @@
                 </div>
 
                 <div id="mayLista">
-                    <div class="may-loading"><i class="fas fa-spinner fa-spin"></i> Cargando lista mayorista…</div>
+                    <div class="may-skel" role="status" aria-label="Cargando lista mayorista"><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 </div>
 
                 <div class="may-cta">
@@ -350,7 +365,8 @@
 
         function render(rows) {
             const cont = document.getElementById('mayLista');
-            if (!rows || !rows.length) { cont.innerHTML = '<div class="may-loading">No se pudo cargar la lista. Probá de nuevo en un momento.</div>'; return; }
+            if (rows && !rows.length) { cont.innerHTML = '<div class="may-estado"><i class="fas fa-boxes-stacked"></i><h4>La lista mayorista se está actualizando</h4><p>Pedínosla por WhatsApp y te la mandamos al toque.</p><div class="may-estado-btns"><a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Quiero%20la%20lista%20mayorista." target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Pedir por WhatsApp</a></div></div>'; return; }
+            if (!rows) { cont.innerHTML = '<div class="may-estado"><i class="fas fa-triangle-exclamation"></i><h4>No se pudo cargar la lista</h4><p>Puede ser la conexión. Probá de nuevo o pedínosla por WhatsApp.</p><div class="may-estado-btns"><button type="button" onclick="location.reload()"><i class="fas fa-rotate"></i> Reintentar</button><a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Quiero%20la%20lista%20mayorista." target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Pedir por WhatsApp</a></div></div>'; return; }
             let html = '';
             let buffer = [];
             let catName = '';
@@ -371,7 +387,7 @@
                 else if (r.tipo === 'prod' && r.producto) { r._prod = matchProducto(r.producto); buffer.push(r); }
             });
             cerrarCat();
-            cont.innerHTML = html || '<div class="may-loading">No hay productos para mostrar.</div>';
+            cont.innerHTML = html || '<div class="may-estado"><i class="fas fa-filter-circle-xmark"></i><h4>No hay productos en esta categoría</h4><p>Elegí otra categoría o mirá la lista completa.</p><div class="may-estado-btns"><button type="button" onclick="mayAplicarFiltro(\'all\')">Ver todo</button></div></div>';
             mayAplicarFiltro(mayFiltroActual);
         }
 
@@ -410,7 +426,7 @@
                 document.getElementById('filterArrow')?.classList.remove('open');
             }
         });
-        window.mayToggleFiltro = mayToggleFiltro; window.mayFiltrar = mayFiltrar;
+        window.mayToggleFiltro = mayToggleFiltro; window.mayFiltrar = mayFiltrar; window.mayAplicarFiltro = mayAplicarFiltro;
 
         // Fuentes de datos: recortes.json (encuadre, mismo origen) + mayorista_list (backend, por JSONP para evitar CORS)
         function jsonp(url) {

@@ -490,7 +490,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     try { await loadPricesFromSheet(); } catch (e) { console.warn('No se pudieron traer precios del Sheet', e); }
     renderSelector();
     renderItems();
-    const aviso = document.getElementById('avisoPrecios');
-    if (aviso) aviso.textContent = 'Precios actualizados desde el Sheet.';
+    avisoPrecios();
     cargarClientesCotizador();   // llena el selector de clientes ya ingresados
 });
+// Estado de los precios: actualizados, o error con Reintentar (antes decía "actualizados" aunque fallara).
+function avisoPrecios() {
+    const aviso = document.getElementById('avisoPrecios'); if (!aviso) return;
+    const conPrecio = products.filter(p => p.price > 0).length;
+    aviso.innerHTML = conPrecio
+        ? 'Precios actualizados.'
+        : '<span class="aviso-error">No se pudieron traer los precios.</span> <button type="button" class="aviso-reintentar" onclick="reintentarPrecios()">Reintentar</button>';
+}
+async function reintentarPrecios() {
+    const aviso = document.getElementById('avisoPrecios');
+    if (aviso) aviso.innerHTML = '<span class="aviso-skel" aria-label="Cargando precios"></span>';
+    try { await loadPricesFromSheet(); } catch (e) {}
+    renderSelector(); renderItems(); avisoPrecios();
+}

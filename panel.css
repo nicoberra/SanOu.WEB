@@ -734,3 +734,34 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     .glass-card{background:#1b1b1b}
 }
+
+/* ═════════ ESTADOS DE LA INTERFAZ (2026-10) ═════════ */
+/* Cargando: skeleton con la forma del contenido; aparece a los 300 ms (si carga antes, no parpadea) */
+.skel{display:flex;flex-direction:column;gap:10px;padding:4px 0;opacity:0;animation:skelAparece .2s ease .3s forwards}
+@keyframes skelAparece{to{opacity:1}}
+.skel-fila{background:var(--neg2);border:1px solid var(--linea);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.skel-b{display:block;border-radius:8px;background:linear-gradient(90deg,#222 0%,#2e2e2e 50%,#222 100%);background-size:200% 100%;animation:skelBrillo 1.3s ease-in-out infinite}
+@keyframes skelBrillo{from{background-position:100% 0}to{background-position:-100% 0}}
+.skel-l1{height:14px;width:45%}
+.skel-l2{height:11px;width:75%}
+.skel-tablero{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.skel-tarjeta{height:92px;border-radius:16px}
+.skel-ancho{grid-column:1/-1;height:120px;border-radius:16px}
+.skel-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.skel-cuadro{aspect-ratio:1/1;border-radius:12px}
+/* Vacío: ícono + texto + acción */
+.estado-vacio{text-align:center;padding:44px 20px;color:var(--gris);display:flex;flex-direction:column;align-items:center;gap:6px}
+.estado-vacio > i{font-size:2rem;color:var(--am);opacity:.55;margin-bottom:6px}
+.estado-vacio h4{color:#fff;font-size:1rem;font-weight:800}
+.estado-vacio p{font-size:.86rem;max-width:340px;line-height:1.45}
+.estado-vacio .panel-btn-add{margin-top:10px}
+/* Error: ícono + mensaje + Reintentar */
+.panel-error i.fa-triangle-exclamation{margin-right:4px}
+.panel-reintentar{transition:transform .12s cubic-bezier(0.25,0.46,0.45,0.94), opacity .15s ease}
+.panel-reintentar:active,.estado-vacio .panel-btn-add:active{transform:scale(.96);transition-duration:0s}
+@media (hover:hover) and (pointer:fine){ .panel-reintentar:hover{opacity:.9} }
+.panel-reintentar:focus-visible,.panel-btn-add:focus-visible{outline:2px solid var(--am);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){
+    .skel{animation:none;opacity:1}
+    .skel-b{animation:none}
+}

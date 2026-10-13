@@ -34,7 +34,8 @@
     }
     var enCurso = null;   // una sola descarga por página aunque la pidan varios scripts
     window.sanouCatalogoCsv = function () {
-        if (!enCurso) enCurso = desdeBackend(6000).catch(function () { return desdeCsv(7000); });
+        if (!enCurso) enCurso = desdeBackend(6000).catch(function () { return desdeCsv(7000); })
+            .catch(function (e) { enCurso = null; throw e; });
         return enCurso;
     };
 })();

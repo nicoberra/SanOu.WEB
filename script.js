@@ -966,7 +966,7 @@ function renderProducts(filter, showAll = false) {
     const verMasWrap = document.getElementById('verMasWrap');
 
     if (list.length === 0) {
-        grid.innerHTML = '<p style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px 0">No hay productos en esta categoría aún.</p>';
+        grid.innerHTML = '<div class="tienda-vacio"><i class="fas fa-box-open"></i><h4>Todavía no hay productos en esta categoría</h4><p>Mirá el resto del catálogo o consultanos por lo que necesitás.</p><div class="tienda-vacio-btns"><button type="button" onclick="filterProducts(\'all\')">Ver todos los productos</button><a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Busco%20una%20herramienta." target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Consultar</a></div></div>';
         if (verMasWrap) verMasWrap.style.display = 'none';
         return;
     }
@@ -1248,7 +1248,8 @@ function searchProducts(query) {
     );
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     if (list.length === 0) {
-        grid.innerHTML = `<p style="color:var(--gray);grid-column:1/-1;text-align:center;padding:40px 0">No se encontraron productos para "<strong style="color:var(--white)">${query}</strong>".</p>`;
+        const qSeguro = String(query).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        grid.innerHTML = `<div class="tienda-vacio"><i class="fas fa-magnifying-glass"></i><h4>No encontramos "${qSeguro}"</h4><p>Probá con el modelo (ej. HHY-70A) o el tipo de herramienta. Si no lo tenemos a la vista, te lo conseguimos.</p><div class="tienda-vacio-btns"><button type="button" onclick="filterProducts('all')">Ver todos los productos</button><a href="https://wa.me/5491131751517?text=${encodeURIComponent('Hola San Ou! Busco: ' + query)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Preguntar por WhatsApp</a></div></div>`;
     } else {
         grid.innerHTML = list.map(p => `
             <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
@@ -1357,7 +1358,7 @@ function updateCartUI() {
     countEl.textContent = count;
 
     if (cart.length === 0) {
-        itemsEl.innerHTML = `<div class="cart-empty"><p>Todavía no agregaste productos.</p></div>`;
+        itemsEl.innerHTML = `<div class="cart-empty cart-empty-estado"><i class="fas fa-cart-shopping" aria-hidden="true"></i><p><strong>Tu carrito está vacío</strong>Sumá herramientas y armá tu presupuesto en un minuto.</p><button type="button" class="cart-empty-btn" onclick="closeCart(); irAProductos();">Ver productos</button></div>`;
         if (totalRow) totalRow.style.display = 'none';
         return;
     }
@@ -1709,7 +1710,8 @@ window.addEventListener('scroll', () => {
 });
 
 window.addEventListener('scroll', () => {
-    document.getElementById('header').style.padding = '0';
+    const h = document.getElementById('header');   // páginas sin header (cotizar.html) no deben tirar error
+    if (h) h.style.padding = '0';
 });
 
 // ─── PRECIOS DESDE GOOGLE SHEETS ─────────────────────────────────
