@@ -82,6 +82,16 @@ function crm(params) {
     });
 }
 
+// Escrituras: si el backend responde ok:false (sesión vencida, límite, fila no encontrada) o
+// no confirma el cambio, se trata como error. Así nunca se muestra "guardado" cuando no se guardó.
+async function crmW(params) {
+    const r = await crm(params);
+    if (!r || r.ok !== true) throw new Error((r && r.error) || 'Sin respuesta del servidor');
+    if (r.updated === false || r.deleted === false || r.saved === false || r.guardado === false || r.borrada === false || r.ordenado === false)
+        throw new Error('El servidor no encontró el registro');
+    return r;
+}
+
 // ─── ESTADO / NAVEGACIÓN ────────────────────────────────────────
 let seccionActual = 'clientes';
 let clientes = [];
@@ -304,7 +314,7 @@ async function borrarCotizacion(id) {
     cotizaciones = cotizaciones.filter(x => x.id !== id);
     cacheSet('cotizaciones', cotizaciones);
     pintarCotizaciones(cotizaciones);
-    try { await crm({ action: 'delete', tab: 'Cotizaciones', id }); } catch (e) {}
+    try { await crmW({ action: 'delete', tab: 'Cotizaciones', id }); } catch (e) {}
 }
 
 // ─── MARKETING ──────────────────────────────────────────────────
@@ -854,7 +864,7 @@ async function guardarCliente(e, id) {
             const c = clientes.find(x => x.id === id);
             const nombreViejo = c ? c.nombre : '';
             const telViejo = c ? c.telefono : '';
-            await crm({ action: 'update', tab: 'Clientes', id, ...datos });
+            await crmW({ action: 'update', tab: 'Clientes', id, ...datos });
             if (c) Object.assign(c, datos);            // actualizar en el acto
             cacheSet('clientes', clientes);
             // Si cambió el nombre, arrastrar el cambio a TODOS sus registros (así no se "pierden").
@@ -863,7 +873,7 @@ async function guardarCliente(e, id) {
             }
         } else {
             datos.origen = 'panel';                     // cargado por vos (no web)
-            const r = await crm({ action: 'add', tab: 'Clientes', ...datos });
+            const r = await crmW({ action: 'add', tab: 'Clientes', ...datos });
             clientes.unshift({ id: (r && r.id) || ('tmp' + Date.now()), fecha: '', ...datos });
             vistaClientes = 'mis';                       // mostrarlo en "Mis clientes"
         }
@@ -883,7 +893,7 @@ async function borrarCliente(id) {
     clientes = clientes.filter(x => x.id !== id);       // sacarlo en el acto
     actualizarContadores();
     filtrarClientes();
-    try { await crm({ action: 'delete', tab: 'Clientes', id }); }
+    try { await crmW({ action: 'delete', tab: 'Clientes', id }); }
     catch (e) { alert('No se pudo eliminar en el servidor. Recargá para verificar.'); }
 }
 
@@ -1104,7 +1114,7 @@ async function guardarProducto(i, campo, valor) {
     if (campo === 'costousd' || campo === 'stock') filtrarProductos();   // actualizar pesos/ganancia o el cartel "Sin stock"
     if (campo === 'precio') sincronizarPrecioAMayorista(p.nombre, valor);  // conectado con el unitario del mayorista
     try {
-        await crm({ action: 'productos_save', tab: 'Clientes', nombre: p.nombre, [campo]: valor });
+        await crmW({ action: 'productos_save', tab: 'Clientes', nombre: p.nombre, [campo]: valor });
         const ok = document.getElementById('prodok-' + i);
         if (ok) {
             ok.classList.add('on');
@@ -1234,7 +1244,7 @@ async function guardarOrdenFotos(){
     _fotosProd.lista = orden;
     const m = document.getElementById('fotosMsg'); if(m) m.textContent = 'Guardando orden…';
     try {
-        await crm({ action:'fotos_orden', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, orden: orden.join(',') });
+        await crmW({ action:'fotos_orden', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, orden: orden.join(',') });
         if(m) m.textContent = '✓ Orden guardado. Puede tardar ~1 min en verse en la web.';
     } catch(e){ if(m) m.textContent = 'No se pudo guardar el orden. Reintentá.'; }
 }
@@ -1272,7 +1282,7 @@ async function borrarFoto(fn){
     if(!(await confirmar('¿Borrar esta foto? No se puede deshacer.','Borrar'))) return;
     const m = document.getElementById('fotosMsg'); if(m) m.textContent = 'Borrando…';
     try {
-        await crm({ action:'foto_borrar', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, filename:fn });
+        await crmW({ action:'foto_borrar', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, filename:fn });
         setTimeout(()=>cargarFotos('✓ Borrada.'), 1500);
     } catch(e){ if(m) m.textContent = 'No se pudo borrar. Reintentá.'; }
 }
@@ -1393,7 +1403,7 @@ async function encGuardar(){
     const m = document.getElementById('encMsg');
     if(m){ m.className = 'enc-msg'; m.textContent = 'Guardando…'; }
     try {
-        await crm({ action:'recorte_save', tab:'Clientes', folder:_encFolder, x:x, y:y, escala:e });
+        await crmW({ action:'recorte_save', tab:'Clientes', folder:_encFolder, x:x, y:y, escala:e });
         if(m){ m.classList.add('ok'); m.textContent = '✓ Guardado. Se va a ver en la web en 1–2 minutos.'; }
     } catch(err){
         if(m){ m.classList.add('err'); m.textContent = 'No se pudo guardar. Reintentá.'; }
@@ -1495,7 +1505,7 @@ async function encfGuardar(){
     const m = document.getElementById('encfMsg');
     if(m){ m.className = 'enc-msg'; m.textContent = 'Guardando…'; }
     try {
-        await crm({ action:'recorte_save', tab:'Clientes', folder:_encfFolder, ffit: completa ? 'contain' : 'cover', fpos: x + '% ' + y + '%', fzoom: z });
+        await crmW({ action:'recorte_save', tab:'Clientes', folder:_encfFolder, ffit: completa ? 'contain' : 'cover', fpos: x + '% ' + y + '%', fzoom: z });
         if(m){ m.classList.add('ok'); m.textContent = '✓ Guardado. Se ve en la web en 1–2 minutos.'; }
     } catch(err){ if(m){ m.classList.add('err'); m.textContent = 'No se pudo guardar. Reintentá.'; } }
 }
@@ -1627,7 +1637,7 @@ async function guardarMayorista(row, campo, valor){
     const m = mayorista.find(x => x.row === row); if(!m) return;
     m[campo] = valor;
     try {
-        await crm({ action:'mayorista_save', tab:'Clientes', row, producto: m.producto, [campo]: valor });
+        await crmW({ action:'mayorista_save', tab:'Clientes', row, producto: m.producto, [campo]: valor });
         cacheSet('mayorista', mayorista);
         // El precio UNITARIO del mayorista está conectado con el PRECIO de Productos: se sincroniza.
         if (campo === 'unitario') {
@@ -1644,7 +1654,7 @@ async function guardarCostoMay(nombreProd, valor){
     const fila = (productos||[]).find(x => x.nombre === nombreProd);
     if (fila) { fila.costousd = valor; cacheSet('productos', productos); }
     try {
-        await crm({ action:'productos_save', tab:'Clientes', nombre: nombreProd, costousd: valor });
+        await crmW({ action:'productos_save', tab:'Clientes', nombre: nombreProd, costousd: valor });
         filtrarMayorista();   // recomputar ganancia con el costo nuevo
     } catch(e){ alert('No se pudo guardar el costo. Reintentá.'); }
 }
@@ -1801,7 +1811,7 @@ async function cambiarEstadoRegistro(tab, id, valor){
     const r = arr.find(x=>x.id===id); if(!r) return;
     r.estado = valor;
     if (tab==='Pedidos') pintarPedidos(pedidos); else pintarSeguimientos(seguimientos);
-    try { await crm({ action:'update', tab, id, estado:valor }); } catch(e){ alert('No se pudo actualizar el estado.'); }
+    try { await crmW({ action:'update', tab, id, estado:valor }); } catch(e){ alert('No se pudo actualizar el estado.'); }
     // Al marcar un pedido como Entregado, borrar el presupuesto de ese cliente (ya se concretó la venta).
     if (tab==='Pedidos' && estPed(valor)==='Entregado') { try { await borrarCotizacionesDeCliente(r); } catch(e){} }
 }
@@ -1822,7 +1832,7 @@ async function borrarCotizacionesDeCliente(ped){
     cotizaciones = cotizaciones.filter(c => !match(c));
     cacheSet('cotizaciones', cotizaciones);
     if (typeof pintarCotizaciones==='function' && document.getElementById('listaCot')) pintarCotizaciones(cotizaciones);
-    for(const c of aBorrar){ try { await crm({ action:'delete', tab:'Cotizaciones', id:c.id }); } catch(e){} }
+    for(const c of aBorrar){ try { await crmW({ action:'delete', tab:'Cotizaciones', id:c.id }); } catch(e){} }
     return aBorrar.length;
 }
 async function borrarRegistro(tab, id){
@@ -1831,7 +1841,7 @@ async function borrarRegistro(tab, id){
     const arr = tab==='Pedidos'?pedidos:seguimientos;
     const idx = arr.findIndex(x=>x.id===id); if(idx>=0) arr.splice(idx,1);
     if (tab==='Pedidos') pintarPedidos(pedidos); else pintarSeguimientos(seguimientos);
-    try { await crm({ action:'delete', tab, id }); } catch(e){ alert('No se pudo eliminar en el servidor.'); }
+    try { await crmW({ action:'delete', tab, id }); } catch(e){ alert('No se pudo eliminar en el servidor.'); }
 }
 
 // ─── PEDIDOS ────────────────────────────────────────────────────
@@ -2135,7 +2145,7 @@ async function guardarPedido(e,id){
         clienteNombre = nombreNuevo;
         clienteTel = limpiarTel(clienteTel);
         try {
-            const rc = await crm({ action:'add', tab:'Clientes', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
+            const rc = await crmW({ action:'add', tab:'Clientes', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
             clienteId = (rc&&rc.id) || '';
             // Sumarlo a la lista local para que aparezca al instante en Usuarios.
             clientes.unshift({ id: clienteId||('tmp'+Date.now()), fecha:'', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
@@ -2159,8 +2169,8 @@ async function guardarPedido(e,id){
     if (clienteId) datos.clienteid = clienteId;
     try {
         let pedGuardado;
-        if(id){ await crm({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); pedGuardado=c||{id,...datos}; }
-        else { const r=await crm({action:'add',tab:'Pedidos',...datos}); pedGuardado={id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}; pedidos.unshift(pedGuardado); }
+        if(id){ await crmW({action:'update',tab:'Pedidos',id,...datos}); const c=pedidos.find(x=>x.id===id); if(c)Object.assign(c,datos); pedGuardado=c||{id,...datos}; }
+        else { const r=await crmW({action:'add',tab:'Pedidos',...datos}); pedGuardado={id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}; pedidos.unshift(pedGuardado); }
         // Si el pedido queda Entregado, borrar el presupuesto de ese cliente (venta concretada).
         if (estPed(datos.estado)==='Entregado') { try { await borrarCotizacionesDeCliente(pedGuardado); } catch(e){} }
         cerrarModal(); if(seccionActual==='pedidos') filtrarPedidos();
@@ -2260,8 +2270,8 @@ async function guardarSeguimiento(e,id){
     const btn=document.getElementById('btnGuardarSeg'); btn.disabled=true; btn.textContent='Guardando…';
     const datos={ cliente:val('sgCliente'), telefono:val('sgTel'), motivo:val('sgMotivo'), objetivo:val('sgObjetivo'), estado:val('sgEstado'), notas:val('sgNotas') };
     try {
-        if(id){ await crm({action:'update',tab:'Seguimientos',id,...datos}); const c=seguimientos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
-        else { const r=await crm({action:'add',tab:'Seguimientos',...datos}); seguimientos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
+        if(id){ await crmW({action:'update',tab:'Seguimientos',id,...datos}); const c=seguimientos.find(x=>x.id===id); if(c)Object.assign(c,datos); }
+        else { const r=await crmW({action:'add',tab:'Seguimientos',...datos}); seguimientos.unshift({id:(r&&r.id)||'tmp'+Date.now(),fecha:'',...datos}); }
         cerrarModal();
         seguimientos.sort((a,b)=>(a.objetivo||'9999').localeCompare(b.objetivo||'9999'));
         filtrarSeguimientos();
