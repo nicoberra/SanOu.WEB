@@ -23,12 +23,20 @@
 
     <!-- Pantalla de acceso -->
     <div class="panel-lock" id="panelLock">
-        <div class="panel-lock-caja">
+        <div class="panel-lock-caja glass-card" id="lockCaja">
+            <span class="glass-halo glass-halo-ok" aria-hidden="true"></span>
+            <span class="glass-halo glass-halo-err" aria-hidden="true"></span>
             <img src="sticker.webp" alt="San Ou" class="panel-lock-logo">
-            <h1>Panel interno</h1>
-            <p>Ingresá la clave para continuar.</p>
-            <input type="password" id="claveInput" placeholder="Clave" autocomplete="current-password">
-            <div class="panel-lock-err" id="claveError"></div>
+            <h1 id="lockTitulo">Panel interno</h1>
+            <p id="lockSub">Ingresá la clave para continuar.</p>
+            <label class="glass-campo" id="glassCampo">
+                <span class="glass-fondo" aria-hidden="true"></span>
+                <input type="password" id="claveInput" aria-label="Clave del panel" autocomplete="current-password"
+                    autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Clave">
+                <span class="glass-puntos" id="glassPuntos" aria-hidden="true"><span class="glass-cursor"></span></span>
+                <span class="glass-check" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </label>
+            <div class="panel-lock-err" id="claveError" role="alert"></div>
             <button id="claveBtn" onclick="probarClave()">Entrar</button>
         </div>
     </div>

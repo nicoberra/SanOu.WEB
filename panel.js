@@ -48,6 +48,34 @@ function refrescarPanel(btn){
     setTimeout(() => location.reload(), 150);
 }
 let _verificando = false;
+const _sinMovimiento = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+// Ingreso "glass": cada carácter de la clave aparece como un punto que entra con un pop.
+// La clave es la misma de siempre (sin largo fijo); solo cambia cómo se ve.
+function pintarPuntosClave(nuevo) {
+    const input = document.getElementById('claveInput');
+    const cont = document.getElementById('glassPuntos');
+    if (!input || !cont) return;
+    const n = Math.min(input.value.length, 24);              // tope visual de puntos
+    const puntos = cont.querySelectorAll('.glass-punto');
+    const cursor = cont.querySelector('.glass-cursor');
+    if (n > puntos.length) {
+        for (let i = puntos.length; i < n; i++) {
+            const d = document.createElement('span');
+            d.className = 'glass-punto' + (nuevo ? ' nuevo' : '');
+            cont.insertBefore(d, cursor);
+        }
+    } else {
+        [...puntos].slice(n).forEach(d => d.remove());
+    }
+    document.getElementById('glassCampo').classList.toggle('con-texto', input.value.length > 0);
+}
+function estadoLock(estado) {
+    const caja = document.getElementById('lockCaja');
+    caja.classList.remove('error', 'sacudir');
+    if (estado === 'error') { void caja.offsetWidth; caja.classList.add('error', 'sacudir'); }
+    caja.classList.toggle('verificando', estado === 'verificando');
+    caja.classList.toggle('ok', estado === 'ok');
+}
 async function probarClave() {
     if (_verificando) return;
     const input = document.getElementById('claveInput');
@@ -55,15 +83,33 @@ async function probarClave() {
     const btn = document.getElementById('claveBtn');
     if (!input.value.trim()) return;
     _verificando = true; btn.disabled = true; btn.textContent = 'Verificando…';
+    err.classList.remove('on');
+    estadoLock('verificando');
+    let entro = false;
     try {
         const h = await huella(input.value);
         let r = null;
         try { r = await crm({ action: 'panel_login', h: h }); } catch (e) {}
-        if (r && r.ok) { try { localStorage.setItem('sanou_auth', h); } catch (e) {} desbloquear(); }
-        else if (r && r.error) { err.textContent = r.error; err.classList.add('on'); }
-        else if (!r) { err.textContent = 'No se pudo verificar la clave (revisá la conexión).'; err.classList.add('on'); }
-        else { err.textContent = 'Clave incorrecta.'; err.classList.add('on'); input.value = ''; input.focus(); }
-    } finally { _verificando = false; btn.disabled = false; btn.textContent = 'Entrar'; }
+        if (r && r.ok) {
+            entro = true;
+            try { localStorage.setItem('sanou_auth', h); } catch (e) {}
+            // Éxito: el campo se cierra en un ✓, la tarjeta brilla en verde y recién ahí entra.
+            const campo = document.getElementById('glassCampo');
+            campo.style.setProperty('--sx', (campo.offsetHeight / Math.max(campo.offsetWidth, 1)).toFixed(3));
+            estadoLock('ok');
+            document.getElementById('lockTitulo').textContent = 'Verificado correctamente';
+            document.getElementById('lockSub').textContent = 'Entrando al panel…';
+            btn.textContent = 'Listo';
+            input.blur();
+            setTimeout(desbloquear, _sinMovimiento() ? 250 : 950);
+        }
+        else if (r && r.error) { estadoLock('error'); err.textContent = r.error; err.classList.add('on'); }
+        else if (!r) { estadoLock('error'); err.textContent = 'No se pudo verificar la clave (revisá la conexión).'; err.classList.add('on'); }
+        else { estadoLock('error'); err.textContent = 'Clave incorrecta.'; err.classList.add('on'); input.value = ''; pintarPuntosClave(false); input.focus(); }
+    } finally {
+        _verificando = false;
+        if (!entro) { btn.disabled = false; btn.textContent = 'Entrar'; }
+    }
 }
 
 // ─── CONEXIÓN AL BACKEND (JSONP, con anti-caché) ────────────────
@@ -2362,6 +2408,10 @@ document.addEventListener('DOMContentLoaded', () => {
         input.addEventListener('keydown', e => {
             document.getElementById('claveError').classList.remove('on');
             if (e.key === 'Enter') probarClave();
+        });
+        input.addEventListener('input', () => {
+            document.getElementById('lockCaja').classList.remove('error');
+            pintarPuntosClave(!_sinMovimiento());
         });
         setTimeout(() => input.focus(), 100);
     }

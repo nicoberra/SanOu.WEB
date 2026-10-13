@@ -665,3 +665,72 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 .prod-vendidos{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,.12);color:#3ddc84;border:1px solid rgba(37,211,102,.3);font-size:.78rem;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
 .prod-vendidos small{color:#bbb;font-weight:700}
 .prod-vendidos.cero{background:rgba(255,255,255,.05);color:#888;border-color:rgba(255,255,255,.1)}
+
+/* ═════════ INGRESO "GLASS" (2026-10) ═════════
+   Tarjeta de vidrio sobre fondo con relieve; cada carácter de la clave entra como un punto con pop;
+   éxito: el campo se cierra en un ✓ y la tarjeta brilla en verde; error: sacudida + brillo rojo.
+   Solo transform/opacity en las animaciones. Con reduced-motion: mismos estados, sin movimiento. */
+.panel-lock{
+    background:
+        radial-gradient(700px 480px at 72% 18%, rgba(255,212,0,.09), transparent 62%),
+        radial-gradient(520px 420px at 15% 90%, rgba(255,212,0,.05), transparent 60%),
+        linear-gradient(135deg, rgba(255,255,255,.035) 0 25%, transparent 25% 50%, rgba(255,255,255,.025) 50% 75%, transparent 75%) 0 0/150px 150px,
+        linear-gradient(60deg, rgba(0,0,0,.45) 0 22%, transparent 22% 48%, rgba(0,0,0,.35) 48% 70%, transparent 70%) 0 0/230px 230px,
+        linear-gradient(-30deg, rgba(255,255,255,.02) 0 30%, transparent 30% 60%, rgba(0,0,0,.25) 60% 100%) 0 0/310px 310px,
+        #0c0c0c;
+}
+.glass-card{
+    position:relative;max-width:380px;padding:30px 26px 26px;border-radius:24px;
+    background:linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,.035));
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 30px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.10);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
+}
+.glass-card::before{content:'';position:absolute;top:10px;left:50%;width:38px;height:4px;margin-left:-19px;border-radius:4px;background:rgba(255,255,255,.18)}
+/* Brillos de estado: capas con box-shadow fijo; solo se anima su opacidad */
+.glass-halo{position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s ease}
+.glass-halo-ok{box-shadow:0 0 0 1px rgba(61,220,132,.55), 0 0 46px rgba(61,220,132,.28), inset 0 0 60px rgba(61,220,132,.16)}
+.glass-halo-err{box-shadow:0 0 0 1px rgba(255,90,90,.55), 0 0 40px rgba(255,90,90,.22)}
+.glass-card.ok .glass-halo-ok{opacity:1}
+.glass-card.error .glass-halo-err{opacity:1}
+.glass-card > *:not(.glass-halo){position:relative}
+
+/* Campo de la clave */
+.glass-campo{position:relative;display:block;height:58px;cursor:text}
+.glass-fondo{position:absolute;inset:0;border-radius:16px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.14);
+    transition:transform .45s cubic-bezier(0.22,1,0.36,1), border-color .2s ease, box-shadow .2s ease}
+.glass-campo:focus-within .glass-fondo{border-color:var(--am);box-shadow:0 0 0 4px rgba(255,212,0,.14), 0 0 26px rgba(255,212,0,.22)}
+.glass-card.error .glass-fondo{border-color:#ff5a5a;box-shadow:0 0 0 4px rgba(255,90,90,.14)}
+.panel-lock-caja .glass-campo input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;font-size:16px;cursor:text;background:transparent}
+.glass-puntos{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:9px;pointer-events:none;
+    transition:transform .3s cubic-bezier(0.22,1,0.36,1), opacity .25s ease}
+.glass-punto{width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 0 10px rgba(255,212,0,.45)}
+.glass-punto.nuevo{animation:glassPop .26s cubic-bezier(0.34,1.56,0.64,1) both}
+@keyframes glassPop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+.glass-cursor{width:2px;height:24px;border-radius:2px;background:var(--am);opacity:0}
+.glass-campo:focus-within .glass-cursor{animation:glassCursor 1.05s steps(1,end) infinite}
+@keyframes glassCursor{0%,100%{opacity:1}50%{opacity:0}}
+/* Placeholder propio: "Clave" mientras está vacío y sin foco */
+.glass-puntos::before{content:'Clave';color:rgba(255,255,255,.35);font-size:.95rem;font-weight:600;letter-spacing:.3px}
+.glass-campo.con-texto .glass-puntos::before,.glass-campo:focus-within .glass-puntos::before{content:none}
+.glass-card.verificando .glass-punto{animation:glassLatido .9s ease-in-out infinite}
+@keyframes glassLatido{0%,100%{opacity:1}50%{opacity:.35}}
+/* Éxito: los puntos se juntan al centro, el campo se cierra en un cuadrado y aparece el ✓ */
+.glass-check{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#3ddc84;
+    opacity:0;transform:scale(.5);transition:opacity .25s ease .22s, transform .38s cubic-bezier(0.34,1.56,0.64,1) .22s;pointer-events:none}
+.glass-card.ok .glass-puntos{transform:scale(.15);opacity:0}
+.glass-card.ok .glass-fondo{transform:scaleX(var(--sx,.2));border-color:rgba(61,220,132,.8);box-shadow:0 0 22px rgba(61,220,132,.35)}
+.glass-card.ok .glass-check{opacity:1;transform:scale(1)}
+.glass-card.ok .glass-cursor{display:none}
+.glass-card.ok #lockTitulo{color:#3ddc84}
+#lockTitulo,#lockSub{transition:color .3s ease}
+.glass-card.ok #claveBtn{background:#3ddc84}
+
+@media (prefers-reduced-motion: reduce){
+    .glass-punto.nuevo,.glass-card.verificando .glass-punto,.glass-campo:focus-within .glass-cursor{animation:none}
+    .glass-campo:focus-within .glass-cursor{opacity:1}
+    .glass-fondo,.glass-puntos,.glass-check,.glass-halo{transition:none}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .glass-card{background:#1b1b1b}
+}
