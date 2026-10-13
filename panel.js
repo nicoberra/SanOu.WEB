@@ -943,6 +943,7 @@ async function renderProductos() {
         <div class="prod-cats" id="prodCats"></div>
         <div class="panel-lista" id="listaProd">${productos.length ? '' : '<div class="panel-cargando"><i class="fas fa-spinner fa-spin"></i> Cargando productos…</div>'}</div>`;
     ensureDolar().then(()=>{ pintarBarraDolar(); if(seccionActual==='productos') filtrarProductos(); });
+    ensurePedidos().then(()=>{ if(seccionActual==='productos' && productos.length) filtrarProductos(); });   // para "X vendidos"
     if (productos.length) { renderProdCats(); filtrarProductos(); }   // instantáneo desde caché/memoria
     try {
         const r = await crm({ action: 'productos_list', tab: 'Clientes' });
@@ -994,6 +995,30 @@ function precioTxt(v) {
     return n ? '$' + parseInt(n, 10).toLocaleString('es-AR') : '';
 }
 
+// Unidades vendidas por producto, sumadas desde los pedidos del CRM (cantidades del detalle "2x Nombre").
+// Vendidos = pedidos Entregados/Cobrados. En curso = los demás, salvo cancelados/rechazados.
+function ventasPorProducto(){
+    const v = {};
+    (pedidos||[]).forEach(ped => {
+        const est = estPed(ped.estado);
+        if (/cancel|rechaz|perdid|anulad/i.test(est)) return;
+        const tipo = est === 'Entregado' ? 'vend' : 'curso';
+        parseDetalle(ped.detalle).forEach(it => {
+            const k = norm(it.nombre); if (!k) return;
+            v[k] = v[k] || { vend: 0, curso: 0 };
+            v[k][tipo] += (it.cantidad || 1);
+        });
+    });
+    return v;
+}
+// Busca las ventas de un producto por su nombre en la planilla o en el catálogo (por si difieren).
+function ventasDe(nombre, mapa){
+    const cp = catalogoDe(nombre);
+    const claves = [norm(nombre)]; if (cp) { claves.push(norm(cp.name)); if (cp.sheetName) claves.push(norm(cp.sheetName)); }
+    const r = { vend: 0, curso: 0 };
+    [...new Set(claves)].forEach(k => { if (mapa[k]) { r.vend += mapa[k].vend; r.curso += mapa[k].curso; } });
+    return r;
+}
 function pintarProductos(lista, q) {
     const cont = document.getElementById('listaProd');
     if (!cont) return;
@@ -1001,14 +1026,17 @@ function pintarProductos(lista, q) {
         cont.innerHTML = `<div class="panel-vacio-chico">${q ? 'Sin resultados.' : 'No hay productos en la planilla.'}</div>`;
         return;
     }
+    const ventas = ventasPorProducto();
     cont.innerHTML = lista.map(p => {
         const i = productos.indexOf(p);
+        const vt = ventasDe(p.nombre, ventas);
         const cp = catalogoDe(p.nombre);
         const fo = cp ? (cp.folder || cp.name) : '';
         return `
         <div class="prod-card${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
             <div class="prod-top">
                 <span class="prod-nombre">${esc(p.nombre)}${p.stock ? '' : ' <span class="prod-badge-sinstock">Sin stock</span>'}</span>
+                <span class="prod-vendidos${vt.vend ? '' : ' cero'}" title="Unidades en pedidos entregados${vt.curso ? ' · ' + vt.curso + ' más en pedidos sin entregar' : ''}"><i class="fas fa-bag-shopping"></i> ${vt.vend} vendido${vt.vend === 1 ? '' : 's'}${vt.curso ? ` <small>+${vt.curso} en curso</small>` : ''}</span>
                 <span class="prod-ok" id="prodok-${i}"><i class="fas fa-check"></i> Guardado</span>
             </div>
             <div class="prod-campos">

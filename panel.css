@@ -659,3 +659,9 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
     .panel-lock-caja, .panel-lock-caja.sacudir { animation: none; }
     .panel-modal, .panel-modal.active { transition: opacity .15s; }
 }
+
+/* Unidades vendidas por producto (sale de los pedidos entregados) */
+.prod-top .prod-nombre{flex:1;min-width:0}
+.prod-vendidos{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,.12);color:#3ddc84;border:1px solid rgba(37,211,102,.3);font-size:.78rem;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.prod-vendidos small{color:#bbb;font-weight:700}
+.prod-vendidos.cero{background:rgba(255,255,255,.05);color:#888;border-color:rgba(255,255,255,.1)}
