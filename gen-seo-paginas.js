@@ -106,6 +106,7 @@ const cortar = (s, max) => { s = String(s).replace(/\s+/g, ' ').trim(); if (s.le
 // hay precio, el producto queda sin 'price' en el JSON-LD (nunca se inventa); precio-seo.js
 // igual lo completa en vivo al abrir la página.
 const PRICES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdbPDoIrVhs0zQPEB_wu_rMGz5280eSTygqqTKpjqaFpcZLWN0fSet_4wKgzcZNNEuk2PfK-i0/pub?output=csv';
+const EXEC_URL = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
 const PRECIOS = {};
 function parseLineaCSV(line) {
   const out = []; let cur = '', inQ = false;
@@ -118,8 +119,14 @@ function parseLineaCSV(line) {
 }
 async function cargarPrecios() {
   try {
-    const r = await fetch(PRICES_CSV_URL, { signal: AbortSignal.timeout(15000) });
-    const text = await r.text();
+    // Primero el backend (acción "catalogo", sin columnas internas); si no responde, el CSV publicado.
+    let text = '';
+    try {
+      const rb = await fetch(EXEC_URL + '?action=catalogo&tab=Clientes', { signal: AbortSignal.timeout(15000) });
+      const j = await rb.json();
+      if (j && j.ok && j.csv) text = j.csv;
+    } catch (e) {}
+    if (!text) { const r = await fetch(PRICES_CSV_URL, { signal: AbortSignal.timeout(15000) }); text = await r.text(); }
     text.trim().split('\n').slice(1).forEach(row => {
       const f = parseLineaCSV(row.replace(/\r$/, ''));
       const nombre = (f[0] || '').trim().toLowerCase();
@@ -320,6 +327,7 @@ function paginaProducto(p) {
             ${relHTML}
         </div>
     </main>
+    <script src="/catalogo-fuente.js" defer></script>
     <script src="/precio-seo.js" defer></script>` + footerCategorias(p.category);
 }
 

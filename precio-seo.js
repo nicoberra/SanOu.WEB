@@ -22,7 +22,9 @@
 
     var ctrl = new AbortController();
     var to = setTimeout(function () { ctrl.abort(); }, 8000);
-    fetch(CSV, { signal: ctrl.signal }).then(function (r) { return r.text(); }).then(function (text) {
+    var fuente = (typeof window.sanouCatalogoCsv === 'function') ? window.sanouCatalogoCsv()
+        : fetch(CSV, { signal: ctrl.signal }).then(function (r) { return r.text(); });
+    fuente.then(function (text) {
         clearTimeout(to);
         var rows = text.trim().split('\n').slice(1);
         for (var i = 0; i < rows.length; i++) {

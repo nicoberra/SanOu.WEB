@@ -1716,11 +1716,16 @@ async function loadPricesFromSheet() {
     try {
         // Timeout: si el Sheet no responde en 7s, abortamos para NO colgar
         // el arranque del catálogo (antes esto dejaba la página muerta).
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 7000);
-        const res = await fetch(PRICES_CSV_URL, { signal: ctrl.signal });
-        clearTimeout(t);
-        const text = await res.text();
+        // Catálogo desde el backend (sin columnas internas); respaldo: CSV publicado. Ver catalogo-fuente.js
+        let text;
+        if (typeof window.sanouCatalogoCsv === 'function') text = await window.sanouCatalogoCsv();
+        else {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 7000);
+            const res = await fetch(PRICES_CSV_URL, { signal: ctrl.signal });
+            clearTimeout(t);
+            text = await res.text();
+        }
         const rows = text.trim().split('\n').slice(1); // saltar encabezado
         // Columnas fijas: 0=Nombre, 1=Precios, 2=Stock, 3=Precio mercado libre, 4=DESTACADO
         rows.forEach(row => {

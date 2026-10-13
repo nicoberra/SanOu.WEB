@@ -140,6 +140,7 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
 <div class="cat-footer"><b>San Ou</b> — Herramientas hidráulicas profesionales &nbsp;|&nbsp; sanou.com.ar &nbsp;|&nbsp; +54 9 11 3175-1517</div>
 
 <script src="catalogo-productos.js"></script>
+<script src="catalogo-fuente.js"></script>
 <script>
 const PRICES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdbPDoIrVhs0zQPEB_wu_rMGz5280eSTygqqTKpjqaFpcZLWN0fSet_4wKgzcZNNEuk2PfK-i0/pub?output=csv';
 const products = window.SANOU_PRODUCTOS || [];
@@ -165,11 +166,15 @@ function parseCsvLine(line) {
 async function loadPricesFromSheet() {
     if (!PRICES_CSV_URL) return;
     try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 7000);
-        const res = await fetch(PRICES_CSV_URL, { signal: ctrl.signal });
-        clearTimeout(t);
-        const text = await res.text();
+        let text;
+        if (typeof window.sanouCatalogoCsv === 'function') text = await window.sanouCatalogoCsv();
+        else {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 7000);
+            const res = await fetch(PRICES_CSV_URL, { signal: ctrl.signal });
+            clearTimeout(t);
+            text = await res.text();
+        }
         const rows = text.trim().split('\n').slice(1);
         rows.forEach(row => {
             if (!row.trim()) return;
