@@ -87,3 +87,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid #FFD700; outline-offs
     html { scroll-behavior: auto; }
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* H2 con la palabra clave de la categoría (SEO) */
+.seo-cat-head { margin-bottom: 20px; }
+.seo-cat-h2 { margin-top: 0; }

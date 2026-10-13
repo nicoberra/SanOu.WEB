@@ -44,6 +44,92 @@ const CATS = {
     intro: 'Otras herramientas profesionales San Ou: tijeras cortacable, soportes para taladro y amoladora, mandriles y cajas de herramientas. Importador directo con envíos a todo el país.' },
 };
 
+// SEO por palabra clave (aprobado por Nicolás el 13/10/2026). Cada categoría tiene UNA palabra
+// clave principal (kp) que va en: title (primero, marca al final, ≤60), meta descripción
+// (arranca con la kp, 140–155), H1, primer párrafo y un H2. 'nombre' (arriba) queda para
+// migas de pan y links del pie.
+const SEO_CATS = {
+  pinzas:       { kp: 'pinza hidráulica para terminales', h1: 'Pinzas hidráulicas para terminales (crimpadoras)', h2: 'Modelos de pinza hidráulica para terminales',
+    title: 'Pinza hidráulica para terminales | Crimpadoras San Ou',
+    desc: 'Pinza hidráulica para terminales de cobre y aluminio, de 6 a 500 mm². Elegí la crimpadora según tu cable. Importador directo y envíos a todo el país.',
+    intro: 'La pinza hidráulica para terminales (crimpadora) indenta y engasta terminales en cables de cobre y aluminio. Elegí el modelo según la sección del cable (mm²): desde 6–50 mm² hasta 500 mm². Importador directo, stock y envíos a todo el país.' },
+  dobladoras:   { kp: 'dobladora de caños hidráulica', h1: 'Dobladoras de caños hidráulicas', h2: 'Modelos de dobladora de caños hidráulica',
+    title: 'Dobladora de caños hidráulica de ½ a 3 pulgadas | San Ou',
+    desc: 'Dobladora de caños hidráulica y manual para caños de ½ a 3 pulgadas, sin aplastar el material. Importador directo, stock y envíos a todo el país.',
+    intro: 'La dobladora de caños hidráulica (y manual) dobla caños de ½" a 3" sin aplastar el material. Ideal para instalaciones de gas, agua y estructuras. Importador directo con envíos a todo el país.' },
+  cortahierro:  { kp: 'cortadora de varilla hidráulica', h1: 'Cortadoras de varilla hidráulicas', h2: 'Modelos de cortadora de varilla hidráulica',
+    title: 'Cortadora de varilla hidráulica hasta 22 mm | San Ou',
+    desc: 'Cortadora de varilla hidráulica para hierro y acero de hasta Ø22 mm: corte limpio, sin rebaba y sin esfuerzo. Consultá stock y envíos a todo el país.',
+    intro: 'La cortadora de varilla hidráulica corta hierro y barras de acero de hasta Ø22 mm de forma limpia y sin esfuerzo. Corte parejo, sin rebaba. Importador directo, envíos a todo el país.' },
+  mordazas:     { kp: 'morsa para torno', h1: 'Morsas para torno', h2: 'Modelos de morsa para torno',
+    title: 'Morsa para torno de 80 a 315 mm | San Ou',
+    desc: 'Morsa para torno y banco de 80 a 315 mm: fundición robusta y cierre preciso para sujetar firme. Importador directo, stock y envíos a todo el país.',
+    intro: 'La morsa para torno (mordaza de torno) de 80 a 315 mm sujeta firme en banco y máquinas. Fundición robusta y cierre preciso. Importador directo con stock y envíos a todo el país.' },
+  bombas:       { kp: 'bomba hidráulica manual', h1: 'Bombas hidráulicas manuales', h2: 'Modelos de bomba hidráulica manual',
+    title: 'Bomba hidráulica manual de 700 bar | San Ou',
+    desc: 'Bomba hidráulica manual de alta presión (700 bar) para cilindros, prensas y herramientas hidráulicas. Importador directo, stock y envíos a todo el país.',
+    intro: 'La bomba hidráulica manual de alta presión (700 bar) alimenta cilindros, prensas y herramientas hidráulicas. Importador directo, envíos a todo el país.' },
+  sacabocados:  { kp: 'sacabocados hidráulico', h1: 'Sacabocados hidráulicos', h2: 'Modelos de sacabocados hidráulico',
+    title: 'Sacabocados hidráulico para chapa y tableros | San Ou',
+    desc: 'Sacabocados hidráulico para perforar chapa y tableros eléctricos con agujeros limpios de Ø22 a 114 mm. Importador directo y envíos a todo el país.',
+    intro: 'El sacabocados hidráulico perfora chapa y tableros eléctricos con agujeros limpios de Ø22 a 114 mm. Rápido y sin esfuerzo. Importador directo con envíos a todo el país.' },
+  cilindros:    { kp: 'cilindro hidráulico', h1: 'Cilindros hidráulicos', h2: 'Modelos de cilindro hidráulico de 10 a 100 toneladas',
+    title: 'Cilindro hidráulico de 10 a 100 toneladas | San Ou',
+    desc: 'Cilindro hidráulico de 10 a 100 toneladas para prensar, levantar y empujar. Compatible con bombas manuales. Consultá stock y envíos a todo el país.',
+    intro: 'El cilindro hidráulico de 10 a 100 toneladas sirve para prensar, levantar y empujar. Compatible con bombas hidráulicas manuales. Importador directo, envíos a todo el país.' },
+  cortadoras:   { kp: 'cortadora de barras de cobre', h1: 'Cortadoras de barras de cobre y aluminio', h2: 'Modelos de cortadora de barras de cobre',
+    title: 'Cortadora de barras de cobre y aluminio | San Ou',
+    desc: 'Cortadora de barras de cobre y aluminio hidráulica para tableros: corta, punzona y dobla barras colectoras. Importador directo, envíos a todo el país.',
+    intro: 'La cortadora de barras de cobre y aluminio hidráulica (procesadora) corta, punzona y dobla barras colectoras para tableros eléctricos. Importador directo con envíos a todo el país.' },
+  extractores:  { kp: 'extractor hidráulico', h1: 'Extractores hidráulicos', h2: 'Modelos de extractor hidráulico',
+    title: 'Extractor hidráulico de rulemanes y poleas | San Ou',
+    desc: 'Extractor hidráulico para sacar rulemanes, poleas y engranajes sin dañar las piezas. Fuerza controlada. Importador directo y envíos a todo el país.',
+    intro: 'El extractor hidráulico saca rulemanes, poleas y engranajes sin dañar las piezas, con fuerza hidráulica controlada. Importador directo, envíos a todo el país.' },
+  punzonadoras: { kp: 'punzonadora hidráulica', h1: 'Punzonadoras hidráulicas', h2: 'Modelos de punzonadora hidráulica',
+    title: 'Punzonadora hidráulica para perfiles y chapa | San Ou',
+    desc: 'Punzonadora hidráulica para perforar perfiles, planchuelas y chapa de forma rápida y limpia. Ideal para herrería. Consultá stock y envíos al país.',
+    intro: 'La punzonadora hidráulica perfora perfiles, planchuelas y chapa de forma rápida y limpia. Ideal para herrería y montaje. Importador directo con envíos a todo el país.' },
+  motores:      { kp: 'herramientas para taller mecánico', h1: 'Herramientas para taller mecánico', h2: 'Herramientas para taller mecánico y camiones',
+    title: 'Herramientas para taller mecánico y camiones | San Ou',
+    desc: 'Herramientas para taller mecánico y camiones: multiplicadores de torque, extractores de rulemanes, rótulas e inyectores. Envíos a todo el país.',
+    intro: 'Herramientas para taller mecánico y mecánica pesada: multiplicadores de torque, extractores de rulemanes, rótulas e inyectores. Para talleres y camiones. Importador directo, envíos a todo el país.' },
+  otros:        { kp: 'herramientas profesionales', h1: 'Herramientas profesionales', h2: 'Más herramientas profesionales San Ou',
+    title: 'Herramientas profesionales: tijeras y soportes | San Ou',
+    desc: 'Herramientas profesionales San Ou: tijeras cortacable, soportes para taladro y amoladora, mandriles y cajas de herramientas. Envíos a todo el país.',
+    intro: 'Herramientas profesionales San Ou: tijeras cortacable, soportes para taladro y amoladora, mandriles y cajas de herramientas. Importador directo con envíos a todo el país.' },
+};
+
+// Recorta en el último espacio antes de 'max' (para no cortar palabras a la mitad).
+const cortar = (s, max) => { s = String(s).replace(/\s+/g, ' ').trim(); if (s.length <= max) return s; const c = s.slice(0, max - 1); return c.slice(0, c.lastIndexOf(' ')).replace(/[,;:.\-–—]+$/, '') + '…'; };
+
+// Precios REALES del Sheet publicado (el mismo CSV que usa la tienda). Si no hay internet o no
+// hay precio, el producto queda sin 'price' en el JSON-LD (nunca se inventa); precio-seo.js
+// igual lo completa en vivo al abrir la página.
+const PRICES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdbPDoIrVhs0zQPEB_wu_rMGz5280eSTygqqTKpjqaFpcZLWN0fSet_4wKgzcZNNEuk2PfK-i0/pub?output=csv';
+const PRECIOS = {};
+function parseLineaCSV(line) {
+  const out = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQ) { if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; } else cur += c; }
+    else if (c === '"') inQ = true; else if (c === ',') { out.push(cur); cur = ''; } else cur += c;
+  }
+  out.push(cur); return out;
+}
+async function cargarPrecios() {
+  try {
+    const r = await fetch(PRICES_CSV_URL, { signal: AbortSignal.timeout(15000) });
+    const text = await r.text();
+    text.trim().split('\n').slice(1).forEach(row => {
+      const f = parseLineaCSV(row.replace(/\r$/, ''));
+      const nombre = (f[0] || '').trim().toLowerCase();
+      const precio = parseInt(String(f[1] || '').replace(/[^\d]/g, ''), 10) || 0;
+      const stock = (f[2] || '').trim().toLowerCase();
+      if (nombre) PRECIOS[nombre] = { precio, sinStock: stock === 'false' || stock === 'no' };
+    });
+  } catch (e) { console.warn('Sin precios del Sheet (se generan sin price):', e.message); }
+}
+
 function getImgs(p) {
   if (!p.imgs || p.imgs === 0) return [];
   const catFolder = p.catFolder || p.category;
@@ -147,18 +233,30 @@ function paginaProducto(p) {
   const url = prodUrl(p);
   const img = imgAbs(p);
   const desc = (p.desc || `${p.name} — herramienta hidráulica profesional San Ou.`).slice(0, 300);
-  const metaDesc = `${p.name}${p.badge ? ' (' + p.badge + ')' : ''}. ${desc} Importador directo, stock y envíos a todo el país.`.slice(0, 300);
+  // Meta descripción: arranca con el nombre del producto (tipo + modelo = palabra clave) y cierra
+  // con un llamado a la acción; 140–155 caracteres.
+  const cta = ' Consultá stock y envíos a todo el país.';
+  let metaDesc = cortar(`${p.name}: ${desc}`, 155 - cta.length) + cta;
+  if (metaDesc.length < 140) metaDesc = cortar(`${p.name}: ${desc} Importador directo.`, 155 - cta.length) + cta;
+  if (metaDesc.length < 140) { const cta2 = ' Consultá stock, precio y envíos a todo el país.'; metaDesc = cortar(`${p.name}: ${desc}`, 155 - cta2.length) + cta2; }
+  // Title: palabra clave primero, marca al final, ≤60 caracteres (la característica solo si entra).
+  const conBadge = `${p.name} — ${p.badge || ''} | San Ou`;
+  const title = (p.badge && conBadge.length <= 60) ? conBadge : cortar(p.name, 51) + ' | San Ou';
   const kw = `${p.name}, ${cat.kw}`;
   const specs = (p.allSpecs && p.allSpecs.length ? p.allSpecs : (p.specs || []));
+  const pr = PRECIOS[String(p.sheetName || p.name).trim().toLowerCase()];
+  const sinStock = pr ? pr.sinStock : p.inStock === false;
 
   const jsonld = [
     {
       '@context': 'https://schema.org', '@type': 'Product',
       name: p.name, image: [img], description: desc,
+      sku: 'SANOU-' + p.id,
       brand: { '@type': 'Brand', name: 'San Ou' },
       category: cat.nombre,
       ...(p.badge ? { additionalProperty: [{ '@type': 'PropertyValue', name: 'Característica', value: p.badge }] } : {}),
-      offers: { '@type': 'Offer', priceCurrency: 'ARS', availability: p.inStock === false ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock', url, itemCondition: 'https://schema.org/NewCondition', seller: { '@type': 'Organization', name: 'San Ou' } }
+      offers: { '@type': 'Offer', ...(pr && pr.precio > 0 ? { price: String(pr.precio) } : {}), priceCurrency: 'ARS',
+        availability: sinStock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock', url, itemCondition: 'https://schema.org/NewCondition', seller: { '@type': 'Organization', name: 'San Ou' } }
     },
     {
       '@context': 'https://schema.org', '@type': 'BreadcrumbList',
@@ -171,7 +269,7 @@ function paginaProducto(p) {
   ];
 
   const specsHTML = specs.length ? `
-                <h2>Especificaciones</h2>
+                <h2>Especificaciones: ${esc(p.name)}</h2>
                 <div class="guia-table-wrap">
                     <table class="guia-table">
                         <tbody>
@@ -193,7 +291,7 @@ function paginaProducto(p) {
 
   const waTxt = encodeURIComponent('Hola San Ou! Quiero consultar por: ' + p.name);
 
-  return head({ title: `${p.name}${p.badge ? ' — ' + p.badge : ''} | San Ou`, desc: metaDesc, kw, url, image: img, ogType: 'product', jsonld })
+  return head({ title, desc: metaDesc, kw, url, image: img, ogType: 'product', jsonld })
     + header() + `
     <main class="seo-page">
         <div class="container">
@@ -203,7 +301,7 @@ function paginaProducto(p) {
                 <span>${esc(p.name)}</span>
             </nav>
             <article class="seo-producto">
-                <div class="seo-prod-media"><img src="${imgRoot(p)}" alt="${esc(p.name)}"></div>
+                <div class="seo-prod-media"><img src="${imgRoot(p)}" alt="${esc(p.name)} — ${esc(seoCat(p.category).kp)} San Ou"></div>
                 <div class="seo-prod-info">
                     ${p.badge ? `<span class="seo-badge">${esc(p.badge)}</span>` : ''}
                     <h1>${esc(p.name)}</h1>
@@ -226,15 +324,17 @@ function paginaProducto(p) {
 }
 
 // ── Página de CATEGORÍA ──
+const seoCat = key => SEO_CATS[key] || SEO_CATS.otros;
 function paginaCategoria(key) {
   const cat = CATS[key];
+  const seo = seoCat(key);
   const url = catUrl(key);
   const prods = PRODS.filter(p => p.category === key);
   const enStock = prods.filter(p => p.inStock !== false);
   const sinStock = prods.filter(p => p.inStock === false);
   const ordenados = enStock.concat(sinStock);
   const img = prods.length ? imgAbs(prods[0]) : SITE + '/sticker.png';
-  const metaDesc = cat.intro.slice(0, 300);
+  const metaDesc = seo.desc;
 
   const jsonld = [
     {
@@ -252,7 +352,7 @@ function paginaCategoria(key) {
   ];
 
   const cards = ordenados.map(p => `<a class="seo-cat-card" href="/producto/${prodSlug(p)}.html">
-                    <div class="seo-cat-card-img"><img src="${imgRoot(p)}" alt="${esc(p.name)}" loading="lazy">${p.inStock === false ? '<span class="seo-chip-out">Sin stock</span>' : ''}</div>
+                    <div class="seo-cat-card-img"><img src="${imgRoot(p)}" alt="${esc(p.name)} — ${esc(seo.kp)}" loading="lazy">${p.inStock === false ? '<span class="seo-chip-out">Sin stock</span>' : ''}</div>
                     <div class="seo-cat-card-body">
                         <h3>${esc(p.name)}</h3>
                         ${p.badge ? `<span class="seo-badge sm">${esc(p.badge)}</span>` : ''}
@@ -261,7 +361,7 @@ function paginaCategoria(key) {
                     </div>
                 </a>`).join('\n                ');
 
-  return head({ title: `${cat.nombre} — San Ou | Importador directo, envíos a todo el país`, desc: metaDesc, kw: cat.kw, url, image: img, ogType: 'website', jsonld })
+  return head({ title: seo.title, desc: metaDesc, kw: seo.kp + ', ' + cat.kw, url, image: img, ogType: 'website', jsonld })
     + header() + `
     <main class="seo-page">
         <div class="container">
@@ -271,9 +371,10 @@ function paginaCategoria(key) {
             </nav>
             <header class="seo-cat-head">
                 <span class="seo-tag">Categoría</span>
-                <h1>${esc(cat.nombre)}</h1>
-                <p class="seo-lead">${esc(cat.intro)}</p>
+                <h1>${esc(seo.h1)}</h1>
+                <p class="seo-lead">${esc(seo.intro)}</p>
             </header>
+            <h2 class="seo-cat-h2">${esc(seo.h2)}</h2>
             <div class="seo-cat-grid">
                 ${cards}
             </div>
@@ -282,6 +383,8 @@ function paginaCategoria(key) {
 }
 
 // ── Escribir archivos ──
+(async () => {
+await cargarPrecios();
 const dirCat = path.join(ROOT, 'categoria');
 const dirProd = path.join(ROOT, 'producto');
 fs.mkdirSync(dirCat, { recursive: true });
@@ -305,7 +408,7 @@ PRODS.forEach(p => {
 const hoy = new Date().toISOString().slice(0, 10);
 const fijas = [
   { loc: SITE + '/', pri: '1.0', freq: 'weekly' },
-  { loc: SITE + '/mayorista.html', pri: '0.8', freq: 'weekly' },
+  // mayorista.html no va: tiene noindex a propósito (la lista se comparte por link).
   { loc: SITE + '/mayoristas.html', pri: '0.6', freq: 'monthly' },
   { loc: SITE + '/guia-crimpadoras-hidraulicas.html', pri: '0.7', freq: 'monthly' },
   { loc: SITE + '/guia-como-crimpar-cables.html', pri: '0.7', freq: 'monthly' },
@@ -326,4 +429,5 @@ ${all.map(u => `  <url>
 `;
 fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), xml, 'utf8');
 
-console.log('Categorías:', Object.keys(CATS).length, '| Productos:', nProd, '| URLs en sitemap:', all.length);
+console.log('Categorías:', Object.keys(CATS).length, '| Productos:', nProd, '| con precio real:', Object.keys(PRECIOS).length ? PRODS.filter(p => (PRECIOS[String(p.sheetName || p.name).trim().toLowerCase()] || {}).precio > 0).length : 0, '| URLs en sitemap:', all.length);
+})();

@@ -5346,3 +5346,15 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 @media (prefers-reduced-motion: reduce) {
     .btn-mp-pagar, .btn-mp-pagar:hover, .btn-mp-pagar:active { transition: none; transform: none; }
 }
+
+/* SEO: línea chica con la palabra clave dentro del H1 del inicio (no cambia el diseño del eslogan) */
+.hero-slogan-kw {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(0.68rem, 1.4vw, 0.82rem);
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray-light);
+    margin-bottom: 10px;
+}
+@media (max-width: 480px) { .hero-slogan-kw { font-size: 0.6rem; letter-spacing: 0.6px; margin-bottom: 6px; white-space: nowrap; } }
