@@ -8,3 +8,6 @@ mapa-editable/geo/
 mapa-editable/mapa.html
 mapa-editable/mapa-base.svg
 mapa-editable/*.png
+
+# Posteos de Instagram (fuentes HTML y PNG; no son parte de la web)
+posteos-instagram/
