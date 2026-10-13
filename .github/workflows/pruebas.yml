@@ -1,0 +1,30 @@
+# Pruebas automáticas en cada push y pull request.
+# Sin secretos y sin acceso a producción (el repo es público):
+#  - test-gs: backend contra planillas simuladas (se saltea en CI porque el .gs no se versiona; correrlo local).
+#  - test-front: sintaxis JS, links locales, JSON-LD, sitemap, un H1 por página indexable.
+#  - smoke: Chromium headless a 390px y 1440px; bloquea Apps Script, analytics y Klaviyo.
+name: Pruebas
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Backend (Apps Script) contra planillas simuladas
+        run: node tests/test-gs.js
+      - name: Chequeos estáticos de la web
+        run: node tests/test-front.js
+      - name: Instalar Playwright (solo para esta corrida)
+        run: |
+          npm i --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Prueba de humo en navegador (celular y compu)
+        run: node tests/smoke.mjs

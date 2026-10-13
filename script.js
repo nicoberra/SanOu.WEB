@@ -157,6 +157,25 @@ function registrarAbandono() {
 
 // Guarda/actualiza el cliente en el CRM. Fire-and-forget (no-cors).
 // El backend hace upsert por email (no duplica si ya existe).
+// ─── ANTI-BOTS (honeypot) ───────────────────────────────────────
+// Campo oculto en cada formulario: una persona no lo ve ni lo completa; un bot que llena todo, sí.
+// Si viene con texto, el backend responde "ok" pero no guarda nada. Nombre neutro y autocomplete off
+// para que el autocompletar del navegador no lo llene (no debe bloquear a clientes reales).
+function _hp() {
+    try { const c = [...document.querySelectorAll('input[name="hp_campo"]')].find(i => i.value); return c ? c.value.slice(0, 40) : ''; }
+    catch (e) { return ''; }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('form').forEach(f => {
+        if (f.querySelector('input[name="hp_campo"]')) return;
+        const i = document.createElement('input');
+        i.type = 'text'; i.name = 'hp_campo'; i.tabIndex = -1; i.autocomplete = 'off';
+        i.setAttribute('aria-hidden', 'true');
+        i.style.cssText = 'position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none';
+        f.appendChild(i);
+    });
+});
+
 function guardarClienteEnSheet(datos) {
     if (!CLIENTES_URL) return;
     try {
@@ -169,7 +188,8 @@ function guardarClienteEnSheet(datos) {
             empresa:  datos.empresa  || '',
             ciudad:   datos.ciudad   || '',
             origen:   'web',
-            notas:    datos.origen   || 'registro web'
+            notas:    datos.origen   || 'registro web',
+            web:      _hp()
         });
         fetch(CLIENTES_URL + '?' + params.toString(), { mode: 'no-cors' });
     } catch (e) { /* silencioso: no frenar al cliente si falla la red */ }
@@ -184,7 +204,7 @@ function crmJsonp(params) {
         const to = setTimeout(() => { limpiar(); reject(new Error('timeout')); }, 15000);
         function limpiar() { clearTimeout(to); try { delete window[cb]; } catch (e) { window[cb] = undefined; } if (s.parentNode) s.parentNode.removeChild(s); }
         window[cb] = (data) => { limpiar(); resolve(data); };
-        const usp = new URLSearchParams(Object.assign({}, params, { callback: cb, _: Date.now() }));
+        const usp = new URLSearchParams(Object.assign({}, params, { web: _hp(), callback: cb, _: Date.now() }));
         s.src = CLIENTES_URL + '?' + usp.toString();
         s.onerror = () => { limpiar(); reject(new Error('network')); };
         document.body.appendChild(s);
@@ -1589,7 +1609,7 @@ function guardarCotizacionWeb(d) {
         const detalle = (d.datos.items || []).map(i => `${i.cantidad}x ${i.nombre}`).join(', ');
         const telefono = (d.datos.cliente.contacto || '').replace(/[^\d]/g, '');
         const params = new URLSearchParams({
-            action: 'add', tab: 'Cotizaciones',
+            action: 'add', tab: 'Cotizaciones', web: _hp(),
             cid:      sanouCid(telefono + '|' + detalle + '|' + Math.round(d.total)),
             cliente:  (d.datos.cliente.razon || '').split(' — ')[0],
             telefono: telefono,
