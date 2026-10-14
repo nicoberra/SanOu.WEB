@@ -372,3 +372,12 @@ body.exportando .cot-tot-final span:last-child { color: var(--amarillo) !importa
 .aviso-reintentar:active{transform:scale(.96);transition-duration:0s}
 .aviso-reintentar:focus-visible{outline:2px solid var(--amarillo);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){.aviso-skel{animation:none}.aviso-reintentar{transition:none}}
+
+/* PDF (2026-10): la copia que se exporta va sola arriba a la izquierda, con ancho fijo de hoja A4 */
+.cot-export-marco{position:absolute;left:0;top:0;width:780px;background:#fff;z-index:-1;pointer-events:none}
+.cot-export-marco .cot-hoja{width:780px !important;max-width:780px !important;margin:0 !important}
+/* Lo marcado no-print TAMPOCO va al PDF (antes las celdas de "precio editable" ganaban y corrían las columnas) */
+body.exportando .cot-tabla td.no-print, body.exportando .cot-tabla th.no-print, body.exportando .no-print{display:none !important}
+/* Cantidad: en el PDF se ve como texto, no como casilla */
+body.exportando .cot-tabla input{border:0 !important;background:transparent !important;box-shadow:none !important;padding:0 !important;text-align:center;width:100% !important;-webkit-appearance:none;appearance:none;-moz-appearance:textfield;color:#111 !important;font:inherit}
+body.exportando .cot-tabla input::-webkit-outer-spin-button, body.exportando .cot-tabla input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}

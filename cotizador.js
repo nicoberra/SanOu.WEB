@@ -435,24 +435,38 @@ async function descargarPDF() {
     const txtOrig = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = 'Generando PDF…'; }
     document.body.classList.add('exportando');
+    let marco = null;
     try {
         // Medir con el layout de export aplicado y pasarle a html2canvas el alto/ancho COMPLETOS,
         // si no capturaba solo el alto del viewport y cortaba el pie (sobre todo en el celular).
+        // Se exporta una COPIA de la hoja, sola, arriba a la izquierda del documento y con ancho fijo.
+        // Antes se capturaba la hoja en su lugar (a la derecha del panel) y html2canvas recortaba
+        // la parte izquierda: faltaban los datos de la empresa, el cliente y los nombres de productos.
+        const yAntes = window.scrollY;
+        marco = document.createElement('div');
+        marco.className = 'cot-export-marco';
+        const copia = hoja.cloneNode(true);
+        copia.removeAttribute('id');
+        marco.appendChild(copia);
+        document.body.appendChild(marco);
+        window.scrollTo(0, 0);
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        const W = hoja.scrollWidth, H = hoja.scrollHeight;
+        const W = copia.offsetWidth, H = Math.ceil(Math.max(copia.scrollHeight, copia.getBoundingClientRect().height)) + 8;   // +8: que no se corte la última línea del pie
         await html2pdf().set({
             margin: [8, 8, 8, 8],
             filename: nombreArch,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff',
-                width: W, height: H, windowWidth: W, windowHeight: H, scrollX: 0, scrollY: 0 },
+                x: 0, y: 0, width: W, height: H, windowWidth: W, windowHeight: H, scrollX: 0, scrollY: 0 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
-        }).from(hoja).save();
+        }).from(copia).save();
+        window.scrollTo(0, yAntes);
     } catch (e) {
         // Si algo falla con la librería, caemos al diálogo de impresión.
         window.print();
     } finally {
+        if (marco) marco.remove();
         document.body.classList.remove('exportando');
         if (btn) { btn.disabled = false; btn.textContent = txtOrig; }
     }
