@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Meta Commerce AI</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="login" class="login" hidden>
+    <form id="loginForm" class="login-card">
+      <div class="brand"><span class="brand-mark">MC</span><div><strong>Meta Commerce AI</strong><small>Departamento de Facebook</small></div></div>
+      <label for="token">Token de acceso</label>
+      <input id="token" type="password" autocomplete="current-password" required placeholder="ADMIN_TOKEN o sesión de Supabase">
+      <button class="btn primary" type="submit">Ingresar</button>
+      <p class="muted small" id="loginError" role="alert"></p>
+    </form>
+  </div>
+
+  <div id="app" class="app" hidden>
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark">MC</span><div><strong>Meta Commerce AI</strong><small id="orgName">—</small></div></div>
+      <nav id="nav">
+        <a href="#/dashboard" data-view="dashboard">Dashboard</a>
+        <a href="#/catalogo" data-view="catalogo">Catálogo</a>
+        <a href="#/marketplace" data-view="marketplace">Marketplace</a>
+        <a href="#/publicidad" data-view="publicidad">Publicidad</a>
+        <a href="#/mensajes" data-view="mensajes">Mensajes</a>
+        <a href="#/agentes" data-view="agentes">Agentes</a>
+        <a href="#/configuracion" data-view="configuracion">Configuración</a>
+      </nav>
+      <div class="sidebar-foot">
+        <span id="writeBadge" class="pill"></span>
+        <button class="btn ghost small" id="logout" type="button">Salir</button>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <button class="btn ghost icon-only" id="menuBtn" type="button" aria-label="Menú">☰</button>
+        <h1 id="title">Dashboard</h1>
+        <div class="topbar-actions">
+          <button class="btn" id="syncBtn" type="button">Sincronizar catálogo</button>
+        </div>
+      </header>
+      <section id="view" class="view" aria-live="polite"></section>
+    </main>
+  </div>
+  <div id="drawer" class="drawer" hidden><div class="drawer-panel" role="dialog" aria-modal="true"><button class="btn ghost close" id="drawerClose" type="button" aria-label="Cerrar">✕</button><div id="drawerBody"></div></div></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
