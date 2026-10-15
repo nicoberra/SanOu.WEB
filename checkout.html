@@ -21,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="checkout.css?v=20261015w">
+    <link rel="stylesheet" href="checkout.css?v=20261015e">
 </head>
 <body>
 <header class="ck-header">
@@ -82,6 +82,25 @@
                         <input id="ckEmail" name="email" type="email" autocomplete="email" required maxlength="80" placeholder="tu@email.com">
                     </div>
                 </div>
+                <label class="ck-check"><input type="checkbox" id="ckFactA"> <span><b>Necesito factura A</b><small>Para empresas o responsables inscriptos. Si no la marcás, va factura a consumidor final.</small></span></label>
+                <div class="ck-campos ck-factura" id="ckFact" hidden>
+                    <div class="ck-campo ck-campo--ancho">
+                        <label for="ckRazon">Razón social o nombre <i>*</i></label>
+                        <input id="ckRazon" maxlength="100" autocomplete="organization" placeholder="Como figura en ARCA">
+                    </div>
+                    <div class="ck-campo">
+                        <label for="ckCuit">CUIT <i>*</i></label>
+                        <input id="ckCuit" inputmode="numeric" maxlength="13" placeholder="30-12345678-9">
+                    </div>
+                    <div class="ck-campo">
+                        <label for="ckIva">Condición frente al IVA <i>*</i></label>
+                        <select id="ckIva"><option>Responsable Inscripto</option><option>Monotributista</option><option>Exento</option></select>
+                    </div>
+                    <div class="ck-campo ck-campo--ancho">
+                        <label for="ckDomF">Domicilio fiscal <i>*</i></label>
+                        <input id="ckDomF" maxlength="140" placeholder="Calle, número, localidad">
+                    </div>
+                </div>
             </fieldset>
 
             <!-- 3. Entrega -->
@@ -131,6 +150,10 @@
                             <label for="ckLoc">Localidad o barrio <i>*</i></label>
                             <input id="ckLoc" name="localidad" autocomplete="address-level2" maxlength="80" placeholder="Ej: Morón, Palermo, Rosario">
                         </div>
+                        <div class="ck-cotizar ck-campo--ancho">
+                            <button type="button" class="ck-btn ck-btn--cotizar" id="ckCotizar"><i class="fas fa-calculator" aria-hidden="true"></i> Cotizar envío</button>
+                            <div class="ck-zona" id="ckZona" aria-live="polite"></div>
+                        </div>
                         <div class="ck-campo" id="ckProvCampo" hidden>
                             <label for="ckProv">Provincia</label>
                             <select id="ckProv"></select>
@@ -140,8 +163,21 @@
                             <select id="ckPart"></select>
                         </div>
                     </div>
-                    <div class="ck-zona" id="ckZona" aria-live="polite"></div>
-                    <p class="ck-nota"><i class="fas fa-circle-info" aria-hidden="true"></i> Capital y GBA: envío con costo fijo según la zona. Interior: por Vía Cargo, el costo se coordina por WhatsApp. <a href="envios.html" target="_blank" rel="noopener">Ver zonas</a></p>
+                    <div class="ck-zonas">
+                        <p class="ck-zonas-tit"><i class="fas fa-map-location-dot" aria-hidden="true"></i> Costo de envío según tu zona</p>
+                        <div class="ck-zonas-cards">
+                            <span class="ck-zc" data-z="capital" style="--zc:#FFD700"><b>Capital (CABA)</b>$5.500</span>
+                            <span class="ck-zc" data-z="gba1" style="--zc:#25D366"><b>GBA 1</b>$7.000</span>
+                            <span class="ck-zc" data-z="gba2" style="--zc:#A8A8A8"><b>GBA 2</b>$9.000</span>
+                            <span class="ck-zc" data-z="gba3" style="--zc:#FF5A52"><b>GBA 3</b>$15.000</span>
+                        </div>
+                        <a href="img/mapa-zonas-envio.webp" target="_blank" rel="noopener" class="ck-mapa" aria-label="Ver el mapa de zonas en grande">
+                            <img src="img/mapa-zonas-envio.webp" width="2400" height="2160" loading="lazy" decoding="async" alt="Mapa de zonas de envío de Capital y Gran Buenos Aires: Capital, GBA 1, GBA 2 y GBA 3">
+                            <span><i class="fas fa-magnifying-glass-plus" aria-hidden="true"></i> Ver en grande</span>
+                        </a>
+                        <p class="ck-zonas-int"><i class="fas fa-truck-fast" aria-hidden="true"></i> <b>Interior del país:</b> por Vía Cargo, el costo se coordina por WhatsApp.</p>
+                    </div>
+                    <p class="ck-nota"><i class="fas fa-circle-info" aria-hidden="true"></i> Escribí tu localidad y tocá <b>Cotizar envío</b>. <a href="envios.html" target="_blank" rel="noopener">Ver los partidos de cada zona</a></p>
                 </div>
             </fieldset>
         </div>
@@ -157,7 +193,7 @@
                 <div class="ck-total"><span>Total</span><span><s id="ckTotalAntes" hidden></s><b id="ckTotal">$0</b></span></div>
                 <div class="ck-error" id="ckError" role="alert" hidden></div>
                 <button type="submit" class="ck-btn ck-btn--primario ck-btn--grande" id="ckBtn">
-                    <i class="fas fa-lock" aria-hidden="true"></i> <span id="ckBtnTxt">Ir a pagar con Mercado Pago</span>
+                    <i class="fas fa-lock" aria-hidden="true"></i> <span id="ckBtnTxt">Pago seguro</span>
                 </button>
                 <p class="ck-legal" id="ckLegal">Te llevamos al sitio seguro de Mercado Pago. No vemos ni guardamos los datos de tu tarjeta.</p>
                 <a href="index.html#productos" class="ck-seguir"><i class="fas fa-arrow-left" aria-hidden="true"></i> Seguir comprando</a>
@@ -167,9 +203,18 @@
 
     <!-- Pedido por transferencia confirmado -->
     <section class="ck-gracias" id="ckGracias" hidden>
+      <div class="ck-gr-izq">
         <div class="ck-gracias-ico"><i class="fas fa-check" aria-hidden="true"></i></div>
         <h2>¡Pedido recibido!</h2>
-        <p>Ya tenemos tu pedido <b id="ckGrNum"></b>. Para terminar, transferí el total y subí el comprobante acá abajo.</p>
+        <p>Tu número de pedido es <b id="ckGrNum"></b>. Para terminar, transferí el total y subí el comprobante.</p>
+        <div class="ck-gracias-det" id="ckGrDet"></div>
+        <ol class="ck-pasos">
+            <li><b>Transferí</b> el importe exacto al alias o CVU.</li>
+            <li><b>Subí el comprobante</b> (foto o PDF) o mandalo por WhatsApp.</li>
+            <li><b>Te avisamos</b> por WhatsApp cuando el pedido esté listo o en camino.</li>
+        </ol>
+      </div>
+      <div class="ck-gr-der">
         <div class="ck-banco">
             <h3><i class="fas fa-building-columns" aria-hidden="true"></i> Datos para transferir</h3>
             <div class="ck-banco-fila"><span>Alias</span><b id="ckAlias">sanou.arg</b><button type="button" class="ck-copiar" data-copiar="ckAlias">Copiar</button></div>
@@ -177,7 +222,6 @@
             <div class="ck-banco-fila"><span>Titular</span><b>Nicolas Thiago Berra</b></div>
             <div class="ck-banco-fila ck-banco-fila--total"><span>Importe</span><b id="ckImporte"></b><button type="button" class="ck-copiar" data-copiar="ckImporte" data-solo-numeros="1">Copiar</button></div>
         </div>
-        <div class="ck-gracias-det" id="ckGrDet"></div>
         <div class="ck-subir" id="ckSubir">
             <label class="ck-btn ck-btn--primario ck-btn--grande" for="ckComp" id="ckCompBtn"><i class="fas fa-paperclip" aria-hidden="true"></i> <span id="ckCompTxt">Subir comprobante</span></label>
             <input type="file" id="ckComp" accept="image/*,application/pdf" class="ck-hp" tabindex="-1">
@@ -185,9 +229,10 @@
         </div>
         <a class="ck-btn ck-btn--wa" id="ckGrWa" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> O mandalo por WhatsApp</a>
         <a href="index.html" class="ck-btn ck-btn--sec">Volver a la tienda</a>
+      </div>
     </section>
 </main>
 
-<script src="checkout.js?v=20261015w"></script>
+<script src="checkout.js?v=20261015d"></script>
 </body>
 </html>

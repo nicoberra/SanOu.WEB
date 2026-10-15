@@ -357,5 +357,15 @@ test('push: una compra web avisa a los dispositivos suscriptos', () => {
   igual(env.llamar({ action: 'push_ultimos', tab: 'Pedidos', pt }).json.error, 'No autorizado');
 });
 
+test('factura A: CUIT inválido se rechaza; con datos válidos queda en el pedido', () => {
+  const env = conProductos();
+  const malo = env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro', fa: '1', razon: 'Talleres SRL', cuit: '30710771820', condiva: 'Responsable Inscripto', domfiscal: 'Calle 1, CABA' })).json;
+  igual(malo.ok, false); verdad(/factura A/.test(malo.error));
+  const ok2 = env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro', cid: 'fact1', fa: '1', razon: 'Talleres SRL', cuit: '30-71077182-7', condiva: 'Responsable Inscripto', domfiscal: 'Calle 1, CABA' })).json;
+  igual(ok2.ok, true);
+  const sh = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos'), h = sh.rows[0], f = sh.rows[1];
+  igual(f[h.indexOf('Facturación')], 'Factura A · Talleres SRL · CUIT 30-71077182-7 · Responsable Inscripto · Calle 1, CABA');
+});
+
 console.log(`\n${ok} OK, ${fallas} con error`);
 process.exit(fallas ? 1 : 0);

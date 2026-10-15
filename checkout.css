@@ -93,8 +93,8 @@ a { color: inherit; }
 /* Resumen */
 .ck-card--resumen h2 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 1.55rem; letter-spacing: 1.2px; margin-bottom: 12px; }
 .ck-items { list-style: none; display: grid; gap: 10px; padding-bottom: 14px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,.08); max-height: 320px; overflow-y: auto; }
-.ck-item { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; font-size: .86rem; }
-.ck-item-ico { width: 40px; height: 40px; border-radius: 10px; background: var(--black-3); color: var(--yellow); display: flex; align-items: center; justify-content: center; position: relative; }
+.ck-item { display: grid; grid-template-columns: 52px 1fr auto; gap: 10px; align-items: center; font-size: .86rem; }
+.ck-item-ico { width: 52px; height: 52px; border-radius: 12px; background: #fff; color: var(--yellow); display: flex; align-items: center; justify-content: center; position: relative; }
 .ck-item-ico em { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; border-radius: 10px; background: var(--yellow); color: var(--black); font-style: normal; font-size: .7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
 .ck-item-nom { min-width: 0; line-height: 1.3; }
 .ck-item-pr { font-weight: 700; white-space: nowrap; }
@@ -168,3 +168,96 @@ a { color: inherit; }
 .ck-subir small { color: var(--gray-light); font-size: .8rem; }
 .ck-subir small.es-error { color: var(--red); }
 .ck-subir:has(input:focus-visible) label { outline: 2px solid var(--white); outline-offset: 3px; }
+
+/* Zonas de envío + mapa dentro de "Envío a domicilio" */
+.ck-zonas { margin-top: 14px; display: grid; gap: 10px; }
+.ck-zonas-tit { font-size: .86rem; font-weight: 700; color: var(--gray-light); display: flex; align-items: center; gap: 8px; }
+.ck-zonas-tit i { color: var(--yellow); }
+.ck-zonas-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.ck-zc { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 12px; background: var(--black-3); border: 1px solid rgba(255,255,255,.08); border-left: 4px solid var(--zc); font-weight: 800; font-size: 1rem; color: var(--zc); transition: border-color .2s, background-color .2s, transform .2s var(--ease-out); }
+.ck-zc b { color: var(--white); font-size: .8rem; font-weight: 700; }
+.ck-zc.on { background: color-mix(in srgb, var(--zc) 14%, var(--black-3)); border-color: var(--zc); transform: translateY(-2px); }
+.ck-mapa { position: relative; display: block; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.08); }
+.ck-mapa img { display: block; width: 100%; height: auto; }
+.ck-mapa span { position: absolute; right: 10px; bottom: 10px; background: rgba(13,13,13,.82); color: var(--white); font-size: .78rem; font-weight: 700; padding: 6px 10px; border-radius: 9px; display: inline-flex; gap: 6px; align-items: center; }
+.ck-zonas-int { font-size: .82rem; color: var(--gray-light); }
+.ck-zonas-int i { color: var(--yellow); margin-right: 4px; }
+@media (max-width: 599px) { .ck-zonas-cards { grid-template-columns: 1fr 1fr; } }
+@media (prefers-reduced-motion: reduce) { .ck-zc { transition: none; } .ck-zc.on { transform: none; } }
+
+/* Foto chica del producto en "Tu pedido" */
+.ck-item-ico img { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 3px; }
+.ck-item-ico i { color: var(--black); }
+
+/* Letra más chica en toda la compra (pedido 2026-10-15): entra más en pantalla */
+body { font-size: 14px; }
+.ck-titulo { font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 8px 0 16px; }
+.ck-card { padding: 16px 18px; }
+.ck-card legend, .ck-card--resumen h2 { font-size: 1.3rem; margin-bottom: 12px; }
+.ck-paso { width: 24px; height: 24px; font-size: .78rem; }
+.ck-opcion { padding: 11px 12px; gap: 10px; }
+.ck-opcion-ico { width: 34px; height: 34px; font-size: .92rem; border-radius: 10px; }
+.ck-opcion-txt b { font-size: .88rem; }
+.ck-opcion-txt small { font-size: .74rem; }
+.ck-opcion-precio { font-size: .86rem; }
+.ck-campos { gap: 11px; }
+.ck-campo label { font-size: .76rem; }
+.ck-campo input, .ck-campo select { height: 42px; font-size: 14px; border-radius: 10px; }
+.ck-retiro { padding: 13px; }
+.ck-retiro b { font-size: .9rem; }
+.ck-retiro span, .ck-retiro a, .ck-zona { font-size: .8rem; }
+.ck-item { font-size: .8rem; }
+.ck-fila { font-size: .84rem; padding: 4px 0; }
+.ck-total b { font-size: 1.9rem; }
+.ck-btn { font-size: .88rem; }
+.ck-btn--grande { padding: 13px 18px; font-size: .95rem; }
+.ck-zc { font-size: .9rem; padding: 8px 10px; }
+.ck-zc b { font-size: .74rem; }
+/* En celular los campos quedan en 16px: con menos, el iPhone hace zoom al tocar */
+@media (max-width: 599px) { .ck-campo input, .ck-campo select { font-size: 16px; } }
+
+/* Cotizar envío: botón + "Tu envío sale $X" al lado */
+.ck-cotizar { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+.ck-btn--cotizar { flex: none; background: var(--yellow); color: var(--black); padding: 11px 16px; }
+.ck-btn--cotizar[disabled] { opacity: .7; }
+.ck-cotizar .ck-zona { flex: 1; min-width: 200px; margin-top: 0; display: flex; flex-direction: column; justify-content: center; }
+.ck-cotizar .ck-zona:empty { display: none; }
+.ck-zona-precio { font-size: .92rem; color: var(--white); }
+.ck-zona-precio b { color: var(--yellow); font-size: 1.05rem; }
+.ck-zona small { color: var(--gray-light); font-size: .76rem; }
+.ck-zona small button { font-size: .76rem; }
+
+/* Factura A */
+.ck-check { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 11px 12px; border-radius: 12px; background: var(--black-3); border: 1px solid rgba(255,255,255,.08); cursor: pointer; }
+.ck-check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--yellow); flex: none; }
+.ck-check span { display: flex; flex-direction: column; }
+.ck-check b { font-size: .86rem; }
+.ck-check small { color: var(--gray-light); font-size: .74rem; }
+.ck-check:has(input:checked) { border-color: var(--yellow); background: rgba(255,215,0,.06); }
+.ck-factura { margin-top: 12px; animation: ckEntra .32s var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .ck-factura { animation: none; } }
+
+/* ═══ Compu: la compra ocupa el ancho de la pantalla ═══ */
+.ck-pasos { list-style: none; counter-reset: paso; display: grid; gap: 8px; width: 100%; text-align: left; }
+.ck-pasos li { counter-increment: paso; display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; color: var(--gray-light); }
+.ck-pasos li::before { content: counter(paso); flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--yellow); color: var(--black); font-weight: 800; font-size: .75rem; display: flex; align-items: center; justify-content: center; }
+.ck-pasos b { color: var(--white); }
+.ck-gr-izq, .ck-gr-der { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+.ck-gr-total { color: var(--yellow) !important; font-size: 1.05rem; }
+@media (min-width: 960px) {
+    .ck-wrap { max-width: 1360px; padding: 0 32px; }
+    .ck-grid { grid-template-columns: minmax(0, 1fr) 420px; gap: 26px; }
+    .ck-col { gap: 20px; }
+    .ck-col > .ck-card:first-child .ck-opciones { grid-template-columns: 1fr 1fr; }   /* medio de pago: las dos opciones lado a lado */
+    .ck-zonas { grid-template-columns: 240px minmax(0, 1fr); align-items: start; column-gap: 16px; }
+    .ck-zonas-tit, .ck-zonas-int { grid-column: 1 / -1; }
+    .ck-zonas-cards { grid-template-columns: 1fr; grid-column: 1; }
+    .ck-mapa { grid-column: 2; grid-row: 2 / span 2; max-width: 520px; }
+    .ck-gracias { max-width: none; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; text-align: left; padding: 44px 48px; margin-top: 10px; }
+    .ck-gr-izq, .ck-gr-der { align-items: stretch; }
+    .ck-gr-izq .ck-gracias-ico { margin: 0; }
+    .ck-gracias .ck-btn { width: 100%; }
+}
+
+.ck-pasos li { display: block; position: relative; padding-left: 32px; line-height: 1.5; }
+.ck-pasos li::before { position: absolute; left: 0; top: 0; }

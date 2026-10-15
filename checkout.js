@@ -34,6 +34,12 @@
     // Estado de la entrega: zona = 'retiro' | 'capital' | 'gba1' | 'gba2' | 'gba3' | 'interior' | '' (falta definir)
     const st = { pago: 'mp', entrega: 'retiro', zona: 'retiro', lugar: '' };
 
+    // Primera foto del producto (misma regla que la tienda: productos/<categoría>/<carpeta>/1.jpg).
+    function fotoDe(p) {
+        if (!p.imgs) return '';
+        const base = `productos/${p.catFolder || p.category}/${p.folder || p.name}/`;
+        return Array.isArray(p.imgs) ? (p.imgs[0] ? base + p.imgs[0] : '') : base + '1.' + (p.ext || 'jpg');
+    }
     function precioTr(i) { return i.precioTransfer > 0 ? i.precioTransfer : i.price; }
     function totales() {
         const sub = cart.reduce((s, i) => s + (i.price || 0) * i.qty, 0);
@@ -46,13 +52,14 @@
     // ── Pintar resumen ──
     function pintar() {
         const t = totales();
-        $('ckItems').innerHTML = cart.map(i => `<li class="ck-item"><span class="ck-item-ico"><i class="fas ${esc(i.icon || 'fa-screwdriver-wrench')}" aria-hidden="true"></i><em>${i.qty}</em></span><span class="ck-item-nom">${esc(i.name)}</span><span class="ck-item-pr">${fmt((st.pago === 'transferencia' ? precioTr(i) : i.price) * i.qty)}</span></li>`).join('');
+        $('ckItems').innerHTML = cart.map(i => `<li class="ck-item"><span class="ck-item-ico">${fotoDe(i) ? `<img src="${esc(fotoDe(i))}" alt="" width="52" height="52" loading="lazy" decoding="async" onerror="this.outerHTML='<i class=&quot;fas ${esc(i.icon || 'fa-screwdriver-wrench')}&quot; aria-hidden=&quot;true&quot;></i>'">` : `<i class="fas ${esc(i.icon || 'fa-screwdriver-wrench')}" aria-hidden="true"></i>`}<em>${i.qty}</em></span><span class="ck-item-nom">${esc(i.name)}</span><span class="ck-item-pr">${fmt((st.pago === 'transferencia' ? precioTr(i) : i.price) * i.qty)}</span></li>`).join('');
         $('ckSubtotal').textContent = fmt(st.pago === 'transferencia' ? t.subTr : t.sub);
         const envDet = $('ckEnvioDet'), envMon = $('ckEnvioMonto');
         if (st.entrega === 'retiro') { envDet.textContent = 'Retiro en el depósito'; envMon.textContent = 'Sin cargo'; }
         else if (ZONAS[st.zona]) { envDet.textContent = ZONAS[st.zona].n + (st.lugar ? ' · ' + st.lugar : ''); envMon.textContent = fmt(t.envio); }
         else if (st.zona === 'interior') { envDet.textContent = 'Interior · Vía Cargo'; envMon.textContent = 'A coordinar'; }
         else { envDet.textContent = 'Completá tu localidad'; envMon.textContent = 'A calcular'; }
+        document.querySelectorAll('.ck-zc').forEach(z => z.classList.toggle('on', st.entrega === 'envio' && z.dataset.z === st.zona));
         $('ckAhorroFila').hidden = !(t.ahorro > 0);
         $('ckAhorro').textContent = '−' + fmt(t.ahorro);
         const antes = $('ckTotalAntes');
@@ -62,7 +69,7 @@
         $('ckPrecioTr').innerHTML = t.sub > t.subTr ? `${fmt(t.subTr)}<small>Ahorrás ${fmt(t.sub - t.subTr)}</small>` : fmt(t.subTr);
         const btn = $('ckBtn');
         btn.classList.toggle('es-mp', st.pago === 'mp');
-        $('ckBtnTxt').textContent = st.pago === 'mp' ? 'Ir a pagar con Mercado Pago' : 'Confirmar pedido';
+        $('ckBtnTxt').textContent = st.pago === 'mp' ? 'Pago seguro' : 'Confirmar pedido';
         $('ckLegal').textContent = st.pago === 'mp'
             ? 'Te llevamos al sitio seguro de Mercado Pago. No vemos ni guardamos los datos de tu tarjeta.'
             : 'Reservamos tu pedido y te mostramos el alias y el CVU para transferir.';
@@ -104,27 +111,31 @@
     }
     function aplicarZona(z) {
         st.zona = z.zona; st.lugar = z.lugar || '';
-        if (ZONAS[z.zona]) zonaMsg(`<i class="fas fa-truck-fast"></i> Envío a <b>${esc(st.lugar)}</b> · ${ZONAS[z.zona].n}: <b>${fmt(ZONAS[z.zona].p)}</b> <button type="button" id="ckCambiar">¿No es tu zona? Cambiar</button>`, true);
-        else if (z.zona === 'interior') zonaMsg(`<i class="fas fa-truck-fast"></i> Envío a <b>${esc(st.lugar)}</b> por Vía Cargo: el costo <b>se coordina por WhatsApp</b>. <button type="button" id="ckCambiar">Cambiar</button>`, true);
+        if (ZONAS[z.zona]) zonaMsg(`<span class="ck-zona-precio">Tu envío sale <b>${fmt(ZONAS[z.zona].p)}</b></span><small>${ZONAS[z.zona].n} · ${esc(st.lugar)} <button type="button" id="ckCambiar">¿No es tu zona?</button></small>`, true);
+        else if (z.zona === 'interior') zonaMsg(`<span class="ck-zona-precio">Envío por Vía Cargo: <b>a coordinar</b></span><small>${esc(st.lugar)} · te pasamos el costo por WhatsApp <button type="button" id="ckCambiar">Cambiar</button></small>`, true);
         const b = $('ckCambiar'); if (b) b.onclick = () => { mostrarManual(true); $('ckProv').focus(); };
         pintar();
     }
+    // Al escribir la localidad se borra la cotización anterior; se cotiza con el botón "Cotizar envío".
     function onLocalidad() {
-        clearTimeout(timer);
+        if (st.entrega !== 'envio') return;
+        st.zona = ''; st.lugar = '';
+        zonaMsg(''); pintar();
+    }
+    async function cotizarEnvio() {
         if (st.entrega !== 'envio') return;
         const v = $('ckLoc').value;
+        if (norm(v).length < 3) { marcar('ckLoc', 'Escribí tu localidad o barrio para cotizar.'); $('ckLoc').focus(); return; }
+        const b = $('ckCotizar'); b.disabled = true;
         st.zona = ''; st.lugar = '';
-        if (norm(v).length < 3) { zonaMsg(''); pintar(); return; }
-        zonaMsg('<i class="fas fa-circle-notch fa-spin"></i> Buscando tu zona…');
-        pintar();
-        timer = setTimeout(async () => {
-            try {
-                const z = await detectar(v);
-                if (z && z.zona) { mostrarManual(false); aplicarZona(z); }
-                else if (z && z.ambiguo) { zonaMsg(`<b>${esc(z.lugar)}</b> es de La Matanza: elegí si es Norte o Sur.`); mostrarManual(true); $('ckProv').value = 'BA'; onProv(); }
-                else { zonaMsg('No reconocimos esa localidad. Elegí tu provincia y partido:'); mostrarManual(true); }
-            } catch (e) { if (e.name !== 'AbortError') { zonaMsg('Elegí tu provincia y partido:'); mostrarManual(true); } }
-        }, 650);
+        zonaMsg('<i class="fas fa-circle-notch fa-spin"></i> Cotizando…'); pintar();
+        try {
+            const z = await detectar(v);
+            if (z && z.zona) { mostrarManual(false); aplicarZona(z); }
+            else if (z && z.ambiguo) { zonaMsg(`<b>${esc(z.lugar)}</b> es de La Matanza: elegí si es Norte o Sur.`); mostrarManual(true); $('ckProv').value = 'BA'; onProv(); }
+            else { zonaMsg('No reconocimos esa localidad. Elegí tu provincia y partido:'); mostrarManual(true); }
+        } catch (e) { if (e.name !== 'AbortError') { zonaMsg('Elegí tu provincia y partido:'); mostrarManual(true); } }
+        b.disabled = false;
     }
     function onProv() {
         const v = $('ckProv').value;
@@ -156,6 +167,11 @@
             ['ckTel', v('ckTel').replace(/\D/g, '').length >= 8 ? '' : 'Celular con código de área (ej: 11 2345-6789).'],
             ['ckEmail', /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('ckEmail')) ? '' : 'Revisá el email.']
         ];
+        if ($('ckFactA').checked) reglas.push(
+            ['ckRazon', v('ckRazon').length >= 3 ? '' : 'Razón social o nombre.'],
+            ['ckCuit', cuitOk(v('ckCuit')) ? '' : 'Revisá el CUIT (11 números).'],
+            ['ckDomF', v('ckDomF').length >= 5 ? '' : 'Domicilio fiscal.']
+        );
         if (st.entrega === 'envio') reglas.push(
             ['ckDni', /^\d{7,9}$/.test(v('ckDni').replace(/\D/g, '')) ? '' : 'DNI de 7 u 8 números.'],
             ['ckCp', v('ckCp').length >= 4 ? '' : 'Código postal.'],
@@ -165,8 +181,17 @@
         let primero = null;
         reglas.forEach(([id, msg]) => { if (!marcar(id, msg) && !primero) primero = id; });
         if (primero) { $(primero).focus(); return false; }
-        if (st.entrega === 'envio' && !st.zona) { error('Elegí tu provincia y partido para calcular el envío.'); mostrarManual(true); return false; }
+        if (st.entrega === 'envio' && !st.zona) { error('Tocá "Cotizar envío" para calcular el costo antes de pagar.'); $('ckCotizar').focus(); return false; }
         return true;
+    }
+    // CUIT válido: 11 números y dígito verificador correcto.
+    function cuitOk(c) {
+        c = String(c || '').replace(/\D/g, '');
+        if (c.length !== 11) return false;
+        const m = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+        let s = 0; for (let i = 0; i < 10; i++) s += m[i] * +c[i];
+        let v = 11 - (s % 11); if (v === 11) v = 0; if (v === 10) v = 9;
+        return v === +c[10];
     }
     function error(t) { const e = $('ckError'); e.textContent = t || ''; e.hidden = !t; }
 
@@ -194,6 +219,7 @@
             nombre: $('ckNombre').value.trim(), telefono: $('ckTel').value.trim(), email: $('ckEmail').value.trim(),
             zona: st.entrega === 'retiro' ? 'retiro' : st.zona
         };
+        if ($('ckFactA').checked) Object.assign(datos, { fa: '1', razon: $('ckRazon').value.trim(), cuit: $('ckCuit').value.replace(/\D/g, ''), condiva: $('ckIva').value, domfiscal: $('ckDomF').value.trim() });
         if (st.entrega === 'envio') Object.assign(datos, { dni: $('ckDni').value.replace(/\D/g, ''), cp: $('ckCp').value.trim(), direccion: $('ckDir').value.trim(), localidad: $('ckLoc').value.trim(), lugar: st.lugar });
         const items = cart.map(i => ({ nombre: i.name, qty: i.qty }));
         ls.set('kl_name', datos.nombre); ls.set('kl_email', datos.email); ls.set('kl_phone', datos.telefono);
@@ -219,10 +245,11 @@
         const entrega = d.zona === 'retiro' ? 'Retiro en el depósito (Marcelo Gamboa 6306, Versalles)'
             : `${ZONAS[d.zona] ? 'Envío ' + ZONAS[d.zona].n : 'Envío por Vía Cargo'} — ${d.direccion}, ${d.localidad} (CP ${d.cp})`;
         st.pedido = r.pedido; st.ut = r.ut;
-        $('ckGrNum').textContent = r.pedido;
-        $('ckGrDet').innerHTML = `<span>Productos: <b>${esc(det)}</b></span><span>Entrega: <b>${esc(entrega)}</b></span>`;
+        const num = '#' + String(r.pedido).slice(-6).toUpperCase();   // número corto para el cliente (el CRM lo encuentra igual)
+        $('ckGrNum').textContent = num;
+        $('ckGrDet').innerHTML = `<span>Pedido <b>${esc(num)}</b></span><span>Productos: <b>${esc(det)}</b></span><span>Entrega: <b>${esc(entrega)}</b></span><span>Total a transferir: <b class="ck-gr-total">${fmt(r.total)}</b></span>`;
         $('ckImporte').textContent = fmt(r.total);
-        const msg = `Hola San Ou! Hice el pedido ${r.pedido} en la web y pagué con transferencia. Te mando el comprobante.\n\n🛠 ${det}\n🚚 ${entrega}\n💰 Total: ${fmt(r.total)}\n👤 ${d.nombre}`;
+        const msg = `Hola San Ou! Hice el pedido ${num} en la web y pagué con transferencia. Te mando el comprobante.\n\n🛠 ${det}\n🚚 ${entrega}\n💰 Total: ${fmt(r.total)}\n👤 ${d.nombre}`;
         $('ckGrWa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
         try { localStorage.removeItem(CART_KEY); } catch (e) {}
         $('ckForm').hidden = true; document.querySelector('.ck-titulo').textContent = 'Pedido confirmado';
@@ -286,13 +313,16 @@
             $('ckRetiro').hidden = r.value !== 'retiro';
             $('ckEnvio').hidden = r.value !== 'envio';
             if (r.value === 'retiro') { st.zona = 'retiro'; st.lugar = ''; pintar(); }
-            else { st.zona = ''; onLocalidad(); }
+            else { st.zona = ''; onLocalidad(); if (norm($('ckLoc').value).length >= 3) cotizarEnvio(); }
             error('');
         }));
+        $('ckFactA').addEventListener('change', () => { $('ckFact').hidden = !$('ckFactA').checked; if ($('ckFactA').checked) $('ckRazon').focus(); });
         $('ckLoc').addEventListener('input', onLocalidad);
+        $('ckLoc').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); cotizarEnvio(); } });
+        $('ckCotizar').addEventListener('click', cotizarEnvio);
         $('ckProv').addEventListener('change', onProv);
         $('ckPart').addEventListener('change', () => { if ($('ckPart').value === 'otro') aplicarZona({ zona: 'interior', lugar: 'Buenos Aires' }); else onPart(); });
-        ['ckNombre', 'ckTel', 'ckEmail', 'ckDni', 'ckCp', 'ckDir', 'ckLoc'].forEach(id => $(id).addEventListener('input', () => { if ($(id).closest('.ck-campo').classList.contains('es-error')) marcar(id, ''); }));
+        ['ckNombre', 'ckTel', 'ckEmail', 'ckDni', 'ckCp', 'ckDir', 'ckLoc', 'ckRazon', 'ckCuit', 'ckDomF'].forEach(id => $(id).addEventListener('input', () => { if ($(id).closest('.ck-campo').classList.contains('es-error')) marcar(id, ''); }));
         $('ckForm').addEventListener('submit', enviar);
         $('ckComp').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) subirComprobante(f); e.target.value = ''; });
         // Copiar alias / CVU / importe (como en Suple Market): el botón confirma "Copiado ✓".

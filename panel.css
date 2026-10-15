@@ -823,3 +823,5 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 .dash-web>.fa-arrow-right{color:#25D366}
 @media (max-width:520px){.pw-datos{grid-template-columns:1fr}.ped-tab{font-size:.82rem;padding:10px 6px}}
 @media (prefers-reduced-motion:reduce){.ped-nuevo,.dash-web.nuevo .dash-web-ic em{animation:none}.dash-web{transition:none}}
+.pg-fa{background:rgba(255,212,0,.12);color:var(--am);border:1px solid rgba(255,212,0,.35)}
+.pw-fa{border:1px solid rgba(255,212,0,.35)}

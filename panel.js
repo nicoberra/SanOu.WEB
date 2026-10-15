@@ -2008,7 +2008,7 @@ function tarjetaPedidoWeb(p){
             <span class="rec-nombre">${nuevo ? '<span class="web-dot" title="Nuevo"></span>' : ''}${esc(p.cliente)||'(sin nombre)'}</span>
             ${badgeEstado(estPed(p.estado))}
         </div>
-        <div class="rec-web-pago">${badgePago(p)}${p.pagodet && p.pago === 'Mercado Pago' ? `<span class="pg-det">${esc(p.pagodet.split(' · te queda')[0])}</span>` : ''}</div>
+        <div class="rec-web-pago">${badgePago(p)}${p.factura ? '<span class="pg-badge pg-fa"><i class="fas fa-file-invoice"></i> Factura A</span>' : ''}${p.pagodet && p.pago === 'Mercado Pago' ? `<span class="pg-det">${esc(p.pagodet.split(' · te queda')[0])}</span>` : ''}</div>
         ${p.detalle?`<div class="rec-detalle">${esc(p.detalle)}</div>`:''}
         <div class="rec-meta">
             ${montoVenta(p)?`<span class="rec-monto">${fmtMoney(montoVenta(p))}</span>`:''}
@@ -2037,7 +2037,7 @@ function verPedidoWeb(id){
     document.getElementById('modalTitulo').textContent = 'Compra web';
     document.getElementById('modalBody').innerHTML = `
         <div class="pw-ficha">
-            <div class="pw-cab">${badgePago(p)} ${badgeEstado(estPed(p.estado))}<span class="pw-id">${esc(p.id)} · ${esc(String(p.fecha||'').slice(0,16))}</span></div>
+            <div class="pw-cab">${badgePago(p)} ${badgeEstado(estPed(p.estado))}<span class="pw-id">Pedido #${esc(String(p.id).slice(-6).toUpperCase())} · ${esc(String(p.fecha||'').slice(0,16))}</span></div>
             <h4><i class="fas fa-box"></i> Productos</h4>
             <table class="pw-tabla"><thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead><tbody>${filas}</tbody>
             <tfoot>${envio ? `<tr><td colspan="3">Envío</td><td class="num">${fmtMoney(envio)}</td></tr>` : ''}<tr class="pw-total"><td colspan="3">Total ${p.pago === 'Transferencia' ? '(precio transferencia)' : ''}</td><td class="num">${fmtMoney(montoVenta(p))}</td></tr></tfoot></table>
@@ -2054,6 +2054,8 @@ function verPedidoWeb(id){
                          : `<span class="pw-ancho"><b>${esc(p.entrega || 'Envío')}</b>${esc(p.direccion || '-')}</span>
                             <span><b>Costo de envío</b>${envio ? fmtMoney(envio) + (p.enviocobrado === 'Sí' ? ' (cobrado)' : '') : 'A coordinar'}</span>`}
             </div>
+            <h4><i class="fas fa-file-invoice"></i> Facturación</h4>
+            <div class="pw-datos">${p.factura ? `<span class="pw-ancho pw-fa"><b>Pidió factura A</b>${esc(p.factura.replace(/^Factura A · /, ''))}</span>` : `<span class="pw-ancho"><b>Factura</b>Consumidor final</span>`}</div>
             <h4><i class="fas fa-wallet"></i> Pago</h4>
             <div class="pw-datos">
                 <span><b>Medio</b>${esc(p.pago || '-')}</span>
@@ -2164,7 +2166,7 @@ function msgPedido(p){
 function filtrarPedidos(){
     const q=(document.getElementById('buscarPed').value||'').toLowerCase().trim();
     const base = pedidos.filter(p => pedTab === 'web' ? esPedWeb(p) : !esPedWeb(p));
-    pintarPedidos(!q?base:base.filter(p=>(p.cliente+' '+p.detalle+' '+p.telefono+' '+p.estado+' '+(p.email||'')+' '+(p.dni||'')+' '+(p.direccion||'')).toLowerCase().includes(q)));
+    pintarPedidos(!q?base:base.filter(p=>(p.cliente+' '+p.detalle+' '+p.telefono+' '+p.estado+' '+p.id+' '+(p.email||'')+' '+(p.dni||'')+' '+(p.direccion||'')).toLowerCase().includes(q)));
 }
 function pintarPedidos(lista){
     const cont=document.getElementById('listaPed'); if(!cont) return;
