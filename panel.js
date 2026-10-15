@@ -2021,6 +2021,7 @@ function tarjetaPedidoWeb(p){
             <span><i class="fas ${retiro ? 'fa-warehouse' : 'fa-truck'}"></i> ${retiro ? 'Retira en el depósito' : esc(p.entrega || 'Envío') + (p.direccion ? ' — ' + esc(p.direccion) : '')}</span>
             ${p.fecha?`<span><i class="far fa-clock"></i> ${esc(String(p.fecha).slice(0,16))}</span>`:''}
         </div>
+        ${p.pago === 'Transferencia' ? `<div class="rec-confirmar">${botonConfirmarPago(p)}</div>` : ''}
         <div class="rec-acciones">
             <select class="rec-estado ${estPed(p.estado)==='Entregado'?'est-entregado':'est-pendiente'}" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
                 ${PEDIDO_ESTADOS.map(e=>`<option value="${e}" ${e===estPed(p.estado)?'selected':''}>${e==='Entregado'?'✓ ':''}${e}</option>`).join('')}
@@ -2063,7 +2064,8 @@ function verPedidoWeb(id){
             <h4><i class="fas fa-file-invoice"></i> Facturación</h4>
             <div class="pw-datos">${p.factura ? `<span class="pw-ancho pw-fa"><b>Pidió factura A</b>${esc(p.factura.replace(/^Factura A · /, ''))}</span>` : `<span class="pw-ancho"><b>Factura</b>Consumidor final</span>`}</div>
             ${p.pago === 'Transferencia' ? `<h4><i class="fas fa-receipt"></i> Comprobante de transferencia</h4>
-            ${p.comprobante ? `<div class="pw-comp-mini" data-comp="${esc(p.comprobante)}">${skel('chico')}</div>` : `<div class="pw-nota pw-sin-comp"><i class="fas fa-hourglass-half"></i> Todavía no subió el comprobante.</div>`}` : ''}
+            ${p.comprobante ? `<div class="pw-comp-mini" data-comp="${esc(p.comprobante)}">${skel('chico')}</div>` : `<div class="pw-nota pw-sin-comp"><i class="fas fa-hourglass-half"></i> Todavía no subió el comprobante.</div>`}
+            <div class="pw-confirmar">${botonConfirmarPago(p, true)}</div>` : ''}
             <h4><i class="fas fa-wallet"></i> Pago</h4>
             <div class="pw-datos">
                 <span><b>Medio</b>${esc(p.pago || '-')}</span>
@@ -2073,7 +2075,6 @@ function verPedidoWeb(id){
             </div>
             <div class="pw-acciones">
                 ${p.comprobante ? `<button class="panel-btn-add" onclick="verComprobante('${p.comprobante}')"><i class="fas fa-expand"></i> Ver comprobante en grande</button>` : ''}
-                ${p.pago === 'Transferencia' && p.pagoestado !== 'Pagado' ? `<button class="panel-btn-add pw-ok" onclick="marcarPagoRecibido('${p.id}')"><i class="fas fa-check"></i> Transferencia recibida</button>` : ''}
                 ${wa ? `<a class="panel-btn-add pw-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Escribirle</a>` : ''}
             </div>
         </div>`;
@@ -2103,13 +2104,31 @@ function cargarComprobantesMini(cont){
         } catch (e) { el.innerHTML = `<button class="panel-btn-add" onclick="verComprobante('${id}')"><i class="fas fa-receipt"></i> Ver comprobante</button>`; }
     });
 }
+// Confirmar (o deshacer) el pago de una compra web por transferencia: lo decidís vos al ver el comprobante.
+function botonConfirmarPago(p, grande){
+    if (p.pago !== 'Transferencia') return '';
+    const cls = grande ? 'panel-btn-add' : 'cli-btn';
+    return p.pagoestado === 'Pagado'
+        ? `<button class="${cls} ped-confirmado" onclick="desconfirmarPago('${p.id}')" title="Tocá para deshacer"><i class="fas fa-circle-check"></i> Pago confirmado</button>`
+        : `<button class="${cls} ped-confirmar" onclick="marcarPagoRecibido('${p.id}')"><i class="fas fa-check"></i> Confirmar pago</button>`;
+}
+async function guardarPagoEstado(id, estado){
+    await crmW({ action: 'update', tab: 'Pedidos', id, pagoestado: estado });
+    const p = pedidos.find(x => String(x.id) === String(id)); if (p) p.pagoestado = estado;
+    cacheSet('pedidos', pedidos);
+    if (seccionActual === 'pedidos') filtrarPedidos();
+    if (document.getElementById('modalForm').classList.contains('active') && document.getElementById('modalTitulo').textContent === 'Compra web') verPedidoWeb(id);
+}
 async function marcarPagoRecibido(id){
-    if (!await confirmar('¿Confirmás que la transferencia ya está acreditada?', 'Sí, recibida')) return;
-    try {
-        await crmW({ action: 'update', tab: 'Pedidos', id, pagoestado: 'Pagado' });
-        const p = pedidos.find(x => String(x.id) === String(id)); if (p) p.pagoestado = 'Pagado';
-        cacheSet('pedidos', pedidos); cerrarModal(); filtrarPedidos();
-    } catch (e) { alert('No se pudo guardar. Reintentá.'); }
+    const p = pedidos.find(x => String(x.id) === String(id));
+    const txt = p && !p.comprobante ? 'Todavía no subió el comprobante. ¿Confirmás igual que la transferencia ya está acreditada?' : '¿Confirmás que la transferencia ya está acreditada en tu cuenta?';
+    if (!await confirmar(txt, 'Sí, confirmar pago')) return;
+    try { await guardarPagoEstado(id, 'Pagado'); } catch (e) { alert('No se pudo guardar. Reintentá.'); }
+}
+async function desconfirmarPago(id){
+    if (!await confirmar('¿Volver el pago a "sin confirmar"?', 'Sí, deshacer')) return;
+    const p = pedidos.find(x => String(x.id) === String(id));
+    try { await guardarPagoEstado(id, p && p.comprobante ? 'Comprobante recibido' : 'Esperando transferencia'); } catch (e) { alert('No se pudo guardar. Reintentá.'); }
 }
 async function verComprobante(fileId){
     document.getElementById('modalTitulo').textContent = 'Comprobante';

@@ -835,3 +835,9 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 .hist-comp iframe{width:180px;height:200px;border:0;border-radius:10px;background:#fff}
 .hist-comp .panel-btn-add{padding:7px 12px;font-size:.8rem}
 .hist-comp-cargando{font-size:.75rem;color:var(--gris)}
+/* Confirmar pago de transferencias */
+.ped-confirmar{background:#25D366!important;color:#fff!important;border:none!important;width:auto!important;padding:0 12px!important;gap:6px;font-weight:800;font-size:.8rem}
+.ped-confirmado{background:rgba(37,211,102,.12)!important;color:#25D366!important;border:1px solid rgba(37,211,102,.4)!important;width:auto!important;padding:0 12px!important;gap:6px;font-weight:700;font-size:.8rem}
+.panel-btn-add.ped-confirmar,.panel-btn-add.ped-confirmado{padding:12px 18px!important;font-size:.92rem;display:inline-flex;align-items:center}
+.pw-confirmar{margin-top:10px}
+.rec-confirmar .cli-btn{width:100%!important;height:40px;justify-content:center;display:flex;align-items:center;font-size:.86rem}
