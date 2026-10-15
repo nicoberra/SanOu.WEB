@@ -65,7 +65,7 @@
         $('ckBtnTxt').textContent = st.pago === 'mp' ? 'Ir a pagar con Mercado Pago' : 'Confirmar pedido';
         $('ckLegal').textContent = st.pago === 'mp'
             ? 'Te llevamos al sitio seguro de Mercado Pago. No vemos ni guardamos los datos de tu tarjeta.'
-            : 'Reservamos tu pedido y te pasamos por WhatsApp los datos para transferir.';
+            : 'Reservamos tu pedido y te mostramos el alias y el CVU para transferir.';
     }
 
     // ── Detección de zona por localidad (API pública Georef, como en Suple Market) ──
@@ -219,8 +219,9 @@
         const entrega = d.zona === 'retiro' ? 'Retiro en San Ou (Marcelo Gamboa 6306, Versalles)'
             : `${ZONAS[d.zona] ? 'Envío ' + ZONAS[d.zona].n : 'Envío por Vía Cargo'} — ${d.direccion}, ${d.localidad} (CP ${d.cp})`;
         $('ckGrNum').textContent = r.pedido;
-        $('ckGrDet').innerHTML = `<span>Productos: <b>${esc(det)}</b></span><span>Entrega: <b>${esc(entrega)}</b></span><span>Total a transferir: <b>${fmt(r.total)}</b></span>`;
-        const msg = `Hola San Ou! Hice el pedido ${r.pedido} en la web y quiero pagar con transferencia.\n\n🛠 ${det}\n🚚 ${entrega}\n💰 Total: ${fmt(r.total)}\n👤 ${d.nombre}\n\n¿Me pasan los datos para transferir?`;
+        $('ckGrDet').innerHTML = `<span>Productos: <b>${esc(det)}</b></span><span>Entrega: <b>${esc(entrega)}</b></span>`;
+        $('ckImporte').textContent = fmt(r.total);
+        const msg = `Hola San Ou! Hice el pedido ${r.pedido} en la web y pagué con transferencia. Te mando el comprobante.\n\n🛠 ${det}\n🚚 ${entrega}\n💰 Total: ${fmt(r.total)}\n👤 ${d.nombre}`;
         $('ckGrWa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
         try { localStorage.removeItem(CART_KEY); } catch (e) {}
         $('ckForm').hidden = true; document.querySelector('.ck-titulo').textContent = 'Pedido confirmado';
@@ -254,6 +255,14 @@
         $('ckPart').addEventListener('change', () => { if ($('ckPart').value === 'otro') aplicarZona({ zona: 'interior', lugar: 'Buenos Aires' }); else onPart(); });
         ['ckNombre', 'ckTel', 'ckEmail', 'ckDni', 'ckCp', 'ckDir', 'ckLoc'].forEach(id => $(id).addEventListener('input', () => { if ($(id).closest('.ck-campo').classList.contains('es-error')) marcar(id, ''); }));
         $('ckForm').addEventListener('submit', enviar);
+        // Copiar alias / CVU / importe (como en Suple Market): el botón confirma "Copiado ✓".
+        document.querySelectorAll('.ck-copiar').forEach(b => b.addEventListener('click', async () => {
+            let v = $(b.dataset.copiar).textContent.trim();
+            if (b.dataset.soloNumeros) v = v.replace(/\D/g, '');
+            try { await navigator.clipboard.writeText(v); } catch (e) { const t = document.createElement('textarea'); t.value = v; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (e2) {} t.remove(); }
+            b.textContent = 'Copiado ✓'; b.classList.add('ok');
+            setTimeout(() => { b.textContent = 'Copiar'; b.classList.remove('ok'); }, 1800);
+        }));
         // Volver con "atrás" desde Mercado Pago: reactivar el botón.
         window.addEventListener('pageshow', ev => { if (ev.persisted) { $('ckBtn').disabled = false; pintar(); } });
         pintar();

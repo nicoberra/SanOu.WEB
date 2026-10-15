@@ -146,3 +146,16 @@ a { color: inherit; }
     .ck-panel, .ck-gracias-ico { animation: none; }
     .ck-btn, .ck-opcion { transition: none; }
 }
+
+/* Datos para transferir */
+.ck-banco { width: 100%; text-align: left; background: rgba(37,211,102,.06); border: 1px solid rgba(37,211,102,.3); border-radius: 16px; padding: 14px 16px; display: grid; gap: 4px; }
+.ck-banco h3 { font-size: .9rem; color: var(--green); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.ck-banco-fila { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: .9rem; }
+.ck-banco h3 + .ck-banco-fila { border-top: 0; }
+.ck-banco-fila span { color: var(--gray-light); font-size: .8rem; }
+.ck-banco-fila b { word-break: break-all; font-weight: 700; }
+.ck-banco-fila--total b { color: var(--yellow); font-size: 1.05rem; }
+.ck-copiar { background: var(--black-3); color: var(--yellow); border: 1px solid rgba(255,215,0,.35); border-radius: 9px; padding: 6px 10px; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform .12s var(--ease-out), background-color .2s, color .2s; }
+.ck-copiar:active { transform: scale(.95); }
+.ck-copiar.ok { background: var(--green); color: #fff; border-color: var(--green); }
+@media (prefers-reduced-motion: reduce) { .ck-copiar { transition: none; } }

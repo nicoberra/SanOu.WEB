@@ -59,7 +59,7 @@
                     <label class="ck-opcion">
                         <input type="radio" name="pago" value="transferencia">
                         <span class="ck-opcion-ico ck-opcion-ico--tr"><i class="fas fa-building-columns" aria-hidden="true"></i></span>
-                        <span class="ck-opcion-txt"><b>Transferencia bancaria</b><small>Precio especial. Te pasamos los datos por WhatsApp.</small></span>
+                        <span class="ck-opcion-txt"><b>Transferencia bancaria</b><small>Precio especial. Al confirmar te mostramos el alias y el CVU.</small></span>
                         <span class="ck-opcion-precio ck-opcion-precio--tr" id="ckPrecioTr"></span>
                     </label>
                 </div>
@@ -169,9 +169,16 @@
     <section class="ck-gracias" id="ckGracias" hidden>
         <div class="ck-gracias-ico"><i class="fas fa-check" aria-hidden="true"></i></div>
         <h2>¡Pedido recibido!</h2>
-        <p>Ya tenemos tu pedido <b id="ckGrNum"></b>. Para terminar, hacé la transferencia: te pasamos los datos bancarios por WhatsApp.</p>
+        <p>Ya tenemos tu pedido <b id="ckGrNum"></b>. Para terminar, transferí el total y mandanos el comprobante por WhatsApp.</p>
+        <div class="ck-banco">
+            <h3><i class="fas fa-building-columns" aria-hidden="true"></i> Datos para transferir</h3>
+            <div class="ck-banco-fila"><span>Alias</span><b id="ckAlias">sanou.arg</b><button type="button" class="ck-copiar" data-copiar="ckAlias">Copiar</button></div>
+            <div class="ck-banco-fila"><span>CVU</span><b id="ckCvu">0000003100097800400358</b><button type="button" class="ck-copiar" data-copiar="ckCvu">Copiar</button></div>
+            <div class="ck-banco-fila"><span>Titular</span><b>Nicolas Thiago Berra</b></div>
+            <div class="ck-banco-fila ck-banco-fila--total"><span>Importe</span><b id="ckImporte"></b><button type="button" class="ck-copiar" data-copiar="ckImporte" data-solo-numeros="1">Copiar</button></div>
+        </div>
         <div class="ck-gracias-det" id="ckGrDet"></div>
-        <a class="ck-btn ck-btn--wa ck-btn--grande" id="ckGrWa" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> Pedir datos para transferir</a>
+        <a class="ck-btn ck-btn--wa ck-btn--grande" id="ckGrWa" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> Enviar comprobante por WhatsApp</a>
         <a href="index.html" class="ck-btn ck-btn--sec">Volver a la tienda</a>
     </section>
 </main>
