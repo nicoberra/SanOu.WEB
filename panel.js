@@ -34,6 +34,7 @@ function desbloquear() {
 }
 function cerrarSesionPanel() {
     try { localStorage.removeItem('sanou_panel_ok'); localStorage.removeItem('sanou_auth'); } catch (e) {}
+    try { if ('caches' in window) caches.delete('sanou-push'); } catch (e) {}
     location.reload();
 }
 // Actualiza el CRM sin cerrar/abrir la app. Borra el cache local de datos para forzar traer
@@ -2102,8 +2103,13 @@ async function pintarBotonNoti(){
     b.classList.toggle('on', on);
     b.innerHTML = on ? '<i class="fas fa-bell"></i> Notificaciones activadas' : '<i class="far fa-bell"></i> Activar notificaciones';
 }
+// La app guarda SOLO un permiso de "leer avisos" (no la clave del CRM) para mostrar el texto de la notificación.
 async function guardarAuthParaAvisos(){
-    try { const a = localStorage.getItem('sanou_auth') || ''; if (a && 'caches' in window) { const c = await caches.open('sanou-push'); await c.put('/__push_auth', new Response(a)); } } catch (e) {}
+    try {
+        if (!('caches' in window)) return;
+        const r = await crm({ action: 'push_token', tab: 'Pedidos' });
+        if (r && r.ok && r.pt) { const c = await caches.open('sanou-push'); await c.put('/__push_pt', new Response(r.pt)); }
+    } catch (e) {}
 }
 function claveB64(b64){ const s = (b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/'); const r = atob(s); return Uint8Array.from(r, c => c.charCodeAt(0)); }
 async function activarNotificaciones(){

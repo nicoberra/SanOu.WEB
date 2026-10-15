@@ -218,7 +218,7 @@
         const det = cart.map(i => `${i.qty}x ${i.name}`).join(', ');
         const entrega = d.zona === 'retiro' ? 'Retiro en el depósito (Marcelo Gamboa 6306, Versalles)'
             : `${ZONAS[d.zona] ? 'Envío ' + ZONAS[d.zona].n : 'Envío por Vía Cargo'} — ${d.direccion}, ${d.localidad} (CP ${d.cp})`;
-        st.pedido = r.pedido;
+        st.pedido = r.pedido; st.ut = r.ut;
         $('ckGrNum').textContent = r.pedido;
         $('ckGrDet').innerHTML = `<span>Productos: <b>${esc(det)}</b></span><span>Entrega: <b>${esc(entrega)}</b></span>`;
         $('ckImporte').textContent = fmt(r.total);
@@ -254,7 +254,7 @@
         lbl.classList.add('es-cargando'); txt.textContent = 'Subiendo…'; msg.textContent = '';
         try {
             const data = await leerArchivo(file);
-            const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'subir_comprobante', pedido: st.pedido, data }) });
+            const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'subir_comprobante', pedido: st.pedido, ut: st.ut, data }) });
             const j = await res.json();
             if (!j || !j.ok) throw new Error((j && j.error) || 'No se pudo subir.');
             lbl.classList.remove('es-cargando'); lbl.classList.add('es-ok');

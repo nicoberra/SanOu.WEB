@@ -56,18 +56,18 @@ self.addEventListener('fetch', (e) => {
 });
 
 // ── Notificaciones de compras web (CRM instalado como app) ──
-// El aviso llega sin contenido; acá se pide el texto al backend con la clave del panel
-// (guardada por el CRM al activar las notificaciones). Si no se puede, se muestra un aviso genérico.
+// El aviso llega sin contenido; acá se pide el texto al backend con un permiso de solo lectura de avisos
+// (guardada por el CRM al activar las notificaciones).
 const API = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
 self.addEventListener('push', (e) => {
   e.waitUntil((async () => {
     let titulo = '🛒 Nueva compra en la web', cuerpo = 'Tocá para ver el pedido en el CRM.';
     try {
       const c = await caches.open('sanou-push');
-      const r = await c.match('/__push_auth');
-      const auth = r ? await r.text() : '';
-      if (auth) {
-        const res = await fetch(API + '?action=push_ultimos&tab=Pedidos&auth=' + encodeURIComponent(auth) + '&_=' + Date.now());
+      const r = await c.match('/__push_pt');
+      const pt = r ? await r.text() : '';
+      if (pt) {
+        const res = await fetch(API + '?action=push_ultimos&tab=Pedidos&pt=' + encodeURIComponent(pt) + '&_=' + Date.now());
         const j = await res.json();
         const a = j && j.ok && j.avisos && j.avisos[0];
         if (a && Date.now() - a.ts < 15 * 60 * 1000) { titulo = a.t; cuerpo = a.b; }

@@ -288,8 +288,12 @@ test('comprobante: se guarda en Drive, queda en el pedido y el CRM lo puede ver 
   const env = conProductos();
   const r = env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro' })).json;
   const foto = 'data:image/jpeg;base64,' + Buffer.from('jpegfalso').toString('base64');
-  const up = env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, data: foto }).json;
+  verdad(/^[0-9a-f]{32}$/.test(r.ut), 'el pedido devuelve su clave secreta');
+  igual(env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, data: foto }).json.ok, false, 'sin la clave del pedido no se acepta');
+  igual(env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, ut: 'f'.repeat(32), data: foto }).json.ok, false, 'clave equivocada');
+  const up = env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, ut: r.ut, data: foto }).json;
   igual(up.ok, true);
+  verdad(/Ya recibimos/.test(env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, ut: r.ut, data: foto }).json.error), 'no pisa un comprobante ya subido');
   const sh = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos'), h = sh.rows[0], f = sh.rows[1];
   igual(f[h.indexOf('Estado del pago')], 'Comprobante recibido');
   const idArch = f[h.indexOf('Comprobante')]; verdad(!!idArch);
@@ -301,7 +305,7 @@ test('comprobante: pedido inexistente o archivo que no es foto/PDF se rechaza', 
   const env = conProductos();
   const r = env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro' })).json;
   igual(env.llamar({}, { action: 'subir_comprobante', pedido: 'ctrnoexiste1', data: 'data:image/jpeg;base64,AAAA' }).json.ok, false);
-  igual(env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, data: 'data:text/html;base64,AAAA' }).json.ok, false);
+  igual(env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, ut: r.ut, data: 'data:text/html;base64,AAAA' }).json.ok, false);
 });
 
 test('detalle del pago de Mercado Pago: tarjeta, cuotas y lo que te queda', () => {
@@ -340,6 +344,12 @@ test('push: una compra web avisa a los dispositivos suscriptos', () => {
   igual(enviados.length, 1); verdad(/^vapid t=.+, k=/.test(enviados[0].headers.Authorization));
   const av = env.llamar({ action: 'push_ultimos', tab: 'Pedidos', auth: env.AUTH }).json.avisos;
   verdad(/transferencia/i.test(av[0].t));
+  // El permiso de avisos (lo que guarda la app) solo lee avisos: no abre el resto del CRM.
+  const pt = env.llamar({ action: 'push_token', tab: 'Pedidos', auth: env.AUTH }).json.pt;
+  igual(env.llamar({ action: 'push_ultimos', tab: 'Pedidos', pt }).json.ok, true);
+  igual(env.llamar({ action: 'push_ultimos', tab: 'Pedidos', pt: 'otro' }).json.error, 'No autorizado');
+  igual(env.llamar({ action: 'list', tab: 'Pedidos', pt }).json.error, 'No autorizado');
+  igual(env.llamar({ action: 'push_token', tab: 'Pedidos' }).json.error, 'No autorizado');
 });
 
 console.log(`\n${ok} OK, ${fallas} con error`);
