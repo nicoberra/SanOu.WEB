@@ -1416,8 +1416,7 @@ function openCart() {
     document.getElementById('cartSidebar').classList.add('active');
     document.getElementById('cartOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
-    // Klaviyo — pedir email al abrir carrito si hay productos
-    if (cart.length > 0) setTimeout(() => { if (!klUserEmail) abrirKlModal(); }, 800);
+    // (El email se pide al agregar un producto; al abrir el carrito ya no, para no tapar "Pagar con Mercado Pago".)
 }
 
 function closeCart() {
