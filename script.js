@@ -1679,9 +1679,13 @@ function checkoutWhatsApp() {
 
 // ─── WHATSAPP: COMPRA RÁPIDA ─────────────────────────────────────
 function quickBuy(id) {
-    // Va directo a WhatsApp (sin frenar con captura de email),
-    // así el redirect funciona en el celular sin que lo bloquee el navegador.
-    _doQuickBuy(id);
+    // Compra rápida = pagar ya con Mercado Pago: suma el producto al carrito (si no estaba) y abre el pago.
+    // Sin precio cargado no se puede cobrar online → sigue yendo a WhatsApp, como antes.
+    const p = products.find(x => x.id === id);
+    if (!p || !(p.price > 0)) { _doQuickBuy(id); return; }
+    if (typeof closeModal === 'function') { try { closeModal(); } catch (e) {} }
+    if (!cart.some(i => i.id === id)) addToCart(id);
+    abrirPagoMP();
 }
 
 function _doQuickBuy(id) {
