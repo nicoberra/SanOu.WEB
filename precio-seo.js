@@ -32,7 +32,8 @@
             var f = parseLine(rows[i]);
             var nombre = (f[0] || '').trim().replace(/^"|"$/g, '').toLowerCase();
             if (nombre !== sheet) continue;
-            var precio = num(f[1]);
+            var transfer = num(f[1]);
+            var precio = (window.sanouPrecioLista ? window.sanouPrecioLista(transfer) : transfer);   // precio normal (+10%)
             var old = num(f[3]);
             var stockRaw = (f[2] || '').trim().toLowerCase();
             var sinStock = (stockRaw === 'false' || stockRaw === 'no');
@@ -40,6 +41,7 @@
                 el.innerHTML = '<span class="seo-precio-lbl">Precio</span>'
                     + (old > precio ? '<span class="seo-precio-old">' + fmt(old) + '</span>' : '')
                     + '<span class="seo-precio-now">' + fmt(precio) + '</span>'
+                    + (transfer > 0 && transfer < precio ? '<span class="seo-precio-transfer">Con transferencia <b>' + fmt(transfer) + '</b> · ahorrás ' + fmt(precio - transfer) + '</span>' : '')
                     + (sinStock ? '<span class="seo-precio-stock out">Sin stock · reingreso en ~90 días</span>'
                                 : '<span class="seo-precio-stock ok">En stock · envío a todo el país</span>');
                 el.classList.add('cargado');

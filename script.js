@@ -655,6 +655,7 @@ function syncCartPrices() {
         const prod = products.find(p => p.id === item.id);
         if (!prod) return;
         if (item.price !== prod.price) { item.price = prod.price; changed = true; }
+        item.precioTransfer = prod.precioTransfer;
         item.oldPrice = prod.oldPrice;
         item.inStock = prod.inStock;
     });
@@ -676,6 +677,15 @@ function specsRows(specs) {
         </div>`).join('');
 }
 
+// Precio con transferencia (descuento sobre el precio normal). Se muestra el ahorro exacto en pesos.
+function transferHTML(p) {
+    const t = p.precioTransfer;
+    if (!(t > 0) || !(p.price > t)) return '';
+    return `<div class="price-transfer"><i class="fas fa-building-columns" aria-hidden="true"></i><span>Con transferencia</span> <b>${fmt(t)}</b> <em>Ahorrás ${fmt(p.price - t)}</em></div>`;
+}
+function totalTransfer(lista) {
+    return lista.reduce((s, i) => s + ((i.precioTransfer > 0 ? i.precioTransfer : i.price) || 0) * (i.qty || 1), 0);
+}
 function priceHTML(p) {
     if (!(p.price > 0)) return '';
     if (p.oldPrice > 0) {
@@ -685,12 +695,12 @@ function priceHTML(p) {
                        <span class="price-old">${fmt(p.oldPrice)}</span>
                        <span class="price-amount">${fmt(p.price)}</span>
                    </div>
-               </div>`;
+               </div>${transferHTML(p)}`;
     }
     return `<div class="product-price-bar">
                <span class="price-label">Precio</span>
                <div class="price-values"><span class="price-amount">${fmt(p.price)}</span></div>
-           </div>`;
+           </div>${transferHTML(p)}`;
 }
 
 function getImgs(p) {
@@ -1020,7 +1030,7 @@ function openModal(id) {
                 <p class="modal-desc">${p.desc}</p>
                 ${p.instagram ? `<a class="btn-ig-video" href="${p.instagram}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Ver video en Instagram</a>` : ''}
                 <div class="specs-table modal-specs">${specsRows(p.allSpecs || p.specs)}</div>
-                ${p.price > 0 ? `<div class="product-price-bar"><span class="price-label">Precio</span><div class="price-values">${p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="price-amount">${fmt(p.price)}</span></div></div>` : '<div class="modal-consultar">Consultar precio por WhatsApp</div>'}
+                ${p.price > 0 ? `<div class="product-price-bar"><span class="price-label">Precio</span><div class="price-values">${p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="price-amount">${fmt(p.price)}</span></div></div>${transferHTML(p)}` : '<div class="modal-consultar">Consultar precio por WhatsApp</div>'}
                 ${stockChipHTML(p)}
                 <div class="modal-buttons">
                     <button class="btn-add-cart" onclick="addToCart(${p.id}); closeModal()" ${p.inStock === false ? 'disabled' : ''}>
@@ -1367,6 +1377,12 @@ function updateCartUI() {
 
     if (totalRow) totalRow.style.display = 'flex';
     totalEl.textContent = fmt(total);
+    const trEl = document.getElementById('cartTotalTransfer');
+    if (trEl) {
+        const tt = totalTransfer(cart);
+        trEl.innerHTML = tt < total ? `<span><i class="fas fa-building-columns" aria-hidden="true"></i> Con transferencia</span><b>${fmt(tt)}</b>` : '';
+        trEl.style.display = tt < total ? 'flex' : 'none';
+    }
 
     itemsEl.innerHTML = cart.map(item => {
         const prod = products.find(p => p.id === item.id);
@@ -1574,7 +1590,8 @@ function emitirPresupuesto({ nombre, telefono, email, empresa, cuit }) {
         fechaEmision: _ddmmaaaa(hoy),
         fechaVence: _ddmmaaaa(vence),
         cliente: { razon: empresa ? (nombre + ' — ' + empresa) : nombre, cuit, condIva: 'Consumidor Final', contacto, dom: '' },
-        items, envio: 0, obs: ''
+        items, envio: 0, obs: '',
+        totalTransferencia: totalTransfer(cart.map(p => { const prod = products.find(x => x.id === p.id) || p; return { price: prod.price, precioTransfer: prod.precioTransfer, qty: p.qty }; }))
     };
 
     // recordar identidad para "Mi cuenta"
@@ -1641,7 +1658,10 @@ function checkoutWhatsApp() {
         msg += `  Precio unitario: ${fmt(item.price)}\n`;
         msg += `  Subtotal: ${fmt(item.price * item.qty)}\n\n`;
     });
-    msg += `💰 *Total estimado: ${fmt(total)}*\n\n`;
+    msg += `💰 *Total estimado: ${fmt(total)}*\n`;
+    const totalTr = totalTransfer(cart);
+    if (totalTr < total) msg += `🏦 *Con transferencia: ${fmt(totalTr)}* (ahorrás ${fmt(total - totalTr)})\n`;
+    msg += `\n`;
     msg += '¿Pueden confirmar disponibilidad, stock y formas de pago? ¡Muchas gracias!';
 
     // Guardar en historial
@@ -1769,9 +1789,13 @@ async function loadPricesFromSheet() {
 
             const priceVal    = precio      ? parseInt(precio.replace(/[$\.,]/g, ''))      : 0;
             const oldPriceVal = oldPriceRaw ? parseInt(oldPriceRaw.replace(/[$\.,]/g, '')) : 0;
-            if (priceVal > 0 && oldPriceVal > 0)      { product.price = priceVal;    product.oldPrice = oldPriceVal; }
-            else if (priceVal > 0)                    { product.price = priceVal;    product.oldPrice = 0; }
-            else if (oldPriceVal > 0)                 { product.price = oldPriceVal; product.oldPrice = 0; }
+            // Planilla = precio con transferencia. Precio normal (web / Mercado Pago) = +10%, a la centena.
+            const lista = v => (typeof window.sanouPrecioLista === 'function') ? window.sanouPrecioLista(v) : v;
+            if (priceVal > 0) {
+                product.precioTransfer = priceVal;
+                product.price = lista(priceVal);
+                product.oldPrice = oldPriceVal > product.price ? oldPriceVal : 0;   // "antes" solo si es mayor
+            } else if (oldPriceVal > 0) { product.price = oldPriceVal; product.precioTransfer = 0; product.oldPrice = 0; }
 
             if (stockRaw) product.inStock = (stockRaw === 'true' || stockRaw === 'si');
             product.featured = (destRaw === 'true' || destRaw === 'si');

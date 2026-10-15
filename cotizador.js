@@ -502,6 +502,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderItems();
     // Traer precios actualizados del Google Sheet
     try { await loadPricesFromSheet(); } catch (e) { console.warn('No se pudieron traer precios del Sheet', e); }
+    usarPrecioTransferencia();
     renderSelector();
     renderItems();
     avisoPrecios();
@@ -515,9 +516,12 @@ function avisoPrecios() {
         ? 'Precios actualizados.'
         : '<span class="aviso-error">No se pudieron traer los precios.</span> <button type="button" class="aviso-reintentar" onclick="reintentarPrecios()">Reintentar</button>';
 }
+// El cotizador interno cotiza con el precio de la planilla (con transferencia), como siempre;
+// la tienda muestra además el precio normal (+10%).
+function usarPrecioTransferencia() { products.forEach(p => { if (p.precioTransfer > 0) p.price = p.precioTransfer; }); }
 async function reintentarPrecios() {
     const aviso = document.getElementById('avisoPrecios');
     if (aviso) aviso.innerHTML = '<span class="aviso-skel" aria-label="Cargando precios"></span>';
     try { await loadPricesFromSheet(); } catch (e) {}
-    renderSelector(); renderItems(); avisoPrecios();
+    usarPrecioTransferencia(); renderSelector(); renderItems(); avisoPrecios();
 }

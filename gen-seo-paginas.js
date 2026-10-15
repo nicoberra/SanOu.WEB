@@ -132,7 +132,8 @@ async function cargarPrecios() {
       const nombre = (f[0] || '').trim().toLowerCase();
       const precio = parseInt(String(f[1] || '').replace(/[^\d]/g, ''), 10) || 0;
       const stock = (f[2] || '').trim().toLowerCase();
-      if (nombre) PRECIOS[nombre] = { precio, sinStock: stock === 'false' || stock === 'no' };
+      // Planilla = precio con transferencia; el price para Google es el precio normal (+10%, a la centena).
+      if (nombre) PRECIOS[nombre] = { precio: precio > 0 ? Math.round(precio * 1.10 / 100) * 100 : 0, sinStock: stock === 'false' || stock === 'no' };
     });
   } catch (e) { console.warn('Sin precios del Sheet (se generan sin price):', e.message); }
 }
