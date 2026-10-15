@@ -381,3 +381,9 @@ body.exportando .cot-tabla td.no-print, body.exportando .cot-tabla th.no-print, 
 /* Cantidad: en el PDF se ve como texto, no como casilla */
 body.exportando .cot-tabla input{border:0 !important;background:transparent !important;box-shadow:none !important;padding:0 !important;text-align:center;width:100% !important;-webkit-appearance:none;appearance:none;-moz-appearance:textfield;color:#111 !important;font:inherit}
 body.exportando .cot-tabla input::-webkit-outer-spin-button, body.exportando .cot-tabla input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
+/* P. final c/IVA (2026-10): en pantalla se edita; en el PDF sale como texto (antes la columna no aparecía) */
+.solo-pdf{display:none}
+body.exportando .solo-pdf{display:inline !important;white-space:nowrap}
+@media print{.solo-pdf{display:inline !important;white-space:nowrap}}
+body.exportando .cot-tabla .col-precio, body.exportando .cot-tabla th.col-precio{width:96px}

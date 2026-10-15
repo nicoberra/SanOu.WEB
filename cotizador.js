@@ -262,7 +262,7 @@ function renderItems() {
                     <span class="cot-item-desc">${(p.specs || []).map(s => s.l + ': ' + s.v).join(' · ')}</span>
                 </td>
                 <td class="col-cant" data-label="Cantidad"><input type="number" min="1" inputmode="numeric" value="${it.cantidad}" onchange="cambiarCantidad(${it.id}, this.value)"></td>
-                <td class="col-precio no-print" data-label="Precio final c/IVA"><input type="text" inputmode="decimal" value="${it.precioFinal.toFixed(2)}" onchange="cambiarPrecio(${it.id}, this.value)" title="Precio final con IVA"></td>
+                <td class="col-precio" data-label="Precio final c/IVA"><span class="solo-pdf">${money(it.precioFinal)}</span><input class="no-print" type="text" inputmode="decimal" value="${it.precioFinal.toFixed(2)}" onchange="cambiarPrecio(${it.id}, this.value)" title="Precio final con IVA"></td>
                 <td class="col-unit" data-label="P. unitario neto">${money(netoUnit)}</td>
                 <td class="col-sub" data-label="Subtotal">${money(subtotal)}
                     <button class="cot-quitar no-print" onclick="quitarItem(${it.id})" title="Quitar">&times;</button>
@@ -450,8 +450,16 @@ async function descargarPDF() {
         marco.appendChild(copia);
         document.body.appendChild(marco);
         window.scrollTo(0, 0);
+        // Medir recién con las tipografías cargadas: si no, la hoja crecía después de medir y se perdía la última línea del pie.
+        if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch (e) {} }
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        const W = copia.offsetWidth, H = Math.ceil(Math.max(copia.scrollHeight, copia.getBoundingClientRect().height)) + 8;   // +8: que no se corte la última línea del pie
+        const W = copia.offsetWidth; let H = Math.ceil(Math.max(copia.scrollHeight, copia.getBoundingClientRect().height)) + 8;   // +8: que no se corte la última línea del pie
+        // Si el contenido real (hasta el pie) entra en una hoja A4, no pasar del alto de la hoja:
+        // unos píxeles de margen de más generaban una segunda página en blanco.
+        const altoHoja = Math.floor(W * (297 - 16) / (210 - 16));
+        const pieEl = copia.querySelector('.cot-pie');
+        const finContenido = pieEl ? Math.ceil(pieEl.getBoundingClientRect().bottom - copia.getBoundingClientRect().top) + 4 : H;
+        if (H > altoHoja && finContenido <= altoHoja) H = altoHoja;
         await html2pdf().set({
             margin: [8, 8, 8, 8],
             filename: nombreArch,
