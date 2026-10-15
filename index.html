@@ -189,9 +189,9 @@
                 <button class="btn-vaciar" onclick="clearCart()">Vaciar</button>
                 <button class="btn-enviar-compra" onclick="pedirPresupuesto()">Pedir presupuesto</button>
             </div>
-            <!-- Pago online con Mercado Pago: queda OCULTO hasta cargar MP_ACCESS_TOKEN en el Apps Script.
-                 Para activarlo: sacar el atributo hidden de este botón. -->
-            <button class="btn-mp-pagar" id="btnMpPagar" onclick="abrirPagoMP()" data-mp-checkout-cta="checkout-pro" hidden><i class="fas fa-lock"></i> Pagar con Mercado Pago</button>
+            <!-- Pago online con Mercado Pago (Checkout Pro). Activo desde 2026-10-15 (token en Propiedades del script).
+                 Para ocultarlo de nuevo: agregar el atributo hidden a este botón. -->
+            <button class="btn-mp-pagar" id="btnMpPagar" onclick="abrirPagoMP()" data-mp-checkout-cta="checkout-pro"><i class="fas fa-lock"></i> Pagar con Mercado Pago</button>
             <button class="btn-wa-secundario" onclick="checkoutWhatsApp()"><i class="fab fa-whatsapp"></i> Consultar por WhatsApp</button>
         </div>
     </aside>
