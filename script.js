@@ -191,7 +191,7 @@ function guardarClienteEnSheet(datos) {
             notas:    datos.origen   || 'registro web',
             web:      _hp()
         });
-        fetch(CLIENTES_URL + '?' + params.toString(), { mode: 'no-cors' });
+        fetch(CLIENTES_URL + '?' + params.toString(), { mode: 'no-cors' }).catch(() => {});   // sin conexión: no frenar ni tirar error
     } catch (e) { /* silencioso: no frenar al cliente si falla la red */ }
 }
 
@@ -413,6 +413,8 @@ function cerrarSesionCliente() {
 
 function abrirKlModal() {
     if (klUserEmail || klModalMostrado) return;
+    // No tapar un formulario que la persona ya abrió (pagar con Mercado Pago o pedir presupuesto).
+    if (document.querySelector('#mpModal.active, #ppModal.active')) return;
     klModalMostrado = true;
     cerrarIosNotif();
     document.getElementById('klOverlay').classList.add('active');
@@ -1412,6 +1414,7 @@ function closeCart() {
 // ─── PEDIR PRESUPUESTO (web → PDF + CRM) ─────────────────────────
 function pedirPresupuesto() {
     if (cart.length === 0) { alert('Agregá al menos un producto al carrito.'); return; }
+    if (typeof cerrarKlModal === 'function') cerrarKlModal();   // que la ventana del email no quede encima del formulario
 
     // Si ya está logueado / tiene sus datos guardados, no le volvemos a pedir nada:
     // generamos el presupuesto directo.
@@ -1454,6 +1457,7 @@ function mpItemsCarrito() {
 }
 function abrirPagoMP() {
     if (cart.length === 0) { alert('Agregá al menos un producto al carrito.'); return; }
+    if (typeof cerrarKlModal === 'function') cerrarKlModal();   // que la ventana del email no quede encima del pago
     const items = mpItemsCarrito();
     const sinPrecio = items.filter(i => !(i.precio > 0)).map(i => i.nombre);
     if (sinPrecio.length) {
