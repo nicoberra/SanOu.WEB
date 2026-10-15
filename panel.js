@@ -871,10 +871,16 @@ async function verCliente(id) {
             <span class="hist-tipo hist-cot"><i class="fas fa-file-invoice-dollar"></i></span>
             <div><div class="hist-det">${esc(x.detalle) || 'Cotización'}</div><div class="hist-sub">${montoTxt(x.monto)}${x.fecha ? ' · ' + fechaTxt(x.fecha) : ''}</div></div>
             <span class="hist-topedido"><i class="fas fa-arrow-right"></i> Pedido</span></div>`).join('') +
-        peds.map(p => `<div class="hist-item hist-click" onclick="cerrarModal(); setTimeout(()=>abrirFormPedido('${p.id}'),200)">
+        peds.map(p => esPedWeb(p) ? `<div class="hist-item hist-click hist-web" onclick="if(!event.target.closest('[data-comp]'))verPedidoWeb('${p.id}')">
+            <span class="hist-tipo hist-ped"><i class="fas fa-globe"></i></span>
+            <div><div class="hist-det">${esc(p.detalle) || 'Compra web'}</div><div class="hist-sub">Compra web · ${fmtMoney(montoVenta(p))}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''} · ${esc(p.pago || '')}${p.pagoestado ? ' (' + esc(p.pagoestado) + ')' : ''}</div>
+            ${p.comprobante ? `<div class="hist-comp" data-comp="${esc(p.comprobante)}"><span class="hist-comp-cargando">Cargando comprobante…</span></div>` : ''}</div>
+            ${badgeEstado(estPed(p.estado))}</div>`
+          : `<div class="hist-item hist-click" onclick="cerrarModal(); setTimeout(()=>abrirFormPedido('${p.id}'),200)">
             <span class="hist-tipo hist-ped"><i class="fas fa-box"></i></span>
             <div><div class="hist-det">${esc(p.detalle) || 'Pedido'}</div><div class="hist-sub">${montoTxt(p.monto)}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''}</div></div>
             ${badgeEstado(estPed(p.estado))}</div>`).join('');
+    cargarComprobantesMini(hist);
 }
 
 // Pasa una cotización a un pedido nuevo (precarga usuario, teléfono, productos y monto).
@@ -2056,6 +2062,8 @@ function verPedidoWeb(id){
             </div>
             <h4><i class="fas fa-file-invoice"></i> Facturación</h4>
             <div class="pw-datos">${p.factura ? `<span class="pw-ancho pw-fa"><b>Pidió factura A</b>${esc(p.factura.replace(/^Factura A · /, ''))}</span>` : `<span class="pw-ancho"><b>Factura</b>Consumidor final</span>`}</div>
+            ${p.pago === 'Transferencia' ? `<h4><i class="fas fa-receipt"></i> Comprobante de transferencia</h4>
+            ${p.comprobante ? `<div class="pw-comp-mini" data-comp="${esc(p.comprobante)}">${skel('chico')}</div>` : `<div class="pw-nota pw-sin-comp"><i class="fas fa-hourglass-half"></i> Todavía no subió el comprobante.</div>`}` : ''}
             <h4><i class="fas fa-wallet"></i> Pago</h4>
             <div class="pw-datos">
                 <span><b>Medio</b>${esc(p.pago || '-')}</span>
@@ -2064,13 +2072,36 @@ function verPedidoWeb(id){
                 ${p.mpid ? `<span><b>Operación MP</b>#${esc(p.mpid)}</span>` : ''}
             </div>
             <div class="pw-acciones">
-                ${p.comprobante ? `<button class="panel-btn-add" onclick="verComprobante('${p.comprobante}')"><i class="fas fa-receipt"></i> Ver comprobante</button>`
-                  : (p.pago === 'Transferencia' ? `<span class="pw-nota"><i class="fas fa-hourglass-half"></i> Todavía no subió el comprobante.</span>` : '')}
+                ${p.comprobante ? `<button class="panel-btn-add" onclick="verComprobante('${p.comprobante}')"><i class="fas fa-expand"></i> Ver comprobante en grande</button>` : ''}
                 ${p.pago === 'Transferencia' && p.pagoestado !== 'Pagado' ? `<button class="panel-btn-add pw-ok" onclick="marcarPagoRecibido('${p.id}')"><i class="fas fa-check"></i> Transferencia recibida</button>` : ''}
                 ${wa ? `<a class="panel-btn-add pw-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Escribirle</a>` : ''}
             </div>
         </div>`;
     abrirModal();
+    cargarComprobantesMini(document.getElementById('modalBody'));
+}
+// Comprobantes: se bajan una vez y quedan en memoria mientras el CRM está abierto.
+const _comps = new Map();
+async function bajarComprobante(fileId){
+    if (_comps.has(fileId)) return _comps.get(fileId);
+    const r = await crm({ action: 'comprobante_ver', tab: 'Pedidos', id: fileId });
+    if (!r || !r.ok) throw new Error((r && r.error) || 'error');
+    const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const c = { url: URL.createObjectURL(new Blob([u8], { type: r.mime })), mime: r.mime, nombre: r.nombre };
+    _comps.set(fileId, c); return c;
+}
+// Muestra la foto (o el PDF) del comprobante dentro de cada [data-comp] del contenedor.
+function cargarComprobantesMini(cont){
+    if (!cont) return;
+    cont.querySelectorAll('[data-comp]').forEach(async el => {
+        const id = el.dataset.comp;
+        try {
+            const c = await bajarComprobante(id);
+            el.innerHTML = /^image\//.test(c.mime)
+                ? `<img src="${c.url}" alt="Comprobante de transferencia" onclick="verComprobante('${id}')">`
+                : `<iframe src="${c.url}" title="Comprobante"></iframe><button class="panel-btn-add" onclick="verComprobante('${id}')"><i class="fas fa-expand"></i> Abrir PDF</button>`;
+        } catch (e) { el.innerHTML = `<button class="panel-btn-add" onclick="verComprobante('${id}')"><i class="fas fa-receipt"></i> Ver comprobante</button>`; }
+    });
 }
 async function marcarPagoRecibido(id){
     if (!await confirmar('¿Confirmás que la transferencia ya está acreditada?', 'Sí, recibida')) return;
@@ -2085,12 +2116,9 @@ async function verComprobante(fileId){
     document.getElementById('modalBody').innerHTML = `<div class="pw-comp">${skel('chico')}</div>`;
     abrirModal();
     try {
-        const r = await crm({ action: 'comprobante_ver', tab: 'Pedidos', id: fileId });
-        if (!r || !r.ok) throw new Error((r && r.error) || 'error');
-        const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-        const url = URL.createObjectURL(new Blob([u8], { type: r.mime }));
-        const cuerpo = /^image\//.test(r.mime) ? `<img src="${url}" alt="Comprobante de transferencia">` : `<iframe src="${url}" title="Comprobante"></iframe>`;
-        document.getElementById('modalBody').innerHTML = `<div class="pw-comp">${cuerpo}<a class="panel-btn-add" href="${url}" download="${esc(r.nombre)}"><i class="fas fa-download"></i> Descargar</a></div>`;
+        const c = await bajarComprobante(fileId), url = c.url;
+        const cuerpo = /^image\//.test(c.mime) ? `<img src="${url}" alt="Comprobante de transferencia">` : `<iframe src="${url}" title="Comprobante"></iframe>`;
+        document.getElementById('modalBody').innerHTML = `<div class="pw-comp">${cuerpo}<a class="panel-btn-add" href="${url}" download="${esc(c.nombre)}"><i class="fas fa-download"></i> Descargar</a></div>`;
     } catch (e) { document.getElementById('modalBody').innerHTML = errorCarga('No se pudo abrir el comprobante.', `verComprobante('${fileId}')`); }
 }
 

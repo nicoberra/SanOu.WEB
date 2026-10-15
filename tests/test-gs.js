@@ -367,5 +367,18 @@ test('factura A: CUIT inválido se rechaza; con datos válidos queda en el pedid
   igual(f[h.indexOf('Facturación')], 'Factura A · Talleres SRL · CUIT 30-71077182-7 · Responsable Inscripto · Calle 1, CABA');
 });
 
+test('compra web: el comprador queda en Usuarios, vinculado al pedido, sin duplicarse', () => {
+  const env = conProductos();
+  env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro', cid: 'uno1' }));
+  env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro', cid: 'dos2', fa: '1', razon: 'Ana Pérez SRL', cuit: '30-71077182-7', condiva: 'Responsable Inscripto', domfiscal: 'Calle 1, CABA' }));
+  const cli = env.planillas[env.ctx.CRM_ID].getSheetByName('Clientes'), hc = cli.rows[0];
+  igual(cli.rows.length - 1, 1, 'un solo usuario aunque compre dos veces');
+  const fila = cli.rows[1];
+  igual(fila[hc.indexOf('Email')], 'ana@ejemplo.com'); igual(fila[hc.indexOf('CUIT')], '30-71077182-7'); igual(fila[hc.indexOf('Origen')], 'web');
+  const ped = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos'), hp = ped.rows[0];
+  igual(String(ped.rows[1][hp.indexOf('ClienteID')]), String(fila[0]));
+  igual(String(ped.rows[2][hp.indexOf('ClienteID')]), String(fila[0]));
+});
+
 console.log(`\n${ok} OK, ${fallas} con error`);
 process.exit(fallas ? 1 : 0);

@@ -825,3 +825,13 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 @media (prefers-reduced-motion:reduce){.ped-nuevo,.dash-web.nuevo .dash-web-ic em{animation:none}.dash-web{transition:none}}
 .pg-fa{background:rgba(255,212,0,.12);color:var(--am);border:1px solid rgba(255,212,0,.35)}
 .pw-fa{border:1px solid rgba(255,212,0,.35)}
+/* Comprobante a la vista (ficha de compra web y ficha del cliente) */
+.pw-comp-mini{background:var(--neg3);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:8px}
+.pw-comp-mini img{display:block;width:100%;max-height:420px;object-fit:contain;border-radius:10px;background:#fff;cursor:zoom-in}
+.pw-comp-mini iframe{width:100%;height:420px;border:0;border-radius:10px;background:#fff}
+.pw-sin-comp{background:rgba(255,212,0,.08);border:1px dashed rgba(255,212,0,.35);border-radius:12px;padding:12px}
+.hist-comp{margin-top:8px}
+.hist-comp img{display:block;max-width:180px;max-height:180px;object-fit:contain;border-radius:10px;background:#fff;cursor:zoom-in;border:1px solid var(--linea)}
+.hist-comp iframe{width:180px;height:200px;border:0;border-radius:10px;background:#fff}
+.hist-comp .panel-btn-add{padding:7px 12px;font-size:.8rem}
+.hist-comp-cargando{font-size:.75rem;color:var(--gris)}
