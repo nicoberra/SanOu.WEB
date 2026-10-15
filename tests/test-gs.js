@@ -345,11 +345,16 @@ test('push: una compra web avisa a los dispositivos suscriptos', () => {
   const av = env.llamar({ action: 'push_ultimos', tab: 'Pedidos', auth: env.AUTH }).json.avisos;
   verdad(/transferencia/i.test(av[0].t));
   // El permiso de avisos (lo que guarda la app) solo lee avisos: no abre el resto del CRM.
-  const pt = env.llamar({ action: 'push_token', tab: 'Pedidos', auth: env.AUTH }).json.pt;
+  const EP = 'https://fcm.googleapis.com/fcm/send/abc';
+  const pt = env.llamar({ action: 'push_token', tab: 'Pedidos', auth: env.AUTH, endpoint: EP }).json.pt;
+  verdad(/^[0-9a-f]{64}$/.test(pt), 'permiso por dispositivo');
   igual(env.llamar({ action: 'push_ultimos', tab: 'Pedidos', pt }).json.ok, true);
   igual(env.llamar({ action: 'push_ultimos', tab: 'Pedidos', pt: 'otro' }).json.error, 'No autorizado');
   igual(env.llamar({ action: 'list', tab: 'Pedidos', pt }).json.error, 'No autorizado');
-  igual(env.llamar({ action: 'push_token', tab: 'Pedidos' }).json.error, 'No autorizado');
+  igual(env.llamar({ action: 'push_token', tab: 'Pedidos', endpoint: EP }).json.error, 'No autorizado');
+  // Al desactivar el dispositivo, su permiso queda revocado.
+  env.llamar({ action: 'push_baja', tab: 'Pedidos', auth: env.AUTH, endpoint: EP });
+  igual(env.llamar({ action: 'push_ultimos', tab: 'Pedidos', pt }).json.error, 'No autorizado');
 });
 
 console.log(`\n${ok} OK, ${fallas} con error`);

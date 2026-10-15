@@ -32,9 +32,10 @@ function desbloquear() {
     document.body.classList.remove('bloqueado');
     navegar('panel');
 }
-function cerrarSesionPanel() {
+async function cerrarSesionPanel() {
+    await bajaAvisos();   // revoca el permiso de avisos de este dispositivo (antes de borrar la clave)
     try { localStorage.removeItem('sanou_panel_ok'); localStorage.removeItem('sanou_auth'); } catch (e) {}
-    try { if ('caches' in window) caches.delete('sanou-push'); } catch (e) {}
+    try { if ('caches' in window) await caches.delete('sanou-push'); } catch (e) {}
     location.reload();
 }
 // Actualiza el CRM sin cerrar/abrir la app. Borra el cache local de datos para forzar traer
@@ -2104,11 +2105,24 @@ async function pintarBotonNoti(){
     b.innerHTML = on ? '<i class="fas fa-bell"></i> Notificaciones activadas' : '<i class="far fa-bell"></i> Activar notificaciones';
 }
 // La app guarda SOLO un permiso de "leer avisos" (no la clave del CRM) para mostrar el texto de la notificación.
-async function guardarAuthParaAvisos(){
+async function guardarAuthParaAvisos(pt){
     try {
         if (!('caches' in window)) return;
-        const r = await crm({ action: 'push_token', tab: 'Pedidos' });
-        if (r && r.ok && r.pt) { const c = await caches.open('sanou-push'); await c.put('/__push_pt', new Response(r.pt)); }
+        if (!pt) {
+            const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription(); if (!sub) return;
+            const r = await crm({ action: 'push_token', tab: 'Pedidos', endpoint: sub.endpoint }); pt = r && r.ok && r.pt;
+        }
+        const c = await caches.open('sanou-push');
+        await c.delete('/__push_auth');   // por las dudas: nunca guardar la clave del CRM acá
+        if (pt) await c.put('/__push_pt', new Response(pt));
+    } catch (e) {}
+}
+// Al cerrar sesión: este dispositivo deja de recibir avisos y su permiso queda revocado.
+async function bajaAvisos(){
+    try {
+        if (!pushSoportado()) return;
+        const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+        if (sub) { try { await crm({ action: 'push_baja', tab: 'Pedidos', endpoint: sub.endpoint }); } catch (e) {} await sub.unsubscribe(); }
     } catch (e) {}
 }
 function claveB64(b64){ const s = (b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/'); const r = atob(s); return Uint8Array.from(r, c => c.charCodeAt(0)); }
@@ -2131,9 +2145,9 @@ async function activarNotificaciones(){
         const reg = await navigator.serviceWorker.ready;
         const k = await crmW({ action: 'push_clave', tab: 'Pedidos' });
         const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: claveB64(k.pub) });
-        await guardarAuthParaAvisos();
         const disp = /android/i.test(navigator.userAgent) ? 'Android' : /iphone|ipad/i.test(navigator.userAgent) ? 'iPhone' : 'Computadora';
-        await crmW({ action: 'push_suscribir', tab: 'Pedidos', endpoint: sub.endpoint, nombre: disp });
+        const alta = await crmW({ action: 'push_suscribir', tab: 'Pedidos', endpoint: sub.endpoint, nombre: disp });
+        await guardarAuthParaAvisos(alta.pt);
         await crmW({ action: 'push_probar', tab: 'Pedidos' });
     } catch (e) { alert(e.message || 'No se pudieron activar las notificaciones.'); }
     if (b) b.disabled = false;
