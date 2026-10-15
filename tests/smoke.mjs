@@ -24,7 +24,7 @@ const server = http.createServer((req, res) => {
 const BASE = `http://127.0.0.1:${server.address().port}`;
 
 const PAGINAS = ['/index.html', '/mayorista.html', '/mayoristas.html', '/envios.html', '/catalogo.html', '/cotizar.html', '/panel.html',
-  '/guia-crimpadoras-hidraulicas.html', '/categoria/crimpadoras-hidraulicas.html', '/producto/pinza-hidraulica-hhy-70a-1.html', '/pago.html'];
+  '/guia-crimpadoras-hidraulicas.html', '/categoria/crimpadoras-hidraulicas.html', '/producto/pinza-hidraulica-hhy-70a-1.html', '/pago.html', '/checkout.html'];
 const BLOQUEAR = /script\.google\.com|script\.googleusercontent\.com|googletagmanager|google-analytics|klaviyo|facebook\.net|api\.mercadopago/;
 
 const browser = await chromium.launch();

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VLTJZZW8JF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-VLTJZZW8JF');
+    </script>
+    <!-- End Google Analytics -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D0D0D">
+    <link rel="icon" type="image/png" href="tuerca-icon.png">
+    <link rel="apple-touch-icon" href="tuerca-icon.png">
+    <title>Finalizar compra — San Ou</title>
+    <meta name="robots" content="noindex, follow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="checkout.css?v=20261015">
+</head>
+<body>
+<header class="ck-header">
+    <div class="ck-wrap ck-header-in">
+        <a href="index.html" class="ck-logo" aria-label="Volver a la tienda San Ou"><img src="sticker.webp" alt="San Ou" width="120" height="40"></a>
+        <span class="ck-seguro"><i class="fas fa-lock" aria-hidden="true"></i> Compra segura</span>
+    </div>
+</header>
+
+<main class="ck-wrap ck-main" id="ckMain">
+    <nav class="ck-migas" aria-label="Ruta"><a href="index.html">Tienda</a> <i class="fas fa-chevron-right" aria-hidden="true"></i> <a href="index.html#productos">Carrito</a> <i class="fas fa-chevron-right" aria-hidden="true"></i> <span>Finalizar compra</span></nav>
+    <h1 class="ck-titulo">Finalizar compra</h1>
+
+    <!-- Carrito vacío -->
+    <section class="ck-vacio" id="ckVacio" hidden>
+        <i class="fas fa-cart-shopping" aria-hidden="true"></i>
+        <h2>Tu carrito está vacío</h2>
+        <p>Agregá herramientas desde la tienda y volvé para finalizar la compra.</p>
+        <a href="index.html#productos" class="ck-btn ck-btn--primario">Ver productos</a>
+    </section>
+
+    <form class="ck-grid" id="ckForm" novalidate hidden>
+        <input type="text" name="hp_campo" class="ck-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="ck-col">
+            <!-- 1. Medio de pago -->
+            <fieldset class="ck-card">
+                <legend><span class="ck-paso">1</span> Medio de pago</legend>
+                <div class="ck-opciones" role="radiogroup">
+                    <label class="ck-opcion">
+                        <input type="radio" name="pago" value="mp" checked>
+                        <span class="ck-opcion-ico ck-opcion-ico--mp"><i class="fas fa-credit-card" aria-hidden="true"></i></span>
+                        <span class="ck-opcion-txt"><b>Mercado Pago</b><small>Tarjeta de crédito, débito, cuotas o dinero en cuenta.</small></span>
+                        <span class="ck-opcion-precio" id="ckPrecioMp"></span>
+                    </label>
+                    <label class="ck-opcion">
+                        <input type="radio" name="pago" value="transferencia">
+                        <span class="ck-opcion-ico ck-opcion-ico--tr"><i class="fas fa-building-columns" aria-hidden="true"></i></span>
+                        <span class="ck-opcion-txt"><b>Transferencia bancaria</b><small>Precio especial. Te pasamos los datos por WhatsApp.</small></span>
+                        <span class="ck-opcion-precio ck-opcion-precio--tr" id="ckPrecioTr"></span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- 2. Datos -->
+            <fieldset class="ck-card">
+                <legend><span class="ck-paso">2</span> Tus datos</legend>
+                <div class="ck-campos">
+                    <div class="ck-campo ck-campo--ancho">
+                        <label for="ckNombre">Nombre y apellido <i>*</i></label>
+                        <input id="ckNombre" name="nombre" autocomplete="name" required maxlength="80" placeholder="Como figura en tu DNI">
+                    </div>
+                    <div class="ck-campo">
+                        <label for="ckTel">Celular <i>*</i></label>
+                        <input id="ckTel" name="telefono" type="tel" inputmode="tel" autocomplete="tel" required maxlength="20" placeholder="11 2345-6789">
+                    </div>
+                    <div class="ck-campo">
+                        <label for="ckEmail">Email <i>*</i></label>
+                        <input id="ckEmail" name="email" type="email" autocomplete="email" required maxlength="80" placeholder="tu@email.com">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 3. Entrega -->
+            <fieldset class="ck-card">
+                <legend><span class="ck-paso">3</span> Entrega</legend>
+                <div class="ck-opciones ck-opciones--2" role="radiogroup">
+                    <label class="ck-opcion">
+                        <input type="radio" name="entrega" value="retiro" checked>
+                        <span class="ck-opcion-ico"><i class="fas fa-store" aria-hidden="true"></i></span>
+                        <span class="ck-opcion-txt"><b>Retiro en San Ou</b><small>Sin cargo</small></span>
+                    </label>
+                    <label class="ck-opcion">
+                        <input type="radio" name="entrega" value="envio">
+                        <span class="ck-opcion-ico"><i class="fas fa-truck-fast" aria-hidden="true"></i></span>
+                        <span class="ck-opcion-txt"><b>Envío a domicilio</b><small>Capital, GBA e interior</small></span>
+                    </label>
+                </div>
+
+                <!-- Retiro: dirección del local -->
+                <div class="ck-panel" id="ckRetiro">
+                    <div class="ck-retiro">
+                        <i class="fas fa-location-dot" aria-hidden="true"></i>
+                        <div>
+                            <b>Marcelo Gamboa 6306, Versalles — CABA</b>
+                            <span>Lunes a viernes de 9 a 17 hs. Te avisamos por WhatsApp cuando tu pedido esté listo para retirar.</span>
+                            <a href="https://www.google.com/maps/search/?api=1&amp;query=San+Ou+Marcelo+Gamboa+6306+Ciudad+Autonoma+de+Buenos+Aires" target="_blank" rel="noopener">Cómo llegar <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Envío: datos del destinatario -->
+                <div class="ck-panel" id="ckEnvio" hidden>
+                    <div class="ck-campos">
+                        <div class="ck-campo">
+                            <label for="ckDni">DNI <i>*</i></label>
+                            <input id="ckDni" name="dni" inputmode="numeric" maxlength="11" placeholder="30111222">
+                        </div>
+                        <div class="ck-campo">
+                            <label for="ckCp">Código postal <i>*</i></label>
+                            <input id="ckCp" name="cp" autocomplete="postal-code" maxlength="10" placeholder="1408">
+                        </div>
+                        <div class="ck-campo ck-campo--ancho">
+                            <label for="ckDir">Dirección (calle, número, piso/depto) <i>*</i></label>
+                            <input id="ckDir" name="direccion" autocomplete="street-address" maxlength="120" placeholder="Av. Rivadavia 1234, 3° B">
+                        </div>
+                        <div class="ck-campo ck-campo--ancho">
+                            <label for="ckLoc">Localidad o barrio <i>*</i></label>
+                            <input id="ckLoc" name="localidad" autocomplete="address-level2" maxlength="80" placeholder="Ej: Morón, Palermo, Rosario">
+                        </div>
+                        <div class="ck-campo" id="ckProvCampo" hidden>
+                            <label for="ckProv">Provincia</label>
+                            <select id="ckProv"></select>
+                        </div>
+                        <div class="ck-campo" id="ckPartCampo" hidden>
+                            <label for="ckPart">Partido</label>
+                            <select id="ckPart"></select>
+                        </div>
+                    </div>
+                    <div class="ck-zona" id="ckZona" aria-live="polite"></div>
+                    <p class="ck-nota"><i class="fas fa-circle-info" aria-hidden="true"></i> Capital y GBA: envío con costo fijo según la zona. Interior: por Vía Cargo, el costo se coordina por WhatsApp. <a href="envios.html" target="_blank" rel="noopener">Ver zonas</a></p>
+                </div>
+            </fieldset>
+        </div>
+
+        <!-- Resumen -->
+        <aside class="ck-resumen">
+            <div class="ck-card ck-card--resumen">
+                <h2>Tu pedido</h2>
+                <ul class="ck-items" id="ckItems"></ul>
+                <div class="ck-fila"><span>Subtotal</span><span id="ckSubtotal">$0</span></div>
+                <div class="ck-fila"><span>Envío <small id="ckEnvioDet"></small></span><span id="ckEnvioMonto">Sin cargo</span></div>
+                <div class="ck-fila ck-fila--ahorro" id="ckAhorroFila" hidden><span><i class="fas fa-tag" aria-hidden="true"></i> Ahorro por transferencia</span><span id="ckAhorro"></span></div>
+                <div class="ck-total"><span>Total</span><span><s id="ckTotalAntes" hidden></s><b id="ckTotal">$0</b></span></div>
+                <div class="ck-error" id="ckError" role="alert" hidden></div>
+                <button type="submit" class="ck-btn ck-btn--primario ck-btn--grande" id="ckBtn">
+                    <i class="fas fa-lock" aria-hidden="true"></i> <span id="ckBtnTxt">Ir a pagar con Mercado Pago</span>
+                </button>
+                <p class="ck-legal" id="ckLegal">Te llevamos al sitio seguro de Mercado Pago. No vemos ni guardamos los datos de tu tarjeta.</p>
+                <a href="index.html#productos" class="ck-seguir"><i class="fas fa-arrow-left" aria-hidden="true"></i> Seguir comprando</a>
+            </div>
+        </aside>
+    </form>
+
+    <!-- Pedido por transferencia confirmado -->
+    <section class="ck-gracias" id="ckGracias" hidden>
+        <div class="ck-gracias-ico"><i class="fas fa-check" aria-hidden="true"></i></div>
+        <h2>¡Pedido recibido!</h2>
+        <p>Ya tenemos tu pedido <b id="ckGrNum"></b>. Para terminar, hacé la transferencia: te pasamos los datos bancarios por WhatsApp.</p>
+        <div class="ck-gracias-det" id="ckGrDet"></div>
+        <a class="ck-btn ck-btn--wa ck-btn--grande" id="ckGrWa" target="_blank" rel="noopener"><i class="fab fa-whatsapp" aria-hidden="true"></i> Pedir datos para transferir</a>
+        <a href="index.html" class="ck-btn ck-btn--sec">Volver a la tienda</a>
+    </section>
+</main>
+
+<script src="checkout.js?v=20261015"></script>
+</body>
+</html>

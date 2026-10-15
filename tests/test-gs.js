@@ -222,5 +222,40 @@ test('Mercado Pago apagado (sin token) responde un mensaje claro', () => {
   igual(r.ok, false); verdad(/no están habilitados/.test(r.error));
 });
 
+// ── Checkout (v26): pedido por transferencia y datos obligatorios del envío ──
+const PEDIDO = { action: 'pedido_transferencia', tab: 'Clientes', items: JSON.stringify([{ nombre: 'Pinza HHY-70A', qty: 2 }]),
+  nombre: 'Ana Pérez', email: 'ana@ejemplo.com', telefono: '1155550000', cid: 'abc123' };
+function conProductos() { const env = entorno(); env.ctx.productosPorNombre = () => ({ 'pinza hhy-70a': { precio: 80000, stock: true } }); return env; }
+
+test('transferencia con retiro: guarda el pedido al precio de la planilla, sin pedir DNI', () => {
+  const env = conProductos();
+  const r = env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro' })).json;
+  igual(r.ok, true); igual(r.total, 160000); igual(filasDe(env, 'Pedidos'), 1);
+});
+
+test('transferencia con envío: sin DNI o sin dirección se rechaza y no guarda', () => {
+  const env = conProductos();
+  const sinDni = env.llamar(Object.assign({}, PEDIDO, { zona: 'gba1', direccion: 'Calle 123', localidad: 'Morón', cp: '1708' })).json;
+  igual(sinDni.ok, false); verdad(/DNI/.test(sinDni.error));
+  const sinDir = env.llamar(Object.assign({}, PEDIDO, { zona: 'gba1', dni: '30111222', cp: '1708' })).json;
+  igual(sinDir.ok, false); verdad(/dirección/i.test(sinDir.error));
+  verdad(filasDe(env, 'Pedidos') <= 0);   // no se guardó nada
+});
+
+test('transferencia con envío completo: suma el envío de la zona y guarda dirección y DNI', () => {
+  const env = conProductos();
+  const r = env.llamar(Object.assign({}, PEDIDO, { zona: 'gba1', dni: '30.111.222', direccion: 'Calle 123', localidad: 'Morón', cp: '1708' })).json;
+  igual(r.ok, true); igual(r.total, 167000);
+  const fila = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos').rows[1].join(' | ');
+  verdad(/Calle 123/.test(fila) && /DNI 30111222/.test(fila) && /CP 1708/.test(fila));
+});
+
+test('transferencia: doble clic con el mismo cid NO duplica el pedido', () => {
+  const env = conProductos();
+  const p = Object.assign({}, PEDIDO, { zona: 'retiro' });
+  env.llamar(p); const b = env.llamar(p).json;
+  igual(b.ok, true); igual(filasDe(env, 'Pedidos'), 1);
+});
+
 console.log(`\n${ok} OK, ${fallas} con error`);
 process.exit(fallas ? 1 : 0);

@@ -1471,6 +1471,7 @@ function mpItemsCarrito() {
     });
 }
 function abrirPagoMP() {
+    return irAFinalizarCompra();   // el pago ahora se hace en checkout.html (antes era esta ventana)
     if (cart.length === 0) { alert('Agregá al menos un producto al carrito.'); return; }
     if (typeof cerrarKlModal === 'function') cerrarKlModal();   // que la ventana del email no quede encima del pago
     const items = mpItemsCarrito();
@@ -1685,7 +1686,15 @@ function quickBuy(id) {
     if (!p || !(p.price > 0)) { _doQuickBuy(id); return; }
     if (typeof closeModal === 'function') { try { closeModal(); } catch (e) {} }
     if (!cart.some(i => i.id === id)) addToCart(id);
-    abrirPagoMP();
+    irAFinalizarCompra();
+}
+// Página de "Finalizar compra" (medio de pago, datos, retiro o envío): checkout.html
+function irAFinalizarCompra() {
+    if (cart.length === 0) { alert('Agregá al menos un producto al carrito.'); return; }
+    if (typeof cerrarKlModal === 'function') cerrarKlModal();
+    syncCartPrices();
+    saveCart();
+    window.location.href = 'checkout.html';
 }
 
 function _doQuickBuy(id) {
