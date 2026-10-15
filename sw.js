@@ -5,7 +5,7 @@
    Los pedidos al backend del CRM (Apps Script, script.google.com) y cualquier otro
    dominio (fuentes, CDN, ipapi, analytics) NO se tocan ni se cachean: pasan directo
    a la red, siempre en vivo. */
-const CACHE = 'sanou-v1';
+const CACHE = 'sanou-v2';
 const SHELL = [
   '/', '/index.html', '/styles.css', '/script.js',
   '/panel.html', '/panel.css', '/panel.js', '/catalogo-productos.js',
@@ -52,5 +52,42 @@ self.addEventListener('fetch', (e) => {
       }
       throw err;
     }
+  })());
+});
+
+// ── Notificaciones de compras web (CRM instalado como app) ──
+// El aviso llega sin contenido; acá se pide el texto al backend con la clave del panel
+// (guardada por el CRM al activar las notificaciones). Si no se puede, se muestra un aviso genérico.
+const API = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
+self.addEventListener('push', (e) => {
+  e.waitUntil((async () => {
+    let titulo = '🛒 Nueva compra en la web', cuerpo = 'Tocá para ver el pedido en el CRM.';
+    try {
+      const c = await caches.open('sanou-push');
+      const r = await c.match('/__push_auth');
+      const auth = r ? await r.text() : '';
+      if (auth) {
+        const res = await fetch(API + '?action=push_ultimos&tab=Pedidos&auth=' + encodeURIComponent(auth) + '&_=' + Date.now());
+        const j = await res.json();
+        const a = j && j.ok && j.avisos && j.avisos[0];
+        if (a && Date.now() - a.ts < 15 * 60 * 1000) { titulo = a.t; cuerpo = a.b; }
+      }
+    } catch (err) { /* sin conexión o sin clave: aviso genérico */ }
+    await self.registration.showNotification(titulo, {
+      body: cuerpo, icon: '/icon-192.png', badge: '/tuerca-icon.png',
+      tag: 'sanou-web-' + Date.now(), renotify: true, vibrate: [120, 60, 120],
+      data: { url: '/panel.html#pedidos-web' }
+    });
+  })());
+});
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/panel.html';
+  e.waitUntil((async () => {
+    const abiertas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const w of abiertas) {
+      if (w.url.indexOf('/panel.html') >= 0) { await w.focus(); w.postMessage({ tipo: 'ir-pedidos-web' }); return; }
+    }
+    await self.clients.openWindow(url);
   })());
 });

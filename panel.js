@@ -255,7 +255,17 @@ function pintarDashboard(){
             ${items.map(t => `<div class="dash-li">${esc(t)}</div>`).join('')}
         </div>`;
 
+    const webPend = pedidos.filter(p => esPedWeb(p) && estPed(p.estado) !== 'Entregado');
+    const webNue = webNuevos();
+    const webHTML = (webPend.length || webNue.length) ? `
+        <button class="dash-web${webNue.length ? ' nuevo' : ''}" onclick="pedTab='web';navegar('pedidos')">
+            <span class="dash-web-ic"><i class="fas fa-cart-shopping"></i>${webNue.length ? `<em>${webNue.length}</em>` : ''}</span>
+            <span class="dash-web-txt"><b>${webNue.length ? `${webNue.length} compra${webNue.length>1?'s':''} nueva${webNue.length>1?'s':''} en la web` : 'Compras web'}</b>
+            <small>${webPend.length} por despachar${webPend.filter(p=>p.pagoestado==='Comprobante recibido').length ? ' · ' + webPend.filter(p=>p.pagoestado==='Comprobante recibido').length + ' con comprobante para revisar' : ''}${webPend.filter(p=>p.pagoestado==='Esperando transferencia').length ? ' · ' + webPend.filter(p=>p.pagoestado==='Esperando transferencia').length + ' esperando transferencia' : ''}</small></span>
+            <i class="fas fa-arrow-right"></i>
+        </button>` : '';
     v.innerHTML = `
+        ${webHTML}
         ${agendaHTML}
 
         <h4 class="dash-sec">💰 Facturación</h4>
@@ -1943,24 +1953,187 @@ const PEDIDO_ESTADOS = ['Pendiente','Entregado'];
 // Entregado = entregado y cobrado. Los pedidos viejos con "Cobrado" se muestran como "Entregado".
 function estPed(e){ return e === 'Cobrado' ? 'Entregado' : (e || 'Pendiente'); }
 
+// ── Pedidos: los que cargás vos y los que entran por la web (checkout) ──
+let pedTab = 'manual';
+const esPedWeb = p => String(p.origen || '') === 'web';
+const _wVisto = () => { try { return parseInt(localStorage.getItem('sanou_web_visto') || '0', 10); } catch (e) { return 0; } };
+const tsPed = p => (parseFechaCRM(p.fecha)?.getTime() || 0);
+function webNuevos(){ const v = _wVisto(); return pedidos.filter(p => esPedWeb(p) && tsPed(p) > v); }
+function marcarWebVistos(){ const m = Math.max(0, ...pedidos.filter(esPedWeb).map(tsPed)); if (m) try { localStorage.setItem('sanou_web_visto', String(m)); } catch (e) {} }
+function pintarTabsPed(){
+    const t = document.getElementById('pedTabs'); if (!t) return;
+    const nW = pedidos.filter(esPedWeb).length, nM = pedidos.length - nW, nuevos = webNuevos().length;
+    t.innerHTML = `<button class="ped-tab${pedTab==='manual'?' on':''}" onclick="cambiarTabPed('manual')"><i class="fas fa-clipboard-list"></i> Pedidos <span>${nM}</span></button>
+        <button class="ped-tab${pedTab==='web'?' on':''}" onclick="cambiarTabPed('web')"><i class="fas fa-globe"></i> Pedidos web <span>${nW}</span>${nuevos?`<em class="ped-nuevo">${nuevos} nuevo${nuevos>1?'s':''}</em>`:''}</button>`;
+    const add = document.getElementById('pedAdd'); if (add) add.style.display = pedTab === 'web' ? 'none' : '';
+    const noti = document.getElementById('pedNoti'); if (noti) { noti.style.display = pedTab === 'web' ? '' : 'none'; pintarBotonNoti(); }
+}
+function cambiarTabPed(t){ pedTab = t; if (t === 'web') setTimeout(marcarWebVistos, 1500); pintarTabsPed(); filtrarPedidos(); }
 async function renderPedidos(){
     const v = document.getElementById('vista');
     v.innerHTML = `
+        <div class="ped-tabs" id="pedTabs" role="tablist"></div>
         <div class="panel-sec-head">
             <div class="panel-buscar"><i class="fas fa-search"></i>
                 <input type="text" id="buscarPed" placeholder="Buscar por usuario, detalle…" oninput="filtrarPedidos()"></div>
-            <button class="panel-btn-add" onclick="abrirFormPedido()"><i class="fas fa-plus"></i> Nuevo pedido</button>
+            <button class="panel-btn-add" id="pedAdd" onclick="abrirFormPedido()"><i class="fas fa-plus"></i> Nuevo pedido</button>
+            <button class="panel-btn-add ped-noti" id="pedNoti" style="display:none" onclick="activarNotificaciones()"></button>
         </div>
         <div class="panel-lista" id="listaPed">${pedidos.length ? '' : skel()}</div>`;
-    if (pedidos.length) pintarPedidos(pedidos);              // instantáneo desde caché/memoria
+    pintarTabsPed();
+    if (pedTab === 'web') setTimeout(marcarWebVistos, 1500);
+    if (pedidos.length) filtrarPedidos();              // instantáneo desde caché/memoria
     // Costos + dólar en segundo plano: al llegar, repintar con la ganancia.
-    Promise.all([ensureProductosPrecios(), ensureDolar()]).then(()=>{ if(seccionActual==='pedidos' && (_pedidosCargados || pedidos.length)) pintarPedidos(pedidos); });
+    Promise.all([ensureProductosPrecios(), ensureDolar()]).then(()=>{ if(seccionActual==='pedidos' && (_pedidosCargados || pedidos.length)) filtrarPedidos(); });
     try {
         const r = await crm({ action:'list', tab:'Pedidos' });
         if (r&&r.ok&&r.rows){ pedidos = r.rows; cacheSet('pedidos',pedidos); _pedidosCargados=true; }
-        if (seccionActual==='pedidos') pintarPedidos(pedidos);
+        if (seccionActual==='pedidos') { pintarTabsPed(); filtrarPedidos(); }
     } catch(e){ if(!pedidos.length) document.getElementById('listaPed').innerHTML = errorCarga('No se pudieron cargar los pedidos. Revisá tu conexión.', 'renderPedidos()'); }
 }
+// ── Compras web ──
+function itemsPedido(p){ try { const a = JSON.parse(p.items || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function badgePago(p){
+    const e = p.pagoestado || '', cls = e === 'Pagado' ? 'pg-ok' : e === 'Comprobante recibido' ? 'pg-comp' : 'pg-esp';
+    const ic = p.pago === 'Mercado Pago' ? 'fa-credit-card' : 'fa-building-columns';
+    return `<span class="pg-badge ${cls}"><i class="fas ${ic}"></i> ${esc(p.pago || '')}${e ? ' · ' + esc(e) : ''}</span>`;
+}
+function tarjetaPedidoWeb(p){
+    const wa = waLink(p.telefono, msgPedido(p)), nuevo = tsPed(p) > _wVisto();
+    const retiro = p.envio !== 'Sí';
+    return `<div class="rec-card rec-web${nuevo ? ' rec-nuevo' : ''}" onclick="if(!event.target.closest('select,a,button'))verPedidoWeb('${p.id}')">
+        <div class="rec-top">
+            <span class="rec-nombre">${nuevo ? '<span class="web-dot" title="Nuevo"></span>' : ''}${esc(p.cliente)||'(sin nombre)'}</span>
+            ${badgeEstado(estPed(p.estado))}
+        </div>
+        <div class="rec-web-pago">${badgePago(p)}${p.pagodet && p.pago === 'Mercado Pago' ? `<span class="pg-det">${esc(p.pagodet.split(' · te queda')[0])}</span>` : ''}</div>
+        ${p.detalle?`<div class="rec-detalle">${esc(p.detalle)}</div>`:''}
+        <div class="rec-meta">
+            ${montoVenta(p)?`<span class="rec-monto">${fmtMoney(montoVenta(p))}</span>`:''}
+            <span><i class="fas ${retiro ? 'fa-warehouse' : 'fa-truck'}"></i> ${retiro ? 'Retira en el depósito' : esc(p.entrega || 'Envío') + (p.direccion ? ' — ' + esc(p.direccion) : '')}</span>
+            ${p.fecha?`<span><i class="far fa-clock"></i> ${esc(String(p.fecha).slice(0,16))}</span>`:''}
+        </div>
+        <div class="rec-acciones">
+            <select class="rec-estado ${estPed(p.estado)==='Entregado'?'est-entregado':'est-pendiente'}" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
+                ${PEDIDO_ESTADOS.map(e=>`<option value="${e}" ${e===estPed(p.estado)?'selected':''}>${e==='Entregado'?'✓ ':''}${e}</option>`).join('')}
+            </select>
+            <button class="cli-btn ped-ver" onclick="verPedidoWeb('${p.id}')"><i class="fas fa-eye"></i> Ver todo</button>
+            ${p.comprobante?`<button class="cli-btn" onclick="verComprobante('${p.comprobante}')" title="Ver comprobante"><i class="fas fa-receipt"></i></button>`:''}
+            ${wa?`<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>`:''}
+            <button class="cli-btn cli-del" onclick="borrarRegistro('Pedidos','${p.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+    </div>`;
+}
+function verPedidoWeb(id){
+    const p = pedidos.find(x => String(x.id) === String(id)); if (!p) return;
+    const its = itemsPedido(p), envio = Number(String(p.enviomonto || '').replace(/[^\d]/g, '')) || 0;
+    const retiro = p.envio !== 'Sí';
+    const filas = its.length
+        ? its.map(i => `<tr><td>${esc(i.n)}</td><td class="num">${i.q}</td><td class="num">${fmtMoney(i.u)}</td><td class="num"><b>${fmtMoney(i.u * i.q)}</b></td></tr>`).join('')
+        : `<tr><td colspan="4">${esc(p.detalle || '')}</td></tr>`;
+    const wa = waLink(p.telefono, msgPedido(p));
+    document.getElementById('modalTitulo').textContent = 'Compra web';
+    document.getElementById('modalBody').innerHTML = `
+        <div class="pw-ficha">
+            <div class="pw-cab">${badgePago(p)} ${badgeEstado(estPed(p.estado))}<span class="pw-id">${esc(p.id)} · ${esc(String(p.fecha||'').slice(0,16))}</span></div>
+            <h4><i class="fas fa-box"></i> Productos</h4>
+            <table class="pw-tabla"><thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead><tbody>${filas}</tbody>
+            <tfoot>${envio ? `<tr><td colspan="3">Envío</td><td class="num">${fmtMoney(envio)}</td></tr>` : ''}<tr class="pw-total"><td colspan="3">Total ${p.pago === 'Transferencia' ? '(precio transferencia)' : ''}</td><td class="num">${fmtMoney(montoVenta(p))}</td></tr></tfoot></table>
+            <h4><i class="fas fa-user"></i> Comprador</h4>
+            <div class="pw-datos">
+                <span><b>Nombre</b>${esc(p.cliente || '-')}</span>
+                <span><b>Celular</b>${esc(p.telefono || '-')}</span>
+                <span><b>Email</b>${esc(p.email || '-')}</span>
+                ${p.dni ? `<span><b>DNI</b>${esc(p.dni)}</span>` : ''}
+            </div>
+            <h4><i class="fas ${retiro ? 'fa-warehouse' : 'fa-truck'}"></i> Entrega</h4>
+            <div class="pw-datos">
+                ${retiro ? `<span class="pw-ancho"><b>Retira en el depósito</b>Marcelo Gamboa 6306, Versalles — coordinar día y horario por WhatsApp.</span>`
+                         : `<span class="pw-ancho"><b>${esc(p.entrega || 'Envío')}</b>${esc(p.direccion || '-')}</span>
+                            <span><b>Costo de envío</b>${envio ? fmtMoney(envio) + (p.enviocobrado === 'Sí' ? ' (cobrado)' : '') : 'A coordinar'}</span>`}
+            </div>
+            <h4><i class="fas fa-wallet"></i> Pago</h4>
+            <div class="pw-datos">
+                <span><b>Medio</b>${esc(p.pago || '-')}</span>
+                <span><b>Estado</b>${esc(p.pagoestado || '-')}</span>
+                ${p.pagodet ? `<span class="pw-ancho"><b>Detalle</b>${esc(p.pagodet)}</span>` : ''}
+                ${p.mpid ? `<span><b>Operación MP</b>#${esc(p.mpid)}</span>` : ''}
+            </div>
+            <div class="pw-acciones">
+                ${p.comprobante ? `<button class="panel-btn-add" onclick="verComprobante('${p.comprobante}')"><i class="fas fa-receipt"></i> Ver comprobante</button>`
+                  : (p.pago === 'Transferencia' ? `<span class="pw-nota"><i class="fas fa-hourglass-half"></i> Todavía no subió el comprobante.</span>` : '')}
+                ${p.pago === 'Transferencia' && p.pagoestado !== 'Pagado' ? `<button class="panel-btn-add pw-ok" onclick="marcarPagoRecibido('${p.id}')"><i class="fas fa-check"></i> Transferencia recibida</button>` : ''}
+                ${wa ? `<a class="panel-btn-add pw-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Escribirle</a>` : ''}
+            </div>
+        </div>`;
+    abrirModal();
+}
+async function marcarPagoRecibido(id){
+    if (!await confirmar('¿Confirmás que la transferencia ya está acreditada?', 'Sí, recibida')) return;
+    try {
+        await crmW({ action: 'update', tab: 'Pedidos', id, pagoestado: 'Pagado' });
+        const p = pedidos.find(x => String(x.id) === String(id)); if (p) p.pagoestado = 'Pagado';
+        cacheSet('pedidos', pedidos); cerrarModal(); filtrarPedidos();
+    } catch (e) { alert('No se pudo guardar. Reintentá.'); }
+}
+async function verComprobante(fileId){
+    document.getElementById('modalTitulo').textContent = 'Comprobante';
+    document.getElementById('modalBody').innerHTML = `<div class="pw-comp">${skel('chico')}</div>`;
+    abrirModal();
+    try {
+        const r = await crm({ action: 'comprobante_ver', tab: 'Pedidos', id: fileId });
+        if (!r || !r.ok) throw new Error((r && r.error) || 'error');
+        const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        const url = URL.createObjectURL(new Blob([u8], { type: r.mime }));
+        const cuerpo = /^image\//.test(r.mime) ? `<img src="${url}" alt="Comprobante de transferencia">` : `<iframe src="${url}" title="Comprobante"></iframe>`;
+        document.getElementById('modalBody').innerHTML = `<div class="pw-comp">${cuerpo}<a class="panel-btn-add" href="${url}" download="${esc(r.nombre)}"><i class="fas fa-download"></i> Descargar</a></div>`;
+    } catch (e) { document.getElementById('modalBody').innerHTML = errorCarga('No se pudo abrir el comprobante.', `verComprobante('${fileId}')`); }
+}
+
+// ── Notificaciones push (CRM instalado como app) ──
+function pushSoportado(){ return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+async function pushActivo(){
+    if (!pushSoportado() || Notification.permission !== 'granted') return false;
+    try { const reg = await navigator.serviceWorker.ready; return !!(await reg.pushManager.getSubscription()); } catch (e) { return false; }
+}
+async function pintarBotonNoti(){
+    const b = document.getElementById('pedNoti'); if (!b) return;
+    const on = await pushActivo();
+    b.classList.toggle('on', on);
+    b.innerHTML = on ? '<i class="fas fa-bell"></i> Notificaciones activadas' : '<i class="far fa-bell"></i> Activar notificaciones';
+}
+async function guardarAuthParaAvisos(){
+    try { const a = localStorage.getItem('sanou_auth') || ''; if (a && 'caches' in window) { const c = await caches.open('sanou-push'); await c.put('/__push_auth', new Response(a)); } } catch (e) {}
+}
+function claveB64(b64){ const s = (b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/'); const r = atob(s); return Uint8Array.from(r, c => c.charCodeAt(0)); }
+async function activarNotificaciones(){
+    if (!pushSoportado()) {
+        const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        alert(ios ? 'En iPhone: abrí el CRM desde el ícono de la pantalla de inicio (Compartir → Agregar a inicio) y activalas desde ahí.' : 'Este navegador no permite notificaciones. Usá Chrome o el CRM instalado como app.');
+        return;
+    }
+    if (await pushActivo()) {
+        if (await confirmar('Las notificaciones ya están activadas en este dispositivo. ¿Mandar un aviso de prueba?', 'Probar')) {
+            await guardarAuthParaAvisos(); try { await crmW({ action: 'push_probar', tab: 'Pedidos' }); } catch (e) { alert('No se pudo mandar la prueba.'); }
+        }
+        return;
+    }
+    const b = document.getElementById('pedNoti'); if (b) { b.disabled = true; b.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Activando…'; }
+    try {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') throw new Error('Tenés que permitir las notificaciones (lo podés cambiar en los ajustes del navegador).');
+        const reg = await navigator.serviceWorker.ready;
+        const k = await crmW({ action: 'push_clave', tab: 'Pedidos' });
+        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: claveB64(k.pub) });
+        await guardarAuthParaAvisos();
+        const disp = /android/i.test(navigator.userAgent) ? 'Android' : /iphone|ipad/i.test(navigator.userAgent) ? 'iPhone' : 'Computadora';
+        await crmW({ action: 'push_suscribir', tab: 'Pedidos', endpoint: sub.endpoint, nombre: disp });
+        await crmW({ action: 'push_probar', tab: 'Pedidos' });
+    } catch (e) { alert(e.message || 'No se pudieron activar las notificaciones.'); }
+    if (b) b.disabled = false;
+    pintarBotonNoti();
+}
+
 // Mensaje de WhatsApp según el estado del pedido.
 function msgPedido(p){
     const nom = p.cliente ? ' ' + String(p.cliente).split(' ')[0] : '';
@@ -1970,11 +2143,12 @@ function msgPedido(p){
 }
 function filtrarPedidos(){
     const q=(document.getElementById('buscarPed').value||'').toLowerCase().trim();
-    pintarPedidos(!q?pedidos:pedidos.filter(p=>(p.cliente+' '+p.detalle+' '+p.telefono+' '+p.estado).toLowerCase().includes(q)));
+    const base = pedidos.filter(p => pedTab === 'web' ? esPedWeb(p) : !esPedWeb(p));
+    pintarPedidos(!q?base:base.filter(p=>(p.cliente+' '+p.detalle+' '+p.telefono+' '+p.estado+' '+(p.email||'')+' '+(p.dni||'')+' '+(p.direccion||'')).toLowerCase().includes(q)));
 }
 function pintarPedidos(lista){
     const cont=document.getElementById('listaPed'); if(!cont) return;
-    if(!lista.length){ const qP=(document.getElementById('buscarPed')||{}).value; cont.innerHTML = qP ? vacio('fa-magnifying-glass','Sin resultados','Probá con otro cliente, producto o estado.') : vacio('fa-cart-shopping','Todavía no hay pedidos','Cargá un pedido para seguir la entrega, el cobro y la ganancia.','<i class="fas fa-plus"></i> Nuevo pedido','abrirFormPedido()'); return; }
+    if(!lista.length){ const qP=(document.getElementById('buscarPed')||{}).value; cont.innerHTML = qP ? vacio('fa-magnifying-glass','Sin resultados','Probá con otro cliente, producto o estado.') : pedTab==='web' ? vacio('fa-globe','Todavía no hay compras web','Cuando alguien compre en sanou.com.ar (Mercado Pago o transferencia) aparece acá con todos los datos.') : vacio('fa-cart-shopping','Todavía no hay pedidos','Cargá un pedido para seguir la entrega, el cobro y la ganancia.','<i class="fas fa-plus"></i> Nuevo pedido','abrirFormPedido()'); return; }
     // Pendientes siempre arriba y, dentro de cada grupo, por fecha: el más reciente
     // primero y el más antiguo al final.
     lista = [...lista].sort((a,b)=>{
@@ -1983,6 +2157,7 @@ function pintarPedidos(lista){
         return (parseFechaCRM(b.fecha)?.getTime() || 0) - (parseFechaCRM(a.fecha)?.getTime() || 0);
     });
     cont.innerHTML = lista.map(p=>{
+        if (esPedWeb(p)) return tarjetaPedidoWeb(p);
         const wa = waLink(p.telefono, msgPedido(p));
         const g = gananciaPedido(p);
         return `<div class="rec-card">
@@ -2421,7 +2596,11 @@ function confirmar(mensaje, textoBtn){
 // ─── ARRANQUE ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     hidratarCache();   // datos guardados = apertura instantánea
-    if (accesoVigente()) { document.body.classList.remove('bloqueado'); navegar('panel'); }
+    if (accesoVigente()) {
+        document.body.classList.remove('bloqueado');
+        if (location.hash === '#pedidos-web') { pedTab = 'web'; navegar('pedidos'); } else navegar('panel');
+        pushActivo().then(on => { if (on) guardarAuthParaAvisos(); });
+    }
     else {
         const input = document.getElementById('claveInput');
         input.addEventListener('keydown', e => {
@@ -2434,6 +2613,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         setTimeout(() => input.focus(), 100);
     }
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || document.body.classList.contains('bloqueado')) return;
+    if (seccionActual === 'panel' || seccionActual === 'pedidos') ensurePedidos(true).then(() => {
+        if (seccionActual === 'panel') pintarDashboard(); else if (seccionActual === 'pedidos') { pintarTabsPed(); filtrarPedidos(); }
+    });
+});
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.tipo === 'ir-pedidos-web' && !document.body.classList.contains('bloqueado')) { pedTab = 'web'; ensurePedidos(true).then(() => navegar('pedidos')); }
 });
 
 // ─── TIRAR PARA RECARGAR (pull-to-refresh) ──────────────────────

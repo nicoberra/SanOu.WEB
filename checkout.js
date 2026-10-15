@@ -49,7 +49,7 @@
         $('ckItems').innerHTML = cart.map(i => `<li class="ck-item"><span class="ck-item-ico"><i class="fas ${esc(i.icon || 'fa-screwdriver-wrench')}" aria-hidden="true"></i><em>${i.qty}</em></span><span class="ck-item-nom">${esc(i.name)}</span><span class="ck-item-pr">${fmt((st.pago === 'transferencia' ? precioTr(i) : i.price) * i.qty)}</span></li>`).join('');
         $('ckSubtotal').textContent = fmt(st.pago === 'transferencia' ? t.subTr : t.sub);
         const envDet = $('ckEnvioDet'), envMon = $('ckEnvioMonto');
-        if (st.entrega === 'retiro') { envDet.textContent = 'Retiro en San Ou'; envMon.textContent = 'Sin cargo'; }
+        if (st.entrega === 'retiro') { envDet.textContent = 'Retiro en el depósito'; envMon.textContent = 'Sin cargo'; }
         else if (ZONAS[st.zona]) { envDet.textContent = ZONAS[st.zona].n + (st.lugar ? ' · ' + st.lugar : ''); envMon.textContent = fmt(t.envio); }
         else if (st.zona === 'interior') { envDet.textContent = 'Interior · Vía Cargo'; envMon.textContent = 'A coordinar'; }
         else { envDet.textContent = 'Completá tu localidad'; envMon.textContent = 'A calcular'; }
@@ -216,8 +216,9 @@
 
     function gracias(r, d) {
         const det = cart.map(i => `${i.qty}x ${i.name}`).join(', ');
-        const entrega = d.zona === 'retiro' ? 'Retiro en San Ou (Marcelo Gamboa 6306, Versalles)'
+        const entrega = d.zona === 'retiro' ? 'Retiro en el depósito (Marcelo Gamboa 6306, Versalles)'
             : `${ZONAS[d.zona] ? 'Envío ' + ZONAS[d.zona].n : 'Envío por Vía Cargo'} — ${d.direccion}, ${d.localidad} (CP ${d.cp})`;
+        st.pedido = r.pedido;
         $('ckGrNum').textContent = r.pedido;
         $('ckGrDet').innerHTML = `<span>Productos: <b>${esc(det)}</b></span><span>Entrega: <b>${esc(entrega)}</b></span>`;
         $('ckImporte').textContent = fmt(r.total);
@@ -227,6 +228,44 @@
         $('ckForm').hidden = true; document.querySelector('.ck-titulo').textContent = 'Pedido confirmado';
         $('ckGracias').hidden = false;
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Comprobante de transferencia: foto (achicada) o PDF, por POST al backend ──
+    function leerArchivo(file) {
+        return new Promise((resolve, reject) => {
+            if (file.type === 'application/pdf') {
+                if (file.size > 4 * 1024 * 1024) return reject(new Error('El PDF es muy grande (máximo 4 MB).'));
+                const fr = new FileReader(); fr.onload = () => resolve(fr.result); fr.onerror = () => reject(new Error('No se pudo leer el archivo.')); fr.readAsDataURL(file); return;
+            }
+            if (!/^image\//.test(file.type)) return reject(new Error('Subí una foto o un PDF.'));
+            const img = new Image(), url = URL.createObjectURL(file);
+            img.onload = () => {
+                const max = 1600, k = Math.min(1, max / Math.max(img.width, img.height));
+                const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+                resolve(c.toDataURL('image/jpeg', 0.85));
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('No se pudo abrir la foto. Probá con otra o mandala por WhatsApp.')); };
+            img.src = url;
+        });
+    }
+    async function subirComprobante(file) {
+        const txt = $('ckCompTxt'), msg = $('ckCompMsg'), lbl = $('ckCompBtn');
+        lbl.classList.add('es-cargando'); txt.textContent = 'Subiendo…'; msg.textContent = '';
+        try {
+            const data = await leerArchivo(file);
+            const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'subir_comprobante', pedido: st.pedido, data }) });
+            const j = await res.json();
+            if (!j || !j.ok) throw new Error((j && j.error) || 'No se pudo subir.');
+            lbl.classList.remove('es-cargando'); lbl.classList.add('es-ok');
+            txt.textContent = '¡Comprobante recibido!'; lbl.querySelector('i').className = 'fas fa-check';
+            msg.textContent = 'Listo. Lo revisamos y te avisamos por WhatsApp cuando el pedido esté en camino.';
+            $('ckComp').disabled = true;
+        } catch (e) {
+            lbl.classList.remove('es-cargando'); txt.textContent = 'Subir comprobante';
+            msg.textContent = (e && e.message && !/fetch|network|json/i.test(e.message)) ? e.message : 'No se pudo subir. Probá de nuevo o mandalo por WhatsApp.';
+            msg.classList.add('es-error');
+        }
     }
 
     // ── Inicio ──
@@ -255,6 +294,7 @@
         $('ckPart').addEventListener('change', () => { if ($('ckPart').value === 'otro') aplicarZona({ zona: 'interior', lugar: 'Buenos Aires' }); else onPart(); });
         ['ckNombre', 'ckTel', 'ckEmail', 'ckDni', 'ckCp', 'ckDir', 'ckLoc'].forEach(id => $(id).addEventListener('input', () => { if ($(id).closest('.ck-campo').classList.contains('es-error')) marcar(id, ''); }));
         $('ckForm').addEventListener('submit', enviar);
+        $('ckComp').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) subirComprobante(f); e.target.value = ''; });
         // Copiar alias / CVU / importe (como en Suple Market): el botón confirma "Copiado ✓".
         document.querySelectorAll('.ck-copiar').forEach(b => b.addEventListener('click', async () => {
             let v = $(b.dataset.copiar).textContent.trim();

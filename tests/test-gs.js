@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 // Pruebas del backend real (apps-script-crm.gs) contra planillas SIMULADAS en memoria.
 // No toca Google, ni la planilla real, ni Telegram, ni GitHub: todos los servicios están falsificados.
 // Uso: node tests/test-gs.js
@@ -43,18 +44,31 @@ function entorno() {
   const props = { PANEL_PASS_HASH: 'hashdeprueba', TG_TOKEN: '', TG_CHAT: '', GH_TOKEN: '', MP_ACCESS_TOKEN: '' };
   const fetches = [];
   const planillas = {};
+  const drive = { archivos: {} };
+  drive.carpeta = { getId: () => 'carpeta1', createFile: blob => { const id = 'archivo' + Object.keys(drive.archivos).length + 'xxxxxx';
+    const f = { getId: () => id, getName: () => blob.nombre, getParents: () => { let d = false; return { hasNext: () => !d, next: () => { d = true; return drive.carpeta; } }; }, getBlob: () => ({ getContentType: () => blob.mime, getBytes: () => blob.bytes || [] }) };
+    drive.archivos[id] = f; return f; } };
   const ctx = {
     console,
     SpreadsheetApp: { openById: id => planillas[id] || (planillas[id] = new Planilla([])) },
     CacheService: { getScriptCache: () => ({ get: k => (cache.has(k) ? cache.get(k) : null), put: (k, v) => cache.set(k, String(v)), remove: k => cache.delete(k) }) },
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => {} }) },
-    PropertiesService: { getScriptProperties: () => ({ getProperty: k => (k in props ? props[k] : null) }) },
+    PropertiesService: { getScriptProperties: () => ({ getProperty: k => (k in props ? props[k] : null), setProperty: (k, v) => { props[k] = String(v); } }) },
     ContentService: { MimeType: { JSON: 'json', JAVASCRIPT: 'js' }, createTextOutput: t => ({ texto: t, setMimeType(m) { this.mime = m; return this; } }) },
     Utilities: {
       formatDate: (d, tz, f) => new Date(d).toISOString().slice(0, 16).replace('T', ' '),
       base64Encode: s => Buffer.from(String(s)).toString('base64'),
       base64Decode: s => Buffer.from(String(s), 'base64'),
-      newBlob: b => ({ getDataAsString: () => Buffer.from(b).toString('utf8') }),
+      base64EncodeWebSafe: b => Buffer.from(b.map(x => x & 255)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_'),
+      computeDigest: (alg, texto) => [...crypto.createHash('sha256').update(String(texto), 'utf8').digest()].map(x => (x > 127 ? x - 256 : x)),
+      DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
+      getUuid: () => crypto.randomUUID(),
+      newBlob: (b, mime, nombre) => ({ getDataAsString: () => Buffer.from(b).toString('utf8'), getBytes: () => [...Buffer.from(b)].map(x => (x > 127 ? x - 256 : x)), mime, nombre }),
+    },
+    DriveApp: {
+      getFolderById: id => drive.carpeta,
+      createFolder: () => drive.carpeta,
+      getFileById: id => drive.archivos[id],
     },
     UrlFetchApp: { fetch: (url, opt) => { fetches.push(url); return { getResponseCode: () => 200, getContentText: () => '{}' }; } },
     ScriptApp: { getService: () => ({ getUrl: () => 'https://exec.test' }) },
@@ -76,7 +90,7 @@ function entorno() {
     const t = out.texto; const m = t.match(/^[\w.$]+\(([\s\S]*)\);$/);
     return { raw: t, json: JSON.parse(m ? m[1] : t) };
   };
-  return { ctx, planillas, cache, fetches, llamar, props, AUTH: props.PANEL_PASS_HASH };
+  return { ctx, planillas, cache, fetches, llamar, props, drive, AUTH: props.PANEL_PASS_HASH };
 }
 
 // ── Mini framework ──
@@ -246,8 +260,13 @@ test('transferencia con envío completo: suma el envío de la zona y guarda dire
   const env = conProductos();
   const r = env.llamar(Object.assign({}, PEDIDO, { zona: 'gba1', dni: '30.111.222', direccion: 'Calle 123', localidad: 'Morón', cp: '1708' })).json;
   igual(r.ok, true); igual(r.total, 167000);
-  const fila = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos').rows[1].join(' | ');
-  verdad(/Calle 123/.test(fila) && /DNI 30111222/.test(fila) && /CP 1708/.test(fila));
+  const sh = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos'), h = sh.rows[0], f = sh.rows[1];
+  const col = t => f[h.indexOf(t)];
+  igual(col('DNI'), '30111222'); igual(col('Dirección de envío'), 'Calle 123, Morón (CP 1708)');
+  igual(col('Origen'), 'web'); igual(col('Medio de pago'), 'Transferencia'); igual(col('Estado del pago'), 'Esperando transferencia');
+  igual(col('Estado'), 'Pendiente'); igual(col('Envío'), 'Sí'); igual(col('Monto envío'), 7000);
+  igual(col('Monto'), '160000', 'Monto = productos (el envío va aparte, como en el CRM)');
+  igual(JSON.parse(col('Productos (JSON)'))[0].u, 80000);
 });
 
 test('transferencia: doble clic con el mismo cid NO duplica el pedido', () => {
@@ -255,6 +274,72 @@ test('transferencia: doble clic con el mismo cid NO duplica el pedido', () => {
   const p = Object.assign({}, PEDIDO, { zona: 'retiro' });
   env.llamar(p); const b = env.llamar(p).json;
   igual(b.ok, true); igual(filasDe(env, 'Pedidos'), 1);
+});
+
+// ── v27: comprobantes, detalle del pago de MP y notificaciones push ──
+test('retiro: queda como "Retiro en el depósito" y sin envío', () => {
+  const env = conProductos();
+  env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro' }));
+  const sh = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos'), h = sh.rows[0], f = sh.rows[1];
+  igual(f[h.indexOf('Entrega')], 'Retiro en el depósito'); igual(f[h.indexOf('Envío')], 'No');
+});
+
+test('comprobante: se guarda en Drive, queda en el pedido y el CRM lo puede ver con la clave', () => {
+  const env = conProductos();
+  const r = env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro' })).json;
+  const foto = 'data:image/jpeg;base64,' + Buffer.from('jpegfalso').toString('base64');
+  const up = env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, data: foto }).json;
+  igual(up.ok, true);
+  const sh = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos'), h = sh.rows[0], f = sh.rows[1];
+  igual(f[h.indexOf('Estado del pago')], 'Comprobante recibido');
+  const idArch = f[h.indexOf('Comprobante')]; verdad(!!idArch);
+  igual(env.llamar({ action: 'comprobante_ver', tab: 'Pedidos', id: idArch }).json.error, 'No autorizado');
+  igual(env.llamar({ action: 'comprobante_ver', tab: 'Pedidos', id: idArch, auth: env.AUTH }).json.mime, 'image/jpeg');
+});
+
+test('comprobante: pedido inexistente o archivo que no es foto/PDF se rechaza', () => {
+  const env = conProductos();
+  const r = env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro' })).json;
+  igual(env.llamar({}, { action: 'subir_comprobante', pedido: 'ctrnoexiste1', data: 'data:image/jpeg;base64,AAAA' }).json.ok, false);
+  igual(env.llamar({}, { action: 'subir_comprobante', pedido: r.pedido, data: 'data:text/html;base64,AAAA' }).json.ok, false);
+});
+
+test('detalle del pago de Mercado Pago: tarjeta, cuotas y lo que te queda', () => {
+  const env = entorno();
+  igual(env.ctx.detallePagoMP({ payment_type_id: 'credit_card', payment_method_id: 'visa', card: { last_four_digits: '4242' }, installments: 3, transaction_details: { net_received_amount: 95000.4 } }),
+    'Tarjeta de crédito Visa · ···· 4242 · 3 cuotas · te queda $95.000');
+  igual(env.ctx.detallePagoMP({ payment_type_id: 'account_money', payment_method_id: 'account_money', installments: 1 }), 'Dinero en cuenta de Mercado Pago');
+});
+
+test('push: la firma ES256 del aviso es válida (verificada con la criptografía de Node)', () => {
+  const env = entorno();
+  const v = env.ctx.vapidClaves();
+  const jwt = env.ctx.vapidJwt('https://fcm.googleapis.com', v);
+  const [hd, cl, sig] = jwt.split('.');
+  const pub = Buffer.from(v.pub, 'base64url');
+  igual(pub.length, 65);
+  const key = crypto.createPublicKey({ key: { kty: 'EC', crv: 'P-256', x: pub.subarray(1, 33).toString('base64url'), y: pub.subarray(33).toString('base64url') }, format: 'jwk' });
+  verdad(crypto.verify('sha256', Buffer.from(hd + '.' + cl), { key, dsaEncoding: 'ieee-p1363' }, Buffer.from(sig, 'base64url')), 'firma inválida');
+  igual(JSON.parse(Buffer.from(cl, 'base64url')).aud, 'https://fcm.googleapis.com');
+  igual(env.ctx.vapidClaves().pub, v.pub, 'la clave se genera una sola vez');
+});
+
+test('push: solo se aceptan servicios de notificación reales y solo con la clave del CRM', () => {
+  const env = entorno();
+  igual(env.llamar({ action: 'push_suscribir', tab: 'Pedidos', endpoint: 'https://fcm.googleapis.com/fcm/send/abc' }).json.error, 'No autorizado');
+  igual(env.llamar({ action: 'push_suscribir', tab: 'Pedidos', endpoint: 'https://malo.com/x', auth: env.AUTH }).json.ok, false);
+  igual(env.llamar({ action: 'push_suscribir', tab: 'Pedidos', endpoint: 'https://fcm.googleapis.com/fcm/send/abc', auth: env.AUTH }).json.ok, true);
+});
+
+test('push: una compra web avisa a los dispositivos suscriptos', () => {
+  const env = conProductos();
+  env.llamar({ action: 'push_suscribir', tab: 'Pedidos', endpoint: 'https://fcm.googleapis.com/fcm/send/abc', auth: env.AUTH });
+  let enviados = [];
+  env.ctx.UrlFetchApp.fetchAll = reqs => { enviados = reqs; return reqs.map(() => ({ getResponseCode: () => 201, getContentText: () => '' })); };
+  env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro' }));
+  igual(enviados.length, 1); verdad(/^vapid t=.+, k=/.test(enviados[0].headers.Authorization));
+  const av = env.llamar({ action: 'push_ultimos', tab: 'Pedidos', auth: env.AUTH }).json.avisos;
+  verdad(/transferencia/i.test(av[0].t));
 });
 
 console.log(`\n${ok} OK, ${fallas} con error`);

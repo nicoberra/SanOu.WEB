@@ -159,3 +159,12 @@ a { color: inherit; }
 .ck-copiar:active { transform: scale(.95); }
 .ck-copiar.ok { background: var(--green); color: #fff; border-color: var(--green); }
 @media (prefers-reduced-motion: reduce) { .ck-copiar { transition: none; } }
+
+/* Subir comprobante */
+.ck-subir { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.ck-subir label { cursor: pointer; }
+.ck-subir label.es-cargando { opacity: .7; pointer-events: none; }
+.ck-subir label.es-ok { background: var(--green); color: #fff; pointer-events: none; box-shadow: none; }
+.ck-subir small { color: var(--gray-light); font-size: .8rem; }
+.ck-subir small.es-error { color: var(--red); }
+.ck-subir:has(input:focus-visible) label { outline: 2px solid var(--white); outline-offset: 3px; }

@@ -14,7 +14,7 @@
     <link rel="icon" type="image/png" href="tuerca-icon.png">
     <link rel="apple-touch-icon" href="tuerca-icon.png">
     <title>Envíos y Garantía — San Ou</title>
-    <meta name="description" content="Información sobre envíos, retiro en local y garantía de los productos de San Ou. Envíos a todo el país.">
+    <meta name="description" content="Información sobre envíos, retiro en el depósito y garantía de los productos de San Ou. Envíos a todo el país.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://sanou.com.ar/envios.html">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -109,8 +109,8 @@
                 <h1 class="legal-title">Envíos y Garantía</h1>
                 <p class="legal-updated">Última actualización: junio de 2026</p>
 
-                <h2><i class="fas fa-store" style="color:var(--yellow);margin-right:8px;"></i>Retiro en el local</h2>
-                <p>Podés retirar tu pedido sin costo en nuestro local de <strong>Marcelo Gamboa 6306, Buenos Aires</strong>, de lunes a viernes de 9 a 17 hs. Coordinamos día y horario por WhatsApp para tenerte el pedido listo cuando llegues.</p>
+                <h2><i class="fas fa-store" style="color:var(--yellow);margin-right:8px;"></i>Retiro en el depósito</h2>
+                <p>Podés retirar tu pedido sin costo en nuestro depósito de <strong>Marcelo Gamboa 6306, Buenos Aires</strong>, de lunes a viernes de 9 a 17 hs. Coordinamos día y horario por WhatsApp para tenerte el pedido listo cuando llegues.</p>
 
                 <h2><i class="fas fa-truck" style="color:var(--yellow);margin-right:8px;"></i>Envíos a todo el país</h2>
                 <p>Realizamos envíos a cualquier punto de Argentina a través de correo o empresas de transporte. El costo del envío corre por cuenta del comprador y se calcula según el destino, el peso y las dimensiones del producto.</p>
@@ -147,7 +147,7 @@
                             <label for="zePartido">Elegí tu partido</label>
                             <select id="zePartido"></select>
                         </div>
-                        <label class="ze-retiro"><input type="checkbox" id="zeRetiro"> Retiro en el local (sin cargo)</label>
+                        <label class="ze-retiro"><input type="checkbox" id="zeRetiro"> Retiro en el depósito (sin cargo)</label>
                         <div class="ze-result" id="zeResult" role="status" aria-live="polite" hidden></div>
                     </div>
                 </div>
@@ -250,7 +250,7 @@
 
             const mostrar = html => { result.innerHTML = html; result.hidden = false; };
             const calcular = () => {
-                if (retiro.checked) { mostrar('<i class="fas fa-store"></i> Retiro en el local: <span class="ze-result-cost">sin cargo</span>.'); return; }
+                if (retiro.checked) { mostrar('<i class="fas fa-warehouse"></i> Retiro en el depósito: <span class="ze-result-cost">sin cargo</span>.'); return; }
                 const v = prov.value;
                 if (!v) { result.hidden = true; return; }
                 if (v === 'CABA') { mostrar(`Envío a <strong>Capital (CABA)</strong>: <span class="ze-result-cost">${fmt(capital.precio)}</span>.`); return; }
