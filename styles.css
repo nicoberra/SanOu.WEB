@@ -5387,3 +5387,12 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 .aviso-reintentar:active{transform:scale(.96)}
 .aviso-reintentar:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){.aviso-skel{animation:none}.cart-empty-btn{transition:none}}
+
+/* ═════════ PRECIO CON TRANSFERENCIA (2026-10) ═════════ */
+.price-transfer{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:8px;padding:8px 12px;border-radius:10px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.22);font-size:.82rem;color:var(--gray-light)}
+.price-transfer i{color:var(--green)}
+.price-transfer b{color:var(--white);font-size:.98rem}
+.price-transfer em{font-style:normal;color:var(--green);font-weight:700;margin-left:auto}
+.cart-total-transfer{justify-content:space-between;align-items:center;margin:6px 0 10px;padding:8px 12px;border-radius:10px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.22);font-size:.86rem;color:var(--gray-light)}
+.cart-total-transfer i{color:var(--green);margin-right:4px}
+.cart-total-transfer b{color:var(--green);font-size:1.02rem}

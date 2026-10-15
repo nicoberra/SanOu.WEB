@@ -3,6 +3,13 @@
 //    (sin "Costo USD") en el mismo formato CSV que usaba la web, así ningún parser cambia.
 // 2) Si el backend no responde (o todavía no tiene la acción), cae al CSV publicado de la planilla.
 //    Cuando la planilla quede privada, este respaldo dará error y no se usa.
+// PRECIOS (desde 2026-10-15): la planilla tiene el precio CON TRANSFERENCIA. El precio normal de la web
+// (tarjeta / Mercado Pago) es 10% más, redondeado a la centena. Mismo cálculo en el backend (apps-script-crm.gs).
+window.SANOU_RECARGO_WEB = 0.10;
+window.sanouPrecioLista = function (transferencia) {
+    var t = Number(transferencia) || 0;
+    return t > 0 ? Math.round(t * (1 + window.SANOU_RECARGO_WEB) / 100) * 100 : 0;
+};
 (function () {
     var EXEC = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
     var CSV_RESPALDO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdbPDoIrVhs0zQPEB_wu_rMGz5280eSTygqqTKpjqaFpcZLWN0fSet_4wKgzcZNNEuk2PfK-i0/pub?output=csv';

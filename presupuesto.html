@@ -16,6 +16,9 @@
         .pp-bar .pp-bar-2{background:#2a2a2a;color:#fff}
         .pp-vacio{max-width:500px;margin:60px auto;text-align:center;color:#888;font-family:Inter,sans-serif;padding:20px}
         /* PDF: la copia que se exporta va sola arriba a la izquierda, con ancho fijo A4 */
+        .cot-tot-transfer{background:#eafaf1;border-radius:8px;margin-top:6px;font-weight:700;color:#137a3f;align-items:center}
+        .cot-tot-transfer span:last-child{text-align:right;white-space:nowrap}
+        .cot-ahorro{display:block;font-size:.78em;font-weight:600}
         .pdf-export-marco{position:absolute;left:0;top:0;width:780px;background:#fff;z-index:-1;pointer-events:none}
         .pdf-export-marco .cot-hoja{width:780px !important;max-width:780px !important;margin:0 !important}
     </style>
@@ -68,6 +71,7 @@
             <div class="cot-tot-fila"><span>IVA 10,5%</span><span id="totIva">$0,00</span></div>
             <div class="cot-tot-fila" id="filaEnvio" style="display:none"><span>Envío</span><span id="totEnvio">$0,00</span></div>
             <div class="cot-tot-fila cot-tot-final"><span>TOTAL</span><span id="totFinal">$0,00</span></div>
+            <div class="cot-tot-fila cot-tot-transfer" id="filaTransfer" style="display:none"><span>Pagando con transferencia</span><span id="totTransfer">$0,00</span></div>
         </section>
 
         <section class="cot-condiciones">
@@ -162,6 +166,11 @@
         set('totSubtotal', money(subtotalNeto)); set('totIva', money(ivaMonto));
         set('totFinal', money(subtotalNeto + ivaMonto + envio));
         if (envio > 0){ document.getElementById('filaEnvio').style.display=''; set('totEnvio', money(envio)); }
+        const totTr = Number(d.totalTransferencia) || 0, totNormal = subtotalNeto + ivaMonto + envio;
+        if (totTr > 0 && totTr + envio < totNormal - 0.5) {
+            document.getElementById('filaTransfer').style.display = '';
+            document.getElementById('totTransfer').innerHTML = money(totTr + envio) + '<small class="cot-ahorro">Ahorrás ' + money(totNormal - totTr - envio) + '</small>';
+        }
     }
 
     let DATOS = null;

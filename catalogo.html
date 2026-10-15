@@ -63,6 +63,7 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
 .dl-btn:hover{opacity:0.85}
 .dl-btn.web{background:#0D0D0D;color:#fff}
 /* LOADING */
+.cat-transfer{color:#137a3f;font-weight:700}
 .cat-loading{text-align:center;padding:60px 20px;color:#777;font-size:0.95rem}
 .cat-skel{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:30px 20px;opacity:0;animation:catSkelIn .2s ease .3s forwards}
 .cat-skel span{height:240px;border-radius:14px;background:linear-gradient(90deg,#eee 0%,#f6f6f6 50%,#eee 100%);background-size:200% 100%;animation:catSkelBrillo 1.3s ease-in-out infinite}
@@ -193,8 +194,7 @@ async function loadPricesFromSheet() {
             const oldPriceRaw = (f[3] || '').trim();
             const priceVal    = precio      ? parseInt(precio.replace(/[$\.,]/g, ''))      : 0;
             const oldPriceVal = oldPriceRaw ? parseInt(oldPriceRaw.replace(/[$\.,]/g, '')) : 0;
-            if (priceVal > 0 && oldPriceVal > 0)      { product.price = priceVal;    product.oldPrice = oldPriceVal; }
-            else if (priceVal > 0)                    { product.price = priceVal;    product.oldPrice = 0; }
+            if (priceVal > 0) { product.precioTransfer = priceVal; product.price = (window.sanouPrecioLista ? window.sanouPrecioLista(priceVal) : priceVal); product.oldPrice = oldPriceVal > product.price ? oldPriceVal : 0; }
             else if (oldPriceVal > 0)                 { product.price = oldPriceVal; product.oldPrice = 0; }
             if (stockRaw) product.inStock = (stockRaw === 'true' || stockRaw === 'si');
         });
@@ -222,7 +222,7 @@ function renderCatalogo() {
             <div class="prods-grid">`;
         prods.forEach(p => {
             const img = firstImg(p);
-            const price = p.price ? `$${p.price.toLocaleString('es-AR')}` : 'Consultar precio';
+            const price = p.price ? `$${p.price.toLocaleString('es-AR')}` + (p.precioTransfer > 0 && p.precioTransfer < p.price ? ` <small class="cat-transfer">· con transferencia $${p.precioTransfer.toLocaleString('es-AR')}</small>` : '') : 'Consultar precio';
             const allSpecsList = p.allSpecs || p.specs || [];
             const specs = allSpecsList.map(s =>
                 `<tr><td class="sl">${s.l}</td><td class="sv">${s.v}</td></tr>`).join('');
