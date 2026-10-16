@@ -128,12 +128,16 @@ const IVA_GENERAL = 0.21;
 const VALIDEZ_DIAS = 7;
 // Devuelve la alícuota de IVA de un ítem según el producto (mordazas de torno = 21%).
 function ivaDeItem(it) {
-    const p = products.find(x => x.id === it.id);
-    const nombre = p ? p.name : '';
-    return /mordaza/i.test(nombre) ? IVA_GENERAL : IVA;
+    return /mordaza/i.test(it.nombre || '') ? IVA_GENERAL : IVA;
 }
 
-let items = [];            // { id, cantidad, precioFinal }
+// Cada línea: { uid, id?, nombre, desc, cantidad, precioFinal } y, en el presupuesto mayorista,
+// además { tipo: 'mayorista'|'unitario', minimo, pMay, pUni, clave }. Un mismo producto puede
+// tener una línea a precio mayorista y otra a precio unitario (ej. 7 mayorista + 5 unitario).
+let items = [];
+let modo = 'comun';        // 'comun' = cotización con precios de la tienda | 'mayorista' = presupuesto mayorista
+let _uid = 0;
+let _may = [];             // lista mayorista (pestaña Mayorista de la planilla)
 
 // ── Fechas ──
 function hoyISO() { return new Date().toISOString().slice(0, 10); }
@@ -192,8 +196,10 @@ function etiquetaIva() {
 }
 
 // ─── ÍTEMS ───────────────────────────────────────────────────────
-function agregarItem(id) {
-    id = parseInt(id, 10);
+function agregarItem(valor) {
+    if (!valor) return;
+    if (modo === 'mayorista') return agregarItemMayorista(valor);
+    const id = parseInt(valor, 10);
     if (!id) return;
     if (items.some(i => i.id === id)) { alert('Ese producto ya está en la cotización.'); return; }
     const p = products.find(x => x.id === id);
@@ -201,26 +207,75 @@ function agregarItem(id) {
     // Aviso de stock: en el CRM se puede cotizar un producto sin stock (ej. "a pedido"),
     // pero que quede claro antes de agregarlo.
     if (p.inStock === false && !confirm('⚠️ "' + p.name + '" está SIN STOCK.\n¿Querés agregarlo igual a la cotización?')) return;
-    items.push({ id, cantidad: 1, precioFinal: p.price > 0 ? p.price : 0 });
+    items.push({ uid: ++_uid, id, nombre: p.name, desc: (p.specs || []).map(s => s.l + ': ' + s.v).join(' · '),
+                 cantidad: 1, precioFinal: p.price > 0 ? p.price : 0, sinStock: p.inStock === false });
     renderItems();
 }
 
-function quitarItem(id) {
-    items = items.filter(i => i.id !== id);
+function quitarItem(uid) {
+    items = items.filter(i => i.uid !== uid);
     renderItems();
 }
 
-function cambiarCantidad(id, val) {
-    const it = items.find(i => i.id === id);
+function cambiarCantidad(uid, val) {
+    const it = items.find(i => i.uid === uid);
     if (!it) return;
     it.cantidad = Math.max(1, parseInt(val, 10) || 1);
     renderItems();
 }
 
-function cambiarPrecio(id, val) {
-    const it = items.find(i => i.id === id);
+function cambiarPrecio(uid, val) {
+    const it = items.find(i => i.uid === uid);
     if (!it) return;
     it.precioFinal = Math.max(0, parseFloat(String(val).replace(/[^\d.,]/g, '').replace(',', '.')) || 0);
+    renderItems();
+}
+
+// ─── PRESUPUESTO MAYORISTA ───────────────────────────────────────
+const numMay = v => { const m = String(v || '').replace(/[.\s$]/g, '').match(/\d+/); return m ? parseInt(m[0], 10) : 0; };
+const sinStockMay = n => /\bsin\s*st/i.test(String(n || ''));
+async function cargarMayorista() {
+    if (_may.length) return _may;
+    const r = await crmJSONP({ action: 'mayorista_list', tab: 'Clientes' });
+    if (!r || !r.ok || !Array.isArray(r.rows)) throw new Error('lista');
+    _may = r.rows;
+    return _may;
+}
+function cambiarModo(m) {
+    if (m === modo) return;
+    if (items.length && !confirm('Se va a vaciar la lista de productos para armar el ' + (m === 'mayorista' ? 'presupuesto mayorista' : 'presupuesto común') + '. ¿Seguimos?')) {
+        document.querySelectorAll('input[name="modoCot"]').forEach(r => { r.checked = r.value === modo; });
+        return;
+    }
+    modo = m; items = [];
+    document.body.classList.toggle('modo-may', modo === 'mayorista');
+    const tit = document.querySelector('.cot-titulo'); if (tit) tit.textContent = modo === 'mayorista' ? 'PRESUPUESTO MAYORISTA' : 'COTIZACIÓN';
+    const btn = document.querySelector('.cot-btn-pdf'); if (btn) btn.textContent = modo === 'mayorista' ? 'Descargar presupuesto mayorista en PDF' : 'Descargar cotización en PDF';
+    renderSelector(); renderItems();
+}
+function agregarItemMayorista(row) {
+    const r = _may.find(x => String(x.row) === String(row)); if (!r) return;
+    const minimo = numMay(r.minimo), pMay = numMay(r.mayorista), pUni = numMay(r.unitario) || pMay;
+    if (sinStockMay(r.nota) && !confirm('⚠️ "' + r.producto + '" figura SIN STOCK en la lista mayorista.\n¿Agregarlo igual?')) return;
+    const clave = String(r.row);
+    const conMay = pMay > 0 && minimo > 0;
+    if (items.some(i => i.clave === clave && i.tipo === (conMay ? 'mayorista' : 'unitario'))) { alert('Ese producto ya está. Cambiá la cantidad o sumá unidades a precio unitario.'); return; }
+    items.push({ uid: ++_uid, clave, nombre: r.producto, desc: (r.nota && !sinStockMay(r.nota)) ? r.nota : '',
+                 tipo: conMay ? 'mayorista' : 'unitario', minimo, pMay, pUni,
+                 cantidad: conMay ? minimo : 1, precioFinal: conMay ? pMay : pUni, sinStock: sinStockMay(r.nota) });
+    renderItems();
+}
+// Suma otra línea del mismo producto a precio unitario (para las unidades que no llegan al mínimo).
+function sumarUnitario(uid) {
+    const base = items.find(i => i.uid === uid); if (!base) return;
+    if (items.some(i => i.clave === base.clave && i.tipo === 'unitario')) { alert('Ya hay una línea a precio unitario de este producto: cambiale la cantidad.'); return; }
+    const pos = items.indexOf(base);
+    items.splice(pos + 1, 0, Object.assign({}, base, { uid: ++_uid, tipo: 'unitario', cantidad: 1, precioFinal: base.pUni }));
+    renderItems();
+}
+function cambiarTipo(uid, tipo) {
+    const it = items.find(i => i.uid === uid); if (!it) return;
+    it.tipo = tipo; it.precioFinal = tipo === 'mayorista' ? it.pMay : it.pUni;
     renderItems();
 }
 
@@ -228,6 +283,23 @@ function cambiarPrecio(id, val) {
 function renderSelector() {
     const sel = document.getElementById('selectorProducto');
     if (!sel) return;
+    if (modo === 'mayorista') {
+        if (!_may.length) {
+            sel.innerHTML = '<option value="">Cargando lista mayorista…</option>';
+            cargarMayorista().then(renderSelector).catch(() => { sel.innerHTML = '<option value="">No se pudo cargar la lista mayorista (tocá para reintentar)</option>'; sel.onfocus = () => { sel.onfocus = null; renderSelector(); }; });
+            return;
+        }
+        let html = '<option value="">+ Agregar producto mayorista…</option>', abierto = false;
+        _may.forEach(r => {
+            if (r.tipo === 'cat') { if (abierto) html += '</optgroup>'; html += `<optgroup label="${esc(r.producto)}">`; abierto = true; return; }
+            const pMay = numMay(r.mayorista), pUni = numMay(r.unitario), min = numMay(r.minimo);
+            const info = pMay > 0 && min > 0 ? ` — mín. ${min} · mayorista ${money(pMay)} · unitario ${pUni ? money(pUni) : '-'}` : ` — solo unitario ${money(pUni || pMay)}`;
+            html += `<option value="${esc(r.row)}">${esc(r.producto)}${info}${sinStockMay(r.nota) ? ' ⛔ SIN STOCK' : ''}</option>`;
+        });
+        if (abierto) html += '</optgroup>';
+        sel.innerHTML = html;
+        return;
+    }
     let html = '<option value="">+ Agregar producto…</option>';
     Object.keys(CAT_NAMES).forEach(cat => {
         const lista = products.filter(p => p.category === cat);
@@ -242,30 +314,51 @@ function renderSelector() {
     });
     sel.innerHTML = html;
 }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 // ─── RENDER: tabla de ítems ──────────────────────────────────────
+// Al redibujar la tabla, el casillero que tenía el foco se borra y dispara su "change" en el medio:
+// esa segunda llamada se deja para cuando termine la primera (antes tiraba error).
+let _pintando = false, _pintarOtraVez = false;
 function renderItems() {
+    if (_pintando) { _pintarOtraVez = true; return; }
+    _pintando = true;
+    try { pintarItems(); } finally { _pintando = false; }
+    if (_pintarOtraVez) { _pintarOtraVez = false; setTimeout(renderItems, 0); }
+}
+function pintarItems() {
     const tbody = document.getElementById('itemsBody');
     if (!tbody) return;
+    const cols = modo === 'mayorista' ? 8 : 6;
 
     if (!items.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="cot-vacio">Agregá productos para armar la cotización.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${cols}" class="cot-vacio">${modo === 'mayorista' ? 'Agregá productos de la lista mayorista para armar el presupuesto.' : 'Agregá productos para armar la cotización.'}</td></tr>`;
     } else {
         tbody.innerHTML = items.map((it, i) => {
-            const p = products.find(x => x.id === it.id);
             const netoUnit = netoDesdeFinal(it.precioFinal, ivaDeItem(it));
             const subtotal = netoUnit * it.cantidad;
-            return `<tr>
+            const may = modo === 'mayorista';
+            const bajoMin = may && it.tipo === 'mayorista' && it.cantidad < it.minimo;
+            const tieneUni = may && items.some(x => x.clave === it.clave && x.tipo === 'unitario');
+            return `<tr class="${may ? 'fila-' + it.tipo : ''}">
                 <td class="col-n">${i + 1}</td>
                 <td class="col-desc">
-                    <strong>${p.name}</strong>${p.inStock === false ? ' <span class="cot-stock-out no-print">SIN STOCK</span>' : ''}
-                    <span class="cot-item-desc">${(p.specs || []).map(s => s.l + ': ' + s.v).join(' · ')}</span>
+                    <strong>${esc(it.nombre)}</strong>${it.sinStock ? ' <span class="cot-stock-out no-print">SIN STOCK</span>' : ''}
+                    ${it.desc ? `<span class="cot-item-desc">${esc(it.desc)}</span>` : ''}
+                    ${bajoMin ? `<span class="cot-aviso-min no-print">⚠️ Menos del mínimo (${it.minimo}): pasá esas unidades a precio unitario.</span>` : ''}
+                    ${may && it.tipo === 'mayorista' && it.pUni > 0 && !tieneUni ? `<button type="button" class="cot-sumar-uni no-print" onclick="sumarUnitario(${it.uid})">+ unidades a precio unitario</button>` : ''}
                 </td>
-                <td class="col-cant" data-label="Cantidad"><input type="number" min="1" inputmode="numeric" value="${it.cantidad}" onchange="cambiarCantidad(${it.id}, this.value)"></td>
-                <td class="col-precio" data-label="Precio final c/IVA"><span class="solo-pdf">${money(it.precioFinal)}</span><input class="no-print" type="text" inputmode="decimal" value="${it.precioFinal.toFixed(2)}" onchange="cambiarPrecio(${it.id}, this.value)" title="Precio final con IVA"></td>
+                ${may ? `<td class="col-min" data-label="Mínimo mayorista">${it.tipo === 'mayorista' && it.minimo ? it.minimo + ' u.' : '—'}</td>` : ''}
+                <td class="col-cant" data-label="Cantidad"><input type="number" min="1" inputmode="numeric" value="${it.cantidad}" onchange="cambiarCantidad(${it.uid}, this.value)"></td>
+                ${may ? `<td class="col-tipo" data-label="Precio"><span class="solo-pdf tipo-${it.tipo}">${it.tipo === 'mayorista' ? 'Mayorista' : 'Unitario'}</span>
+                    <select class="no-print" onchange="cambiarTipo(${it.uid}, this.value)">
+                        ${it.pMay > 0 ? `<option value="mayorista" ${it.tipo === 'mayorista' ? 'selected' : ''}>Mayorista</option>` : ''}
+                        <option value="unitario" ${it.tipo === 'unitario' ? 'selected' : ''}>Unitario</option>
+                    </select></td>` : ''}
+                <td class="col-precio" data-label="Precio final c/IVA"><span class="solo-pdf">${money(it.precioFinal)}</span><input class="no-print" type="text" inputmode="decimal" value="${it.precioFinal.toFixed(2)}" onchange="cambiarPrecio(${it.uid}, this.value)" title="Precio final con IVA"></td>
                 <td class="col-unit" data-label="P. unitario neto">${money(netoUnit)}</td>
                 <td class="col-sub" data-label="Subtotal">${money(subtotal)}
-                    <button class="cot-quitar no-print" onclick="quitarItem(${it.id})" title="Quitar">&times;</button>
+                    <button class="cot-quitar no-print" onclick="quitarItem(${it.uid})" title="Quitar">&times;</button>
                 </td>
             </tr>`;
         }).join('');
@@ -355,10 +448,8 @@ function guardarCotizacionEnCRM() {
         const val = id => { const e = document.getElementById(id); return (e && e.value || '').trim(); };
         const cliente = val('cliNombre');
         if (!cliente || !items.length) return; // sin cliente/ítems no guardamos
-        const detalle = items.map(it => {
-            const p = products.find(x => x.id === it.id);
-            return it.cantidad + 'x ' + (p ? p.name : 'producto');
-        }).join(', ');
+        const nombreLinea = it => it.nombre + (modo === 'mayorista' ? (it.tipo === 'mayorista' ? ' (precio mayorista)' : ' (precio unitario)') : '');
+        const detalle = (modo === 'mayorista' ? 'MAYORISTA: ' : '') + items.map(it => it.cantidad + 'x ' + nombreLinea(it)).join(', ');
         const total = calcularTotales().total;
         const tel = val('cliContacto').replace(/[^\d]/g, '');
 
@@ -376,10 +467,8 @@ function guardarCotizacionEnCRM() {
                 contacto: val('cliContacto'),
                 dom:      val('cliDom')
             },
-            items: items.map(it => {
-                const pr = products.find(x => x.id === it.id);
-                return { nombre: pr ? pr.name : 'producto', cantidad: it.cantidad, precioFinal: it.precioFinal };
-            }),
+            items: items.map(it => ({ nombre: nombreLinea(it), cantidad: it.cantidad, precioFinal: it.precioFinal })),
+            tipo: modo,
             envio: envio || 0,
             obs: val('obs'),
             condPago: val('condPago'),

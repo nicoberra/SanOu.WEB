@@ -387,3 +387,35 @@ body.exportando .cot-tabla input::-webkit-outer-spin-button, body.exportando .co
 body.exportando .solo-pdf{display:inline !important;white-space:nowrap}
 @media print{.solo-pdf{display:inline !important;white-space:nowrap}}
 body.exportando .cot-tabla .col-precio, body.exportando .cot-tabla th.col-precio{width:96px}
+
+/* ═════════ PRESUPUESTO MAYORISTA (2026-10) ═════════ */
+.solo-modo-may { display: none !important; }
+body.modo-may .solo-modo-may { display: revert !important; }
+body.modo-may li.solo-modo-may { display: list-item !important; }
+body.modo-may th.solo-modo-may, body.modo-may td.col-min, body.modo-may td.col-tipo { display: table-cell !important; }
+.cot-modo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.cot-modo label { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.12); cursor: pointer; font-weight: 700; font-size: .88rem; }
+.cot-modo label:has(input:checked) { border-color: #FFD400; background: rgba(255,212,0,.08); }
+.cot-modo input { accent-color: #FFD400; }
+.cot-tabla .col-min { text-align: center; white-space: nowrap; width: 64px; }
+.cot-tabla .col-tipo { width: 96px; text-align: center; }
+.cot-tabla .col-tipo select { width: 100%; padding: 6px 4px; border-radius: 8px; border: 1px solid #ccc; font: inherit; font-size: .82rem; }
+.tipo-mayorista, .tipo-unitario { display: inline-block; font-size: .72rem; font-weight: 800; border-radius: 6px; padding: 2px 7px; }
+.tipo-mayorista { background: #FFF4B8; color: #6b5600; }
+.tipo-unitario { background: #ECECEC; color: #444; }
+.cot-aviso-min { display: block; margin-top: 4px; font-size: .75rem; color: #c0392b; font-weight: 700; }
+.cot-sumar-uni { display: inline-block; margin-top: 6px; background: none; border: 1px dashed #999; color: #333; border-radius: 8px; padding: 4px 10px; font: inherit; font-size: .75rem; font-weight: 700; cursor: pointer; }
+.cot-sumar-uni:hover { border-color: #b38f00; color: #b38f00; }
+tr.fila-unitario td { background: rgba(0,0,0,.025); }
+body.exportando .cot-tabla .col-tipo, body.exportando .cot-tabla th.col-tipo { width: 80px; }
+body.exportando .cot-tabla .col-min, body.exportando .cot-tabla th.col-min { width: 58px; }
+.cot-modo label { justify-content: flex-start; }
+.cot-modo input { width: auto !important; height: auto !important; margin: 0; flex: none; }
+.cot-tabla .solo-pdf.tipo-mayorista, .cot-tabla .solo-pdf.tipo-unitario { display: none; }
+body.exportando .cot-tabla .solo-pdf.tipo-mayorista, body.exportando .cot-tabla .solo-pdf.tipo-unitario { display: inline-block !important; }
+@media print { .cot-tabla .solo-pdf.tipo-mayorista, .cot-tabla .solo-pdf.tipo-unitario { display: inline-block !important; } }
+@media (max-width: 780px) {
+    /* celular: mínimo y tipo de precio como fila "etiqueta + valor" (al exportar el PDF vuelve a ser tabla) */
+    body.modo-may:not(.exportando) td.col-min, body.modo-may:not(.exportando) td.col-tipo { display: flex !important; width: 100%; }
+    body.modo-may:not(.exportando) .cot-tabla .col-tipo select { width: 130px; flex-shrink: 0; }
+}

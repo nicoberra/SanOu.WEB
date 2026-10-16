@@ -7,7 +7,7 @@
     <title>Cotización — San Ou</title>
     <link rel="icon" type="image/png" href="tuerca-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="cotizador.css">
+    <link rel="stylesheet" href="cotizador.css?v=20261016c">
     <!-- Oculta el contenido antes de que cargue el JS (evita que se vea un instante) -->
     <style>body.bloqueado .cot-panel, body.bloqueado .cot-hoja { display: none !important; }</style>
 </head>
@@ -32,6 +32,15 @@
             Cotizador San Ou <span class="cot-badge">uso interno</span>
             <button class="cot-salir" onclick="cerrarSesionCotizador()" title="Cerrar sesión en este dispositivo">Salir</button>
         </h1>
+
+        <div class="cot-campo">
+            <label>Tipo de presupuesto</label>
+            <div class="cot-modo" role="radiogroup">
+                <label><input type="radio" name="modoCot" value="comun" checked onchange="cambiarModo(this.value)"> <span>Cotización común</span></label>
+                <label><input type="radio" name="modoCot" value="mayorista" onchange="cambiarModo(this.value)"> <span>Presupuesto mayorista</span></label>
+            </div>
+            <small class="cot-ayuda solo-modo-may">Precios de la lista mayorista. Cada producto entra con su mínimo a precio mayorista; con "+ unidades a precio unitario" sumás las que no llegan al mínimo.</small>
+        </div>
 
         <div class="cot-campo">
             <label>Agregar producto</label>
@@ -148,7 +157,9 @@
             <tr>
                 <th class="col-n">#</th>
                 <th class="col-desc">Descripción</th>
+                <th class="col-min solo-modo-may">Mín. may.</th>
                 <th class="col-cant">Cant.</th>
+                <th class="col-tipo solo-modo-may">Precio</th>
                 <th class="col-precio">P. final c/IVA</th>
                 <th class="col-unit">P. unitario</th>
                 <th class="col-sub">Subtotal</th>
@@ -172,6 +183,7 @@
             <li><b>Plazo de entrega:</b> <span data-print-from="condEntrega"></span></li>
             <li><b>Garantía:</b> todos los productos cuentan con garantía de fábrica, válida únicamente contra defectos de fabricación. No cubre daños ocasionados por uso indebido o falla humana.</li>
             <li><b>Moneda:</b> pesos argentinos (ARS). Precios sujetos a disponibilidad de stock.</li>
+            <li class="solo-modo-may"><b>Precio mayorista:</b> válido comprando al menos la cantidad mínima indicada en cada producto. Las unidades por debajo del mínimo se cotizan a precio unitario.</li>
         </ul>
         <p class="cot-obs"><b>Observaciones:</b> <span data-print-from="obs"></span></p>
         <p class="cot-legal">Este documento es un presupuesto comercial y no constituye comprobante fiscal.</p>
@@ -196,6 +208,6 @@
 <script src="catalogo-productos.js"></script>
 <script src="catalogo-fuente.js"></script>
 <script src="script.js"></script>
-<script src="cotizador.js"></script>
+<script src="cotizador.js?v=20261016b"></script>
 </body>
 </html>
