@@ -2684,6 +2684,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ── App instalada (sobre todo iPhone): casi nunca recarga y se queda con la versión vieja.
+// Al abrir o volver a la app se compara la versión cargada (panel.js?v=…) con la publicada en
+// panel.html (sin caché); si cambió, se recarga UNA vez por versión.
+function versionCargada(){ const s = document.querySelector('script[src*="panel.js?v="]'); return s ? (s.getAttribute('src').split('v=')[1] || '') : ''; }
+async function buscarVersionNueva(){
+    try {
+        const actual = versionCargada(); if (!actual) return;
+        const html = await (await fetch('panel.html?_=' + Date.now(), { cache: 'no-store' })).text();
+        const m = html.match(/panel\.js\?v=([\w.-]+)/); const publicada = m && m[1];
+        if (!publicada || publicada === actual) return;
+        if (sessionStorage.getItem('sanou_recarga_' + publicada)) return;   // una sola vez por versión
+        sessionStorage.setItem('sanou_recarga_' + publicada, '1');
+        location.reload();
+    } catch (e) { /* sin conexión: sigue con lo que tiene */ }
+}
+window.addEventListener('pageshow', buscarVersionNueva);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') buscarVersionNueva(); });
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible' || document.body.classList.contains('bloqueado')) return;
     if (seccionActual === 'panel' || seccionActual === 'pedidos') ensurePedidos(true).then(() => {
