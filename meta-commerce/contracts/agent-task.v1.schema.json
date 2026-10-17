@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sanou.com.ar/contracts/agent-task.v1.schema.json",
+  "title": "agent-task/v1",
+  "description": "Contrato de tareas entre el orquestador de la agencia y el departamento de Facebook (Meta Commerce AI).",
+  "type": "object",
+  "required": ["organization", "agent", "type"],
+  "properties": {
+    "organization": { "type": "string", "description": "Slug de la empresa (ej. 'sanou'). Solo en la solicitud." },
+    "agent": { "enum": ["FacebookDirectorAgent", "MarketplaceAgent", "MetaAdsAgent", "FacebookSalesAgent"] },
+    "type": { "type": "string", "pattern": "^[a-z_]+\\.[a-z_]+$", "examples": ["director.plan", "catalog.sync", "report.inventory"] },
+    "priority": { "type": "integer", "minimum": 1, "maximum": 5, "default": 3, "description": "1 = urgente" },
+    "input": { "type": "object", "description": "Datos de entrada. Para director.plan: { instruction: string }" },
+    "idempotency_key": { "type": "string", "maxLength": 200, "description": "Repetir la misma clave devuelve la misma tarea (duplicate: true)." },
+    "correlation_id": { "type": "string", "format": "uuid", "description": "Agrupa tareas de una misma iniciativa de la agencia." },
+    "parent_task_id": { "type": ["string", "null"], "format": "uuid" },
+    "callback_url": { "type": "string", "pattern": "^https://", "description": "Se notifica (POST firmado) cuando la tarea termina." },
+    "requested_by": { "type": "string", "description": "Agente o persona de la agencia que pide la tarea." }
+  },
+  "$defs": {
+    "envelope": {
+      "description": "Respuesta y payload del callback.",
+      "type": "object",
+      "required": ["contract", "id", "organization_id", "agent", "type", "status"],
+      "properties": {
+        "contract": { "const": "agent-task/v1" },
+        "id": { "type": "string", "format": "uuid" },
+        "organization_id": { "type": "string" },
+        "correlation_id": { "type": "string" },
+        "parent_task_id": { "type": ["string", "null"] },
+        "idempotency_key": { "type": ["string", "null"] },
+        "agent": { "type": "string" }, "type": { "type": "string" }, "priority": { "type": "integer" },
+        "input": { "type": "object" },
+        "status": { "enum": ["pendiente", "en_progreso", "esperando_aprobacion", "completada", "fallida", "cancelada", "no_disponible"] },
+        "result": {}, "requires_approval": { "type": "boolean" },
+        "created_at": { "type": "string" }, "updated_at": { "type": "string" }, "completed_at": { "type": ["string", "null"] },
+        "error": { "type": ["string", "null"] },
+        "execution_log": { "type": "array", "items": { "type": "object" } }
+      }
+    }
+  }
+}
