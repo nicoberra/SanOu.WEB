@@ -841,3 +841,13 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 .panel-btn-add.ped-confirmar,.panel-btn-add.ped-confirmado{padding:12px 18px!important;font-size:.92rem;display:inline-flex;align-items:center}
 .pw-confirmar{margin-top:10px}
 .rec-confirmar .cli-btn{width:100%!important;height:40px;justify-content:center;display:flex;align-items:center;font-size:.86rem}
+/* Mayorista: link de la lista para copiar y mandar */
+.may-link{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,rgba(255,212,0,.12),rgba(255,212,0,.03));border:1px solid rgba(255,212,0,.32);border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.may-link-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.may-link-txt b{font-size:.92rem;color:var(--am)}
+.may-link-txt span{font-size:.85rem;color:var(--gris2);word-break:break-all}
+.may-link-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.may-link-btns .panel-btn-add{text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:10px 14px}
+.may-link-wa{background:#25D366!important;color:#fff!important}
+.may-link-btns .copiado{background:#25D366!important;color:#fff!important}
+@media (max-width:520px){.may-link-btns{width:100%}.may-link-btns .panel-btn-add{flex:1;justify-content:center}}

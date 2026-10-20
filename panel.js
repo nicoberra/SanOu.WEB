@@ -1175,8 +1175,9 @@ function pintarRecBadge(el, tiene){
     else { el.classList.add('rec-no'); el.innerHTML = '<i class="fas fa-circle-xmark"></i> Sin recorte PNG'; }
 }
 // Copia el link directo a la ficha del producto en la web (abre ese producto solo).
-function copiarLinkProducto(id, btn){
-    const url = 'https://sanou.com.ar/#producto-' + id;
+function copiarLinkProducto(id, btn){ copiarLink('https://sanou.com.ar/#producto-' + id, btn); }
+// Copia un link al portapapeles y el botón confirma "¡Link copiado!".
+function copiarLink(url, btn){
     const ok = () => {
         const orig = btn.innerHTML;
         btn.classList.add('copiado');
@@ -1638,7 +1639,17 @@ async function renderMayorista(){
     const v = document.getElementById('vista');
     const cache = mayorista.length ? mayorista : (cacheGet('mayorista') || []);
     if (cache.length) mayorista = cache;
+    const LINK_MAY = 'https://sanou.com.ar/mayorista.html';
+    const msgMay = '¡Hola! Te paso la lista de precios mayoristas de San Ou 🔧: ' + LINK_MAY;
     v.innerHTML = `
+        <div class="may-link">
+            <div class="may-link-txt"><b><i class="fas fa-link"></i> Link de la lista mayorista</b><span>${LINK_MAY}</span></div>
+            <div class="may-link-btns">
+                <button class="panel-btn-add" onclick="copiarLink('${LINK_MAY}', this)"><i class="fas fa-copy"></i> Copiar link</button>
+                <a class="panel-btn-add may-link-wa" href="https://wa.me/?text=${encodeURIComponent(msgMay)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Mandar por WhatsApp</a>
+                <a class="cli-btn" href="${LINK_MAY}" target="_blank" rel="noopener" title="Abrir la lista"><i class="fas fa-arrow-up-right-from-square"></i></a>
+            </div>
+        </div>
         <div class="dol-bar" id="barraDolar"></div>
         <div class="panel-sec-head">
             <div class="panel-buscar"><i class="fas fa-search"></i>
