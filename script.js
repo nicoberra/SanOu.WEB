@@ -927,6 +927,11 @@ function discountBadge(p) {
 function stockChipHTML(p) {
     if (p.inStock === false)
         return '<span class="stock-chip stock-chip--out">Sin stock · reingreso en ~90 días</span>';
+    // quedan: unidades exactas que quedan (se carga en catalogo-productos.js).
+    if (p.quedan === 1)
+        return '<span class="stock-chip stock-chip--low"><i class="fas fa-fire"></i> ¡Queda 1 sola en stock!</span>';
+    if (p.quedan > 1)
+        return `<span class="stock-chip stock-chip--low"><i class="fas fa-fire"></i> ¡Quedan solo ${p.quedan} en stock!</span>`;
     if (p.lowStock)
         return '<span class="stock-chip stock-chip--low"><i class="fas fa-fire"></i> ¡Pocas unidades!</span>';
     return '<span class="stock-chip"><i class="fas fa-check"></i> En stock</span>';

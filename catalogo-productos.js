@@ -549,7 +549,7 @@ window.SANOU_PRODUCTOS = [
       specs: [{ l:'Capacidad', v:'100 Ton' }, { l:'Carrera', v:'68 mm' }, { l:'Altura cerrada', v:'88 mm' }],
       allSpecs: [{ l:'Capacidad', v:'100 Ton' }, { l:'Carrera', v:'68 mm' }, { l:'Altura cerrada', v:'88 mm' }, { l:'Cap. de aceite', v:'225 cc' }, { l:'Peso', v:'14,5 kg' }, { l:'Bomba recomendada', v:'HHB-700C' }] },
     // Cortadoras para barras de cobre/aluminio
-    { id: 30, name: 'Procesadora de Barras HHM-120HS', category: 'cortadoras', price: 0, icon: 'fa-cut', badge: '3 en 1', imgs: 2, folder: '120HS', ext: 'webp', catFolder: 'cortadora para barras de cobrealuminio',
+    { id: 30, name: 'Procesadora de Barras HHM-120HS', category: 'cortadoras', price: 0, icon: 'fa-cut', badge: '3 en 1', lowStock: true, quedan: 1, imgs: 2, folder: '120HS', ext: 'webp', catFolder: 'cortadora para barras de cobrealuminio',
       desc: 'Procesadora hidráulica de barras de cobre/aluminio 3 en 1: corta, dobla y punzona cambiando el cabezal. Incluye 4 punzones.',
       specs: [
         { l: 'Capacidad de barra', v: '120 × 10 mm' },
