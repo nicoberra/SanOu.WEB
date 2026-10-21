@@ -51,7 +51,7 @@ function entorno() {
   const ctx = {
     console,
     SpreadsheetApp: { openById: id => planillas[id] || (planillas[id] = new Planilla([])) },
-    CacheService: { getScriptCache: () => ({ get: k => (cache.has(k) ? cache.get(k) : null), put: (k, v) => cache.set(k, String(v)), remove: k => cache.delete(k) }) },
+    CacheService: { getScriptCache: () => ({ get: k => (cache.has(k) ? cache.get(k) : null), put: (k, v) => cache.set(k, String(v)), remove: k => cache.delete(k), getAll: ks => Object.fromEntries(ks.filter(k => cache.has(k)).map(k => [k, cache.get(k)])), putAll: o => Object.entries(o).forEach(([k, v]) => cache.set(k, String(v))), removeAll: ks => ks.forEach(k => cache.delete(k)) }) },
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => {} }) },
     PropertiesService: { getScriptProperties: () => ({ getProperty: k => (k in props ? props[k] : null), setProperty: (k, v) => { props[k] = String(v); } }) },
     ContentService: { MimeType: { JSON: 'json', JAVASCRIPT: 'js' }, createTextOutput: t => ({ texto: t, setMimeType(m) { this.mime = m; return this; } }) },
@@ -493,6 +493,44 @@ test('fotos: una foto borrada no vuelve a aparecer aunque GitHub todavía la lis
   igual(listar(env).join(','), '1.webp,3.webp');
   const man = JSON.parse(Buffer.from(env.repo['fotos.json'].b64, 'base64').toString('utf8'));
   igual(man['repuestos/x'].join(','), '1.webp,3.webp', 'el índice de la web tampoco la tiene');
+});
+
+// Velocidad: las listas se guardan en memoria y se vuelven a leer cuando algo cambia.
+test('velocidad: la lista se reusa de memoria y se refresca al agregar/editar/borrar', () => {
+  const env = entorno(); const { llamar, AUTH } = env;
+  const id = llamar({ action: 'add', tab: 'Clientes', auth: AUTH, nombre: 'Ana' }).json.id;
+  igual(llamar({ action: 'list', tab: 'Clientes', auth: AUTH }).json.rows.length, 1);
+  env.planillas[env.ctx.CRM_ID].getSheetByName('Clientes').rows.push([ 'rmano', '', 'Editado a mano' ]);
+  igual(llamar({ action: 'list', tab: 'Clientes', auth: AUTH }).json.rows.length, 1, 'sale de memoria (sin releer la planilla)');
+  llamar({ action: 'update', tab: 'Clientes', auth: AUTH, id, nombre: 'Ana María' });
+  const filas = llamar({ action: 'list', tab: 'Clientes', auth: AUTH }).json.rows;
+  igual(filas.length, 2, 'después de un cambio se relee'); igual(filas[0].nombre, 'Ana María');
+  llamar({ action: 'delete', tab: 'Clientes', auth: AUTH, id });
+  igual(llamar({ action: 'list', tab: 'Clientes', auth: AUTH }).json.rows.length, 1);
+});
+test('velocidad: un alta pública desde la web también refresca las listas', () => {
+  const { llamar, AUTH } = entorno();
+  igual(llamar({ action: 'list', tab: 'Pedidos', auth: AUTH }).json.rows.length, 0);
+  llamar({ action: 'add', tab: 'Cotizaciones', cliente: 'Web', telefono: '1155556666', detalle: 'x', monto: '1' });
+  igual(llamar({ action: 'list', tab: 'Cotizaciones', auth: AUTH }).json.rows.length, 1);
+});
+test('velocidad: inicio trae todo junto, sin claves, y pide autorización', () => {
+  const { llamar, AUTH } = entorno();
+  llamar({ action: 'registrar', nombre: 'Leo', email: 'leo@x.com', clave: 'secreta123', telefono: '1144443333' });
+  igual(llamar({ action: 'inicio', tab: 'Clientes' }).json.error, 'No autorizado');
+  const d = llamar({ action: 'inicio', tab: 'Clientes', auth: AUTH }).json.datos;
+  verdad(Array.isArray(d.Clientes) && Array.isArray(d.Pedidos) && Array.isArray(d.Seguimientos) && Array.isArray(d.Cotizaciones) && Array.isArray(d.productos));
+  verdad(d.Clientes.length >= 1 && !('clave' in d.Clientes[0]), 'nunca manda la clave');
+  igual(d.productos.length, 2);
+});
+test('velocidad: una lista grande se guarda en trozos y vuelve igual', () => {
+  const env = entorno(); const { llamar, AUTH } = env;
+  const hoja = env.ctx.hoja('Clientes');
+  for (let i = 0; i < 400; i++) hoja.rows.push(['r' + i, '', 'Cliente ' + i + ' ' + 'ñ'.repeat(200)]);
+  const a = llamar({ action: 'list', tab: 'Clientes', auth: AUTH }).json.rows;
+  verdad([...env.cache.keys()].filter(k => /^lc_.*_l_Clientes_\d+$/.test(k)).length > 1, 'en varios trozos');
+  const b = llamar({ action: 'list', tab: 'Clientes', auth: AUTH }).json.rows;
+  igual(JSON.stringify(a), JSON.stringify(b)); igual(b.length, 400);
 });
 
 console.log(`\n${ok} OK, ${fallas} con error`);

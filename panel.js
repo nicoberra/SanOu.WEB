@@ -198,12 +198,35 @@ function hidratarCache(){
     productos    = cacheGet('productos')    || productos;
 }
 
+// Trae clientes, pedidos, seguimientos, cotizaciones y precios en UN pedido (cada pedido a Google
+// tarda ~1,5 s aunque no traiga nada). Devuelve false si el servidor todavía no tiene 'inicio'.
+let _inicioEnCurso = null;
+function cargarInicio(){
+    if (_inicioEnCurso) return _inicioEnCurso;
+    _inicioEnCurso = (async () => {
+        try {
+            const r = await crm({ action:'inicio', tab:'Clientes' });
+            const d = r && r.ok && r.datos; if (!d) return false;
+            if (d.Clientes)     { clientes = d.Clientes;         cacheSet('clientes', clientes);         _clientesCargados = true; }
+            if (d.Pedidos)      { pedidos = d.Pedidos;           cacheSet('pedidos', pedidos);           _pedidosCargados = true; }
+            if (d.Seguimientos) { seguimientos = d.Seguimientos; cacheSet('seguimientos', seguimientos); _segCargados = true; }
+            if (d.Cotizaciones) { cotizaciones = d.Cotizaciones; cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
+            if (d.productos)    { productos = d.productos;       cacheSet('productos', productos);       _preciosCargados = true; }
+            return true;
+        } catch (e) { return false; }
+        finally { setTimeout(() => { _inicioEnCurso = null; }, 0); }
+    })();
+    return _inicioEnCurso;
+}
+
 async function renderDashboard(){
     const hayDatos = clientes.length || pedidos.length || seguimientos.length || cotizaciones.length;
     if (hayDatos) pintarDashboard();     // instantáneo con lo que haya en memoria/caché
     else document.getElementById('vista').innerHTML = skel('tablero');
-    // refrescar los 4 en paralelo y repintar
-    await Promise.all([ensureClientes(stale('clientes')), ensurePedidos(stale('pedidos')), ensureSeguimientos(stale('seguimientos')), ensureCotizaciones(stale('cotizaciones'))]);
+    // refrescar todo en un solo pedido (si el servidor es viejo, los 4 en paralelo) y repintar
+    const viejos = ['clientes','pedidos','seguimientos','cotizaciones'].some(stale);
+    if (!viejos || !(await cargarInicio()))
+        await Promise.all([ensureClientes(stale('clientes')), ensurePedidos(stale('pedidos')), ensureSeguimientos(stale('seguimientos')), ensureCotizaciones(stale('cotizaciones'))]);
     if (seccionActual === 'panel') pintarDashboard();
 }
 
