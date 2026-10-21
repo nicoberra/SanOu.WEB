@@ -1106,30 +1106,74 @@ function itemsDePedido(ped){
         return { nombre: x, cantidad: 1 };
     });
 }
-function ventasPorProducto(){
-    const lista = [];
-    (pedidos||[]).forEach(ped => {
+const tokensDe = s => new Set(claveNombre(s).split(' ').filter(Boolean));
+// Ventas por producto: cada renglón de cada pedido se asigna a UN solo producto, el que más se parece:
+// 1) nombre igual (sin tildes ni mayúsculas); 2) si no, el que comparte el modelo (HHY-120A, mordaza 100 mm…)
+// y más palabras del nombre. Si hay empate, no se asigna (así "Matriz … HHK-8" no se lleva las ventas
+// del Sacabocados HHK-8). Devuelve, por nombre de producto: vendidos, en curso y quiénes compraron.
+function ventasPorProducto(listaProductos){
+    const cands = (listaProductos || productos || []).map(p => {
+        const cp = catalogoDe(p.nombre);
+        const nombres = [p.nombre]; if (cp) { nombres.push(cp.name); if (cp.sheetName) nombres.push(cp.sheetName); }
+        const modelos = new Set(); nombres.forEach(n => modelosDe(n).forEach(m => modelos.add(m)));
+        return { nombre: p.nombre, claves: new Set(nombres.map(claveNombre)), modelos, tokens: tokensDe(nombres[nombres.length > 1 ? 1 : 0]) };
+    });
+    const res = new Map(cands.map(c => [c.nombre, { vend: 0, curso: 0, compras: [] }]));
+    (pedidos || []).forEach(ped => {
         const est = estPed(ped.estado);
         if (/cancel|rechaz|perdid|anulad/i.test(est)) return;
         const tipo = est === 'Entregado' ? 'vend' : 'curso';
         itemsDePedido(ped).forEach(it => {
             const clave = claveNombre(it.nombre); if (!clave) return;
-            lista.push({ clave, modelos: modelosDe(it.nombre), tipo, cantidad: it.cantidad || 1 });
+            const mods = modelosDe(it.nombre), toks = tokensDe(it.nombre);
+            let mejor = null, mejorP = 0, empate = false;
+            cands.forEach(c => {
+                let p = 0;
+                if (c.claves.has(clave)) p = 1000;
+                else {
+                    const comunes = [...mods].filter(m => c.modelos.has(m)).length;
+                    if (comunes) { const inter = [...toks].filter(t => c.tokens.has(t)).length; p = comunes * 10 + inter / (toks.size + c.tokens.size - inter || 1); }
+                }
+                if (p > mejorP) { mejor = c; mejorP = p; empate = false; } else if (p && p === mejorP) empate = true;
+            });
+            if (!mejor || empate) return;
+            const r = res.get(mejor.nombre);
+            r[tipo] += it.cantidad || 1;
+            r.compras.push({ ped, cantidad: it.cantidad || 1, tipo });
         });
     });
-    return lista;
+    return res;
 }
-// Ventas de un producto (nombre de la planilla; también prueba con el nombre del catálogo).
-function ventasDe(nombre, lista){
-    const cp = catalogoDe(nombre);
-    const nombres = [nombre]; if (cp) { nombres.push(cp.name); if (cp.sheetName) nombres.push(cp.sheetName); }
-    const claves = new Set(nombres.map(claveNombre)), modelos = new Set();
-    nombres.forEach(n => modelosDe(n).forEach(m => modelos.add(m)));
-    const r = { vend: 0, curso: 0 };
-    lista.forEach(it => {
-        if (claves.has(it.clave) || [...it.modelos].some(m => modelos.has(m))) r[it.tipo] += it.cantidad;
+function ventasDe(nombre, mapa){ return mapa.get(nombre) || { vend: 0, curso: 0, compras: [] }; }
+// Tocar "X vendidos": quiénes compraron el producto (agrupado por cliente), con sus pedidos.
+function verCompradores(i){
+    const p = productos[i]; if (!p) return;
+    const v = ventasDe(p.nombre, ventasPorProducto(productos));
+    const porCliente = new Map();
+    v.compras.forEach(c => {
+        const k = norm(c.ped.cliente || '') || ('tel' + soloDigitos(c.ped.telefono));
+        const g = porCliente.get(k) || { cliente: c.ped.cliente || '(sin nombre)', telefono: c.ped.telefono || '', unidades: 0, pedidos: [] };
+        g.unidades += c.cantidad; g.pedidos.push(c); porCliente.set(k, g);
     });
-    return r;
+    const grupos = [...porCliente.values()].sort((a, b) => b.unidades - a.unidades);
+    document.getElementById('modalTitulo').textContent = 'Compraron: ' + p.nombre;
+    document.getElementById('modalBody').innerHTML = !grupos.length
+        ? vacio('fa-bag-shopping', 'Todavía nadie lo compró', 'Cuando cargues un pedido con este producto, aparece acá quién lo compró.')
+        : `<p class="prod-ayuda">${v.vend} vendido${v.vend === 1 ? '' : 's'}${v.curso ? ` · ${v.curso} en pedidos sin entregar` : ''} · ${grupos.length} cliente${grupos.length === 1 ? '' : 's'}</p>
+           <div class="comp-lista">${grupos.map(g => {
+                const wa = waLink(g.telefono, `¡Hola ${String(g.cliente).split(' ')[0]}! Te escribo de San Ou 🔧.`);
+                return `<div class="comp-cli">
+                    <div class="comp-top"><b>${esc(g.cliente)}</b><span class="comp-u">${g.unidades} u.</span>${wa ? `<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}</div>
+                    ${g.telefono ? `<div class="comp-tel"><i class="fas fa-phone"></i> ${esc(g.telefono)}</div>` : ''}
+                    ${g.pedidos.map(c => `<button type="button" class="comp-ped" data-ped="${esc(c.ped.id)}">
+                        <span>${c.cantidad} u. · ${esc(fechaTxt ? fechaTxt(c.ped.fecha) : String(c.ped.fecha || '').slice(0, 10))}${esPedWeb(c.ped) ? ' · <i class="fas fa-globe"></i> web' : ''}</span>
+                        ${badgeEstado(estPed(c.ped.estado))}</button>`).join('')}
+                </div>`; }).join('')}</div>`;
+    abrirModal();
+    document.querySelectorAll('#modalBody .comp-ped').forEach(b => b.addEventListener('click', () => {
+        const ped = pedidos.find(x => String(x.id) === b.dataset.ped); if (!ped) return;
+        if (esPedWeb(ped)) verPedidoWeb(ped.id); else { cerrarModal(); setTimeout(() => abrirFormPedido(ped.id), 200); }
+    }));
 }
 function pintarProductos(lista, q) {
     const cont = document.getElementById('listaProd');
@@ -1138,7 +1182,7 @@ function pintarProductos(lista, q) {
         cont.innerHTML = q ? vacio('fa-magnifying-glass', 'Sin resultados', 'Probá con otro nombre o modelo.') : vacio('fa-box-open', 'No hay productos en la planilla', 'Los productos salen de la planilla de precios. Si acabás de cargarlos, recargá.', '<i class="fas fa-rotate"></i> Recargar', 'renderProductos()');
         return;
     }
-    const ventas = ventasPorProducto();
+    const ventas = ventasPorProducto(productos);   // con TODOS los productos, así cada venta va a uno solo
     cont.innerHTML = lista.map(p => {
         const i = productos.indexOf(p);
         const vt = ventasDe(p.nombre, ventas);
@@ -1148,7 +1192,7 @@ function pintarProductos(lista, q) {
         <div class="prod-card${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
             <div class="prod-top">
                 <span class="prod-nombre">${esc(p.nombre)}${p.stock ? '' : ' <span class="prod-badge-sinstock">Sin stock</span>'}</span>
-                <span class="prod-vendidos${vt.vend ? '' : ' cero'}" title="Unidades en pedidos entregados${vt.curso ? ' · ' + vt.curso + ' más en pedidos sin entregar' : ''}"><i class="fas fa-bag-shopping"></i> ${vt.vend} vendido${vt.vend === 1 ? '' : 's'}${vt.curso ? ` <small>+${vt.curso} en curso</small>` : ''}</span>
+                <button type="button" class="prod-vendidos${vt.vend ? '' : ' cero'}" onclick="verCompradores(${i})" title="Ver quiénes lo compraron"><i class="fas fa-bag-shopping"></i> ${vt.vend} vendido${vt.vend === 1 ? '' : 's'}${vt.curso ? ` <small>+${vt.curso} en curso</small>` : ''}</button>
                 <span class="prod-ok" id="prodok-${i}"><i class="fas fa-check"></i> Guardado</span>
             </div>
             <div class="prod-campos">

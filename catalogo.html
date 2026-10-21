@@ -249,7 +249,7 @@ const conFotos = p => Array.isArray(p.imgs) ? p.imgs.length > 0 : (p.imgs || 0) 
 async function cargarFotosManifest() {
     try {
         const man = await (await fetch('fotos.json?_=' + Date.now(), { cache: 'no-store' })).json();
-        products.forEach(p => { const k = (p.catFolder || p.category) + '/' + (p.folder || p.name); if (man[k] && man[k].length) p.imgs = man[k]; });
+        products.forEach(p => { const k = (p.catFolder || p.category) + '/' + (p.folder || p.name); const f = Array.isArray(man[k]) ? man[k].filter(x => /^[\w.-]{1,80}\.(jpe?g|png|webp)$/i.test(String(x))) : []; if (f.length) p.imgs = f; });   // solo nombres de foto válidos
     } catch (e) {}
 }
 (async function init() {

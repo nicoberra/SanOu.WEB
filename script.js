@@ -2332,6 +2332,8 @@ function refrescarCatalogo() {
     } catch (e) { console.warn('Error refrescando el catálogo:', e); }
 }
 
+// Solo nombres de foto válidos (ej. 1.webp): nunca se mete otra cosa en el HTML.
+const fotosValidas = l => Array.isArray(l) ? l.filter(f => /^[\w.-]{1,80}\.(jpe?g|png|webp)$/i.test(String(f))) : [];
 // Fotos: lee fotos.json (lo mantiene el CRM) y actualiza qué fotos tiene cada producto.
 async function loadFotosManifest() {
     try {
@@ -2340,12 +2342,12 @@ async function loadFotosManifest() {
         const man = await r.json();
         products.forEach(p => {
             const key = (p.catFolder || p.category) + '/' + (p.folder || p.name);
-            if (man[key] && man[key].length) p.imgs = man[key];   // sobreescribe con las fotos reales
+            const f = fotosValidas(man[key]); if (f.length) p.imgs = f;   // sobreescribe con las fotos reales
         });
         // Los que estaban apartados por no tener fotos se publican apenas tengan la primera.
         for (let i = SIN_FOTOS.length - 1; i >= 0; i--) {
             const p = SIN_FOTOS[i], key = (p.catFolder || p.category) + '/' + (p.folder || p.name);
-            if (man[key] && man[key].length) { p.imgs = man[key]; products.push(SIN_FOTOS.splice(i, 1)[0]); }
+            const f = fotosValidas(man[key]); if (f.length) { p.imgs = f; products.push(SIN_FOTOS.splice(i, 1)[0]); }
         }
     } catch (e) { /* si falla, quedan las fotos del catálogo */ }
 }

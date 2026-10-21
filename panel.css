@@ -885,3 +885,15 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 .fotos-wrap{position:relative}
 .fotos-soltar{display:none;position:absolute;inset:-6px;z-index:5;border:2px dashed var(--am);border-radius:16px;background:rgba(20,20,20,.88);color:var(--am);font-weight:800;font-size:1.05rem;align-items:center;justify-content:center;gap:10px;pointer-events:none}
 .fotos-wrap.soltando .fotos-soltar{display:flex}
+/* Quiénes compraron un producto */
+button.prod-vendidos{font:inherit;cursor:pointer;transition:transform .12s,filter .15s}
+button.prod-vendidos:hover{filter:brightness(1.15)}
+button.prod-vendidos:active{transform:scale(.96)}
+.comp-lista{display:flex;flex-direction:column;gap:10px}
+.comp-cli{background:var(--neg3);border:1px solid var(--linea);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.comp-top{display:flex;align-items:center;gap:10px}
+.comp-top b{flex:1;min-width:0}
+.comp-u{font-weight:800;color:#25D366}
+.comp-tel{font-size:.82rem;color:var(--gris2)}
+.comp-ped{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;background:var(--neg2);border:1px solid var(--linea);border-radius:9px;color:var(--gris2);font:inherit;font-size:.82rem;padding:7px 10px;cursor:pointer;text-align:left}
+.comp-ped:hover{border-color:rgba(255,212,0,.4);color:#fff}
