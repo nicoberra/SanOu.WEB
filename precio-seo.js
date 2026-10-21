@@ -39,7 +39,7 @@
             var sinStock = (stockRaw === 'false' || stockRaw === 'no');
             if (precio > 0) {
                 el.innerHTML = '<span class="seo-precio-lbl">Precio</span>'
-                    + (old > precio ? '<span class="seo-precio-old">' + fmt(old) + '</span>' : '')
+                    + (old > precio * 1.03 ? '<span class="seo-precio-old">' + fmt(old) + '</span>' : '')
                     + '<span class="seo-precio-now">' + fmt(precio) + '</span>'
                     + (transfer > 0 && transfer < precio ? '<span class="seo-precio-transfer">Con transferencia <b>' + fmt(transfer) + '</b> · ahorrás ' + fmt(precio - transfer) + '</span>' : '')
                     + (sinStock ? '<span class="seo-precio-stock out">Sin stock · reingreso en ~90 días</span>'

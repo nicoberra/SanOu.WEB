@@ -196,7 +196,7 @@ async function loadPricesFromSheet() {
             const oldPriceRaw = (f[3] || '').trim();
             const priceVal    = precio      ? parseInt(precio.replace(/[$\.,]/g, ''))      : 0;
             const oldPriceVal = oldPriceRaw ? parseInt(oldPriceRaw.replace(/[$\.,]/g, '')) : 0;
-            if (priceVal > 0) { product.precioTransfer = priceVal; product.price = (window.sanouPrecioLista ? window.sanouPrecioLista(priceVal) : priceVal); product.oldPrice = oldPriceVal > product.price ? oldPriceVal : 0; }
+            if (priceVal > 0) { product.precioTransfer = priceVal; product.price = (window.sanouPrecioLista ? window.sanouPrecioLista(priceVal) : priceVal); product.oldPrice = oldPriceVal > product.price * 1.03 ? oldPriceVal : 0; }
             else if (oldPriceVal > 0)                 { product.price = oldPriceVal; product.oldPrice = 0; }
             if (stockRaw) product.inStock = (stockRaw === 'true' || stockRaw === 'si');
         });

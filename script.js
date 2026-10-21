@@ -1815,7 +1815,7 @@ async function loadPricesFromSheet() {
             if (priceVal > 0) {
                 product.precioTransfer = priceVal;
                 product.price = lista(priceVal);
-                product.oldPrice = oldPriceVal > product.price ? oldPriceVal : 0;   // "antes" solo si es mayor
+                product.oldPrice = oldPriceVal > product.price * 1.03 ? oldPriceVal : 0;   // "antes" solo si es al menos 3% mayor (si no, el tachado casi igual queda raro)
             } else if (oldPriceVal > 0) { product.price = oldPriceVal; product.precioTransfer = 0; product.oldPrice = 0; }
 
             if (stockRaw) product.inStock = (stockRaw === 'true' || stockRaw === 'si');
