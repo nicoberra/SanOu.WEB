@@ -217,7 +217,7 @@ function renderCatalogo() {
     const catOrder = Object.keys(CAT_NAMES).filter(k => k !== 'otros');   // incluye las categorías agregadas desde el CRM
     let body = '';
     catOrder.forEach(cat => {
-        const prods = products.filter(p => p.category === cat || (p.extraCategories || []).includes(cat));
+        const prods = products.filter(p => conFotos(p) && (p.category === cat || (p.extraCategories || []).includes(cat)));   // sin fotos no se publica
         if (!prods.length) return;
         body += `<div class="cat-section">
             <div class="cat-header">${CAT_NAMES[cat] || cat}</div>
@@ -244,9 +244,17 @@ function renderCatalogo() {
     document.getElementById('catBody').innerHTML = body || '<div class="cat-loading">No hay productos para mostrar.</div>';
 }
 
+const conFotos = p => Array.isArray(p.imgs) ? p.imgs.length > 0 : (p.imgs || 0) > 0;
+// Fotos reales (fotos.json, lo mantiene el CRM): así entran los productos nuevos apenas tienen foto.
+async function cargarFotosManifest() {
+    try {
+        const man = await (await fetch('fotos.json?_=' + Date.now(), { cache: 'no-store' })).json();
+        products.forEach(p => { const k = (p.catFolder || p.category) + '/' + (p.folder || p.name); if (man[k] && man[k].length) p.imgs = man[k]; });
+    } catch (e) {}
+}
 (async function init() {
     renderCatalogo();           // pinta ya, con los precios del catálogo
-    await loadPricesFromSheet();
+    await Promise.all([loadPricesFromSheet(), cargarFotosManifest()]);
     renderCatalogo();           // repinta con precios/stock actualizados del Sheet
 })();
 </script>

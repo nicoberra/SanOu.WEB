@@ -630,6 +630,10 @@ const PRICES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdb
 
 // ─── PRODUCTOS ──────────────────────────────────────────────────
 const products = window.SANOU_PRODUCTOS || [];
+// Un producto SIN FOTOS no se publica: queda apartado hasta que fotos.json (lo actualiza el CRM
+// al subir fotos) diga que tiene; ahí se suma a la tienda antes de dibujar.
+const SIN_FOTOS = [];
+for (let i = products.length - 1; i >= 0; i--) if (!getImgs(products[i]).length) SIN_FOTOS.unshift(products.splice(i, 1)[0]);
 
 const CAT_NAMES = window.SANOU_CAT_NAMES || {};
 
@@ -2338,6 +2342,11 @@ async function loadFotosManifest() {
             const key = (p.catFolder || p.category) + '/' + (p.folder || p.name);
             if (man[key] && man[key].length) p.imgs = man[key];   // sobreescribe con las fotos reales
         });
+        // Los que estaban apartados por no tener fotos se publican apenas tengan la primera.
+        for (let i = SIN_FOTOS.length - 1; i >= 0; i--) {
+            const p = SIN_FOTOS[i], key = (p.catFolder || p.category) + '/' + (p.folder || p.name);
+            if (man[key] && man[key].length) { p.imgs = man[key]; products.push(SIN_FOTOS.splice(i, 1)[0]); }
+        }
     } catch (e) { /* si falla, quedan las fotos del catálogo */ }
 }
 

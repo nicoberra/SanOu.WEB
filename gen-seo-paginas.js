@@ -21,7 +21,11 @@ eval(fs.readFileSync(path.join(ROOT, 'catalogo-productos.js'), 'utf8'));
   (E.categorias || []).forEach(c => { if (c && okKey(c.key) && !C[c.key]) { const o = C.otros; delete C.otros; C[c.key] = limpio(c.nombre); if (o) C.otros = o; } });
   (E.productos || []).forEach(p => { const id = parseInt(p && p.id, 10); if (id > 0 && okKey(p.category) && !P.some(x => x.id === id)) P.push(Object.assign(limpio(p), { id, price: 0, extra: true })); });
 })();
-const PRODS = window.SANOU_PRODUCTOS;
+// Fotos reales (fotos.json, lo mantiene el CRM). Un producto sin fotos no tiene página ni entra al sitemap.
+let MAN_FOTOS = {}; try { MAN_FOTOS = JSON.parse(fs.readFileSync(path.join(ROOT, 'fotos.json'), 'utf8')); } catch (e) {}
+window.SANOU_PRODUCTOS.forEach(p => { const k = (p.catFolder || p.category) + '/' + (p.folder || p.name); if (MAN_FOTOS[k] && MAN_FOTOS[k].length) p.imgs = MAN_FOTOS[k]; });
+const conFotos = p => Array.isArray(p.imgs) ? p.imgs.length > 0 : (p.imgs || 0) > 0;
+const PRODS = window.SANOU_PRODUCTOS.filter(conFotos);
 
 const SITE = 'https://sanou.com.ar';
 const WA = '5491131751517';
