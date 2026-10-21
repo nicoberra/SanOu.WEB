@@ -1078,28 +1078,54 @@ function precioTxt(v) {
     return n ? '$' + parseInt(n, 10).toLocaleString('es-AR') : '';
 }
 
-// Unidades vendidas por producto, sumadas desde los pedidos del CRM (cantidades del detalle "2x Nombre").
+// Unidades vendidas por producto, sumadas desde los pedidos del CRM.
 // Vendidos = pedidos Entregados/Cobrados. En curso = los demás, salvo cancelados/rechazados.
+// El producto se reconoce por el nombre (sin importar tildes ni mayúsculas) o por su MODELO
+// (HHY-120A, HHG-16, HHYG-50D, mordaza 100 mm…), así suma aunque el pedido lo escriba distinto.
+function sinAcentos(s){ return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+function claveNombre(s){ return sinAcentos(s).replace(/\((precio )?(mayorista|unitario)\)/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
+function modelosDe(s){
+    const t = sinAcentos(s), out = new Set();
+    (t.match(/\b[a-z]{2,4}\s?-?\s?\d{1,4}[a-z]{0,3}\b/g) || []).forEach(m => {
+        const k = m.replace(/[\s-]/g, '');
+        if (!/^(mm|nm|cm|kg|ton|gba|cp)\d/.test(k)) out.add(k);
+    });
+    const mm = t.match(/(\d{2,3})\s?mm\b/);
+    if (mm && /mordaza/.test(t)) out.add('mordaza' + mm[1]);
+    return out;
+}
+// Productos de un pedido: los de la compra web (con cantidades exactas) o los del detalle escrito.
+function itemsDePedido(ped){
+    try { const a = JSON.parse(ped.items || '[]'); if (Array.isArray(a) && a.length) return a.map(i => ({ nombre: i.n, cantidad: parseInt(i.q, 10) || 1 })); } catch (e) {}
+    return String(ped.detalle || '').replace(/^\s*mayorista:\s*/i, '').split(',').map(x => x.trim()).filter(Boolean).map(x => {
+        let m = x.match(/^(\d+)\s*[x×]\s*(.+)$/i); if (m) return { nombre: m[2], cantidad: parseInt(m[1], 10) };
+        m = x.match(/^(.+?)\s*[x×]\s*(\d+)$/i); if (m) return { nombre: m[1], cantidad: parseInt(m[2], 10) };
+        return { nombre: x, cantidad: 1 };
+    });
+}
 function ventasPorProducto(){
-    const v = {};
+    const lista = [];
     (pedidos||[]).forEach(ped => {
         const est = estPed(ped.estado);
         if (/cancel|rechaz|perdid|anulad/i.test(est)) return;
         const tipo = est === 'Entregado' ? 'vend' : 'curso';
-        parseDetalle(ped.detalle).forEach(it => {
-            const k = norm(it.nombre); if (!k) return;
-            v[k] = v[k] || { vend: 0, curso: 0 };
-            v[k][tipo] += (it.cantidad || 1);
+        itemsDePedido(ped).forEach(it => {
+            const clave = claveNombre(it.nombre); if (!clave) return;
+            lista.push({ clave, modelos: modelosDe(it.nombre), tipo, cantidad: it.cantidad || 1 });
         });
     });
-    return v;
+    return lista;
 }
-// Busca las ventas de un producto por su nombre en la planilla o en el catálogo (por si difieren).
-function ventasDe(nombre, mapa){
+// Ventas de un producto (nombre de la planilla; también prueba con el nombre del catálogo).
+function ventasDe(nombre, lista){
     const cp = catalogoDe(nombre);
-    const claves = [norm(nombre)]; if (cp) { claves.push(norm(cp.name)); if (cp.sheetName) claves.push(norm(cp.sheetName)); }
+    const nombres = [nombre]; if (cp) { nombres.push(cp.name); if (cp.sheetName) nombres.push(cp.sheetName); }
+    const claves = new Set(nombres.map(claveNombre)), modelos = new Set();
+    nombres.forEach(n => modelosDe(n).forEach(m => modelos.add(m)));
     const r = { vend: 0, curso: 0 };
-    [...new Set(claves)].forEach(k => { if (mapa[k]) { r.vend += mapa[k].vend; r.curso += mapa[k].curso; } });
+    lista.forEach(it => {
+        if (claves.has(it.clave) || [...it.modelos].some(m => modelos.has(m))) r[it.tipo] += it.cantidad;
+    });
     return r;
 }
 function pintarProductos(lista, q) {
