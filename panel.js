@@ -1306,10 +1306,11 @@ async function cargarFotos(msg){
                 <span class="foto-orden">${i===0?'★ Principal':(i+1)}</span>
                 <button class="foto-del" onclick="borrarFoto('${esc(fn).replace(/'/g,"\\'")}')"><i class="fas fa-trash"></i></button>
                 <div class="foto-acc">
-                    <button class="foto-acc-btn" onclick="copiarFoto('${url}', this)" title="Copiar la foto"><i class="fas fa-copy"></i> Copiar</button>
+                    <button type="button" class="foto-acc-btn foto-copiar" data-url="${esc(url)}" title="Copiar la foto"><i class="fas fa-copy"></i> Copiar</button>
                     <a class="foto-acc-btn" href="${url}" download="${esc(_fotosProd.fo + '-' + fn)}" title="Descargar la foto"><i class="fas fa-download"></i></a>
                 </div></div>`;
         }).join('') : '<div class="panel-vacio-chico">Este producto no tiene fotos todavía. Subí la primera con el botón de arriba.</div>';
+        grid.querySelectorAll('.foto-copiar').forEach(btn => btn.addEventListener('click', () => copiarFoto(btn.dataset.url, btn)));
         if(fotos.length > 1) habilitarReordenFotos(grid);
     } catch(e){ if(m) m.textContent = 'No se pudieron cargar las fotos.'; }
 }
