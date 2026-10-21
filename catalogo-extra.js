@@ -1,5 +1,5 @@
 // Generado por el CRM (Productos → Nueva categoría / Nuevo producto). No editar a mano.
-window.SANOU_EXTRA = {"categorias":[],"productos":[]};
+window.SANOU_EXTRA = {"categorias":[{"key":"repuestos","nombre":"Repuestos"}],"productos":[]};
 (function () {
   var E = window.SANOU_EXTRA || {}, C = window.SANOU_CAT_NAMES, P = window.SANOU_PRODUCTOS;
   if (!C || !P) return;
