@@ -2781,3 +2781,49 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
         }
     });
 })();
+
+// ─── MENÚ DE ESTADO REDONDEADO (compu) ───────────────────────────
+// El desplegable nativo de Windows se ve cuadrado y no se puede estilizar: en compu (mouse)
+// se reemplaza por un menú propio. El <select> sigue siendo el que guarda (mismo "change"),
+// el teclado funciona igual y en el celular queda el selector del teléfono.
+(function menuEstado(){
+    if (!window.matchMedia || !matchMedia('(pointer:fine)').matches) return;
+    let menu = null;
+    const tono = t => /entregado|hecho|ganada|cobrado|pagado/i.test(t) ? 'ok' : /perdida|rechaz/i.test(t) ? 'mal' : 'pend';
+    function cerrar(){ if (menu) { menu.remove(); menu = null; } }
+    function abrir(sel){
+        cerrar();
+        const r = sel.getBoundingClientRect();
+        menu = document.createElement('div');
+        menu.className = 'estado-menu'; menu.setAttribute('role', 'listbox');
+        [...sel.options].forEach(o => {
+            const txt = o.textContent.replace(/^✓\s*/, '');
+            const b = document.createElement('button');
+            b.type = 'button'; b.className = 'estado-op est-' + tono(txt) + (o.selected ? ' on' : '');
+            b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(o.selected));
+            b.innerHTML = '<span class="estado-dot"></span><span class="estado-txt"></span>' + (o.selected ? '<i class="fas fa-check"></i>' : '');
+            b.querySelector('.estado-txt').textContent = txt;
+            b.addEventListener('click', () => {
+                cerrar();
+                if (sel.value !== o.value) { sel.value = o.value; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+            });
+            menu.appendChild(b);
+        });
+        document.body.appendChild(menu);
+        const alto = menu.offsetHeight, abajo = window.innerHeight - r.bottom;
+        menu.style.minWidth = Math.max(r.width, 180) + 'px';
+        menu.style.left = Math.min(r.left, window.innerWidth - menu.offsetWidth - 8) + 'px';
+        menu.style.top = (abajo > alto + 12 ? r.bottom + 6 : r.top - alto - 6) + 'px';
+    }
+    document.addEventListener('mousedown', e => {
+        if (menu && e.target.closest('.estado-menu')) return;
+        const sel = e.target.closest('select.rec-estado');
+        if (!sel) { cerrar(); return; }
+        e.preventDefault(); sel.focus();
+        if (menu) { cerrar(); return; }
+        abrir(sel);
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrar(); });
+    window.addEventListener('resize', cerrar);
+    window.addEventListener('scroll', cerrar, true);
+})();

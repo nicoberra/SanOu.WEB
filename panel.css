@@ -851,3 +851,15 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 .may-link-wa{background:#25D366!important;color:#fff!important}
 .may-link-btns .copiado{background:#25D366!important;color:#fff!important}
 @media (max-width:520px){.may-link-btns{width:100%}.may-link-btns .panel-btn-add{flex:1;justify-content:center}}
+/* Menú de estado redondeado (reemplaza el desplegable cuadrado de Windows) */
+.estado-menu{position:fixed;z-index:9999;background:var(--neg2);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:6px;box-shadow:0 18px 44px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:2px;transform-origin:top center;animation:estadoMenu .16s cubic-bezier(.22,1,.36,1)}
+@keyframes estadoMenu{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.estado-op{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;color:#fff;font:inherit;font-size:.92rem;font-weight:600;text-align:left;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background-color .15s}
+.estado-op:hover,.estado-op:focus-visible{background:var(--neg3);outline:none}
+.estado-op.on{background:rgba(255,255,255,.06);font-weight:800}
+.estado-op i{margin-left:auto;color:var(--am);font-size:.8rem}
+.estado-dot{width:10px;height:10px;border-radius:50%;flex:none}
+.est-pend .estado-dot{background:#ff9d2e;box-shadow:0 0 0 3px rgba(255,140,0,.18)}
+.est-ok .estado-dot{background:#25D366;box-shadow:0 0 0 3px rgba(37,211,102,.18)}
+.est-mal .estado-dot{background:#ff5a52;box-shadow:0 0 0 3px rgba(255,90,82,.18)}
+@media (prefers-reduced-motion:reduce){.estado-menu{animation:none}.estado-op{transition:none}}
