@@ -354,7 +354,7 @@ function pintarCotizaciones(lista) {
         const reabrible = datosReabrir(c);   // tiene datos completos → se puede reabrir el PDF
         // Si la cotización no guardó teléfono, lo buscamos en los usuarios por nombre.
         const tel = c.telefono || telDeCliente(c.cliente);
-        const wa = waLink(tel, `¡Hola ${(c.cliente || '').split(' ')[0]}! Te escribo de San Ou 🔧 por tu presupuesto.`);
+        const wa = waLink(tel, msgPresupuesto(c));
         return `<div class="rec-card">
             <div class="rec-top">
                 <span class="rec-nombre">${esc(c.cliente) || '(sin nombre)'}</span>
@@ -805,7 +805,7 @@ function pintarClientes(lista) {
     lista = [...lista].sort((a,b)=>(parseFechaCRM(b.fecha)?.getTime() || 0) - (parseFechaCRM(a.fecha)?.getTime() || 0));
     cont.innerHTML = lista.map(c => {
         const tel = soloDigitos(c.telefono);
-        const wa = tel ? `https://wa.me/${tel.length <= 11 ? '549' + tel : tel}?text=${encodeURIComponent('¡Hola ' + (c.nombre || '') + '! Te escribo de San Ou 🔧')}` : '';
+        const wa = waLink(tel, '¡Hola ' + (c.nombre || '') + '! Te escribo de San Ou.');
         const sub = [c.empresa, c.ciudad].filter(Boolean).join(' · ');
         const nped = _pedidosCargados ? pedidosDeCliente(c.nombre, c.telefono, c.id).length : 0;
         return `
@@ -2206,9 +2206,32 @@ function autoTel(pref){
     if (campo.readOnly) campo.value = tel || '';        // pedido: refleja el del usuario, no se edita
     else if (tel && !campo.value) campo.value = tel;    // seguimiento: completa si está vacío
 }
+// Link de WhatsApp. Se sacan los emojis "nuevos" (fuera del plano básico, ej. 🔧): la app de
+// WhatsApp de escritorio en Windows los rompe cuando vienen en el link y se ven como �.
 function waLink(tel, texto){
     const t = soloDigitos(tel); if(!t) return '';
-    return `https://wa.me/${t.length<=11?'549'+t:t}?text=${encodeURIComponent(texto)}`;
+    const limpio = String(texto || '').replace(/[\u{1F000}-\u{1FFFF}\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ').replace(/ ([.,!?:])/g, '$1');
+    return `https://wa.me/${t.length<=11?'549'+t:t}?text=${encodeURIComponent(limpio)}`;
+}
+// Mensaje para el cliente de un presupuesto, según su estado (abierto, vencido, ganado o perdido).
+function msgPresupuesto(c){
+    const nom = String(c.cliente || '').trim().split(' ')[0];
+    const hola = `¡Hola${nom ? ' ' + nom : ''}! ¿Cómo estás? Te escribo de San Ou`;
+    const d = datosReabrir(c) || {};
+    const items = Array.isArray(d.items) && d.items.length
+        ? d.items.map(i => `• ${i.cantidad} x ${i.nombre}`)
+        : parseDetalle(c.detalle).map(i => `• ${i.cantidad} x ${i.nombre}`);
+    const lista = items.length ? '\n\n' + items.join('\n') : (c.detalle ? '\n\n' + c.detalle : '');
+    const total = montoTxt(c.monto) ? `\n\nTotal: ${montoTxt(c.monto)} (IVA incluido)` : '';
+    const num = d.numero ? ` N° ${d.numero}` : '';
+    const vence = d.fechaVence ? String(d.fechaVence) : '';
+    const fv = vence ? new Date(vence.split('/').reverse().join('-') + 'T23:59:59') : null;
+    const vencido = fv && !isNaN(fv) && fv < new Date();
+    const est = c.estado || 'Abierta';
+    if (/ganad/i.test(est)) return `${hola}. ¡Gracias por confirmar el presupuesto${num}!${lista}${total}\n\nYa lo estamos preparando. Te aviso apenas esté listo para retirar en el depósito o para enviártelo.`;
+    if (/perdid/i.test(est)) return `${hola}. Te quería agradecer por consultarnos por el presupuesto${num}. Si más adelante necesitás estas herramientas o cualquier otra, escribime y te armo uno nuevo.`;
+    if (vencido) return `${hola} por el presupuesto${num} que te pasamos:${lista}${total}\n\nVenció el ${vence}. Si te sigue interesando, te lo actualizo con los precios y el stock de hoy.`;
+    return `${hola} por el presupuesto${num} que te pasamos:${lista}${total}${vence ? `\nVálido hasta el ${vence}.` : ''}\n\n¿Pudiste verlo? Si te sirve, lo confirmamos y te lo preparamos para retirar en el depósito o te lo enviamos. Cualquier duda, quedo a disposición.`;
 }
 function badgeEstado(e){
     const cls = {'Pendiente':'est-pend','Entregado':'est-cobr','Cobrado':'est-cobr','Hecho':'est-hecho',
