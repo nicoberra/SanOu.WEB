@@ -115,6 +115,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://sanou.com.ar/categoria/separador-de-bridas.html</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://sanou.com.ar/categoria/otras-herramientas.html</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>weekly</changefreq>
@@ -398,6 +404,12 @@
   </url>
   <url>
     <loc>https://sanou.com.ar/producto/tijera-cortacable-manual-hhd-500-49.html</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://sanou.com.ar/producto/separador-de-bridas-hidraulico-10tn-hhp-1481-51.html</loc>
     <lastmod>2026-10-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
