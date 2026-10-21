@@ -2031,7 +2031,7 @@ function openCatalog() {
         return base + `productos/${catFolder}/${folder}/1.${ext}`;
     }
 
-    const catOrder = ['pinzas','dobladoras','cortahierro','mordazas','bombas','sacabocados','cilindros','cortadoras','extractores','punzonadoras','motores'];
+    const catOrder = Object.keys(CAT_NAMES).filter(k => k !== 'otros');   // incluye las categorías agregadas desde el CRM
 
     let body = '';
     catOrder.forEach(cat => {
@@ -2341,8 +2341,38 @@ async function loadFotosManifest() {
     } catch (e) { /* si falla, quedan las fotos del catálogo */ }
 }
 
+// Categorías agregadas desde el CRM (catalogo-extra.js): tarjeta en "Categorías" y opción en el filtro.
+// La foto de la tarjeta es la primera foto de un producto de esa categoría.
+function sumarCategoriasExtra() {
+    const grid = document.querySelector('.categories-grid'), menu = document.getElementById('filterDropdownMenu');
+    Object.keys(CAT_NAMES).forEach(cat => {
+        if (grid) {
+            let card = grid.querySelector(`[data-cat="${cat}"]`);
+            if (!card) {
+                card = document.createElement('div');
+                card.className = 'category-card'; card.dataset.cat = cat; card.onclick = () => filterProducts(cat);
+                const h = document.createElement('h3'); h.textContent = CAT_NAMES[cat]; card.appendChild(h);
+                grid.insertBefore(card, grid.querySelector('[data-cat="otros"]'));
+                card.dataset.extra = '1';
+            }
+            if (card.dataset.extra && !card.style.backgroundImage) {
+                const p = products.find(x => x.category === cat && getImgs(x).length);
+                if (p) card.style.backgroundImage = `url("${encodeURI(getImgs(p)[0])}")`;
+            }
+        }
+        if (menu && !menu.querySelector(`[data-filter="${cat}"]`)) {
+            const o = document.createElement('div');
+            o.className = 'filter-option'; o.dataset.filter = cat; o.textContent = CAT_NAMES[cat];
+            o.onclick = () => selectFilter(cat, CAT_NAMES[cat]);
+            menu.insertBefore(o, menu.querySelector('[data-filter="otros"]'));
+        }
+    });
+}
+sumarCategoriasExtra();
+
 // Cargar precios + manifest de fotos y luego dibujar (o refrescar si la red de seguridad ya dibujó).
 Promise.all([loadPricesFromSheet(), loadFotosManifest()]).finally(() => {
+    sumarCategoriasExtra();   // ya con las fotos reales: fondo de las categorías nuevas
     syncCartPrices();   // corrige precios viejos/placeholder del carrito con los reales del Sheet
     if (typeof updateCartUI === 'function') updateCartUI();
     if (_catalogoDibujado) refrescarCatalogo();

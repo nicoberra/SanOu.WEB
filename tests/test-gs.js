@@ -380,5 +380,52 @@ test('compra web: el comprador queda en Usuarios, vinculado al pedido, sin dupli
   igual(String(ped.rows[2][hp.indexOf('ClienteID')]), String(fila[0]));
 });
 
+// ── v30: categorías y productos nuevos desde el CRM ──
+function conRepo() {
+  const env = entorno(); const repo = {};
+  env.ctx.GH_TOKEN = 'token-de-prueba';
+  env.ctx.Utilities.newBlob = (b) => ({ getDataAsString: () => Buffer.from(b).toString('utf8'), getBytes: () => [...Buffer.from(b)] });
+  env.ctx.Utilities.base64Encode = (s) => Buffer.from(String(s), 'utf8').toString('base64');
+  env.ctx.ghApi = (method, path, payload) => {
+    const ruta = path.replace(/^contents\//, '').replace(/\?.*$/, '');
+    if (method === 'get') return repo[ruta] ? { code: 200, json: { content: repo[ruta].b64, sha: 'sha' + repo[ruta].v } } : { code: 404, json: null };
+    repo[ruta] = { b64: payload.content, v: (repo[ruta] ? repo[ruta].v : 0) + 1, msg: payload.message }; return { code: 200, json: {} };
+  };
+  env.repo = repo; return env;
+}
+const textoRepo = (env, r) => Buffer.from(env.repo[r].b64, 'base64').toString('utf8');
+
+test('catálogo: nueva categoría y nuevo producto quedan en la web y en la planilla', () => {
+  const env = conRepo();
+  igual(env.llamar({ action: 'cat_agregar', tab: 'Clientes', nombre: 'Llaves de impacto' }).json.error, 'No autorizado');
+  const c = env.llamar({ action: 'cat_agregar', tab: 'Clientes', auth: env.AUTH, nombre: 'Llaves de impacto', existentes: 'pinzas,otros' }).json;
+  igual(c.ok, true); igual(c.key, 'llaves-de-impacto');
+  const p = env.llamar({ action: 'prod_agregar', tab: 'Clientes', auth: env.AUTH, nombre: 'Llave de Impacto LI-500', categoria: c.key, precio: '$150.000', stock: 'true',
+    desc: 'Llave neumática', specs: JSON.stringify([{ l: 'Torque', v: '500 Nm' }, { l: '', v: 'vacío' }]), idmax: '50' }).json;
+  igual(p.ok, true); igual(p.producto.id, 51); igual(p.producto.specs.length, 1);
+  // la fila nueva en la planilla de precios
+  const filas = env.planillas[env.ctx.PRECIOS_ID].getSheetByName('Precios').rows;
+  const fila = filas[filas.length - 1]; igual(fila[0], 'Llave de Impacto LI-500'); igual(fila[1], 150000); igual(fila[2], true);
+  // el archivo generado suma la categoría (antes de "Otros") y el producto a la web
+  const w = { SANOU_CAT_NAMES: { pinzas: 'Crimpadoras', otros: 'Otros' }, SANOU_PRODUCTOS: [{ id: 1, name: 'Pinza' }] };
+  vm.runInNewContext(textoRepo(env, 'catalogo-extra.js'), { window: w });
+  igual(Object.keys(w.SANOU_CAT_NAMES).join(','), 'pinzas,llaves-de-impacto,otros');
+  igual(w.SANOU_PRODUCTOS.length, 2); igual(w.SANOU_PRODUCTOS[1].name, 'Llave de Impacto LI-500'); igual(w.SANOU_PRODUCTOS[1].price, 0);
+  // no se repiten nombres
+  verdad(/Ya hay un producto/.test(env.llamar({ action: 'prod_agregar', tab: 'Clientes', auth: env.AUTH, nombre: 'Llave de Impacto LI-500', categoria: c.key }).json.error));
+  verdad(/Ya existe/.test(env.llamar({ action: 'cat_agregar', tab: 'Clientes', auth: env.AUTH, nombre: 'llaves de impacto' }).json.error));
+});
+
+test('catálogo: editar y borrar solo productos agregados desde el CRM', () => {
+  const env = conRepo();
+  const p = env.llamar({ action: 'prod_agregar', tab: 'Clientes', auth: env.AUTH, nombre: 'Producto Nuevo X1', categoria: 'otros', precio: '1000', idmax: '50' }).json.producto;
+  igual(env.llamar({ action: 'prod_editar', tab: 'Clientes', auth: env.AUTH, id: p.id, desc: 'Nueva descripción', badge: 'Nuevo' }).json.producto.desc, 'Nueva descripción');
+  verdad(/Solo se pueden/.test(env.llamar({ action: 'prod_editar', tab: 'Clientes', auth: env.AUTH, id: 3, desc: 'x' }).json.error));
+  igual(env.llamar({ action: 'prod_borrar', tab: 'Clientes', auth: env.AUTH, id: p.id }).json.ok, true);
+  const filas = env.planillas[env.ctx.PRECIOS_ID].getSheetByName('Precios').rows;
+  verdad(!filas.some(f => f[0] === 'Producto Nuevo X1'), 'se borró la fila de la planilla');
+  verdad(!/Producto Nuevo X1/.test(textoRepo(env, 'catalogo-extra.js')), 'se sacó del catálogo');
+});
+
 console.log(`\n${ok} OK, ${fallas} con error`);
 process.exit(fallas ? 1 : 0);

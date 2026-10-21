@@ -7,6 +7,8 @@ const ROOT = __dirname;  // corré: node gen-seo-paginas.js (regenera /categoria
 
 global.window = {};
 eval(fs.readFileSync(path.join(ROOT, 'catalogo-productos.js'), 'utf8'));
+// + categorías y productos agregados desde el CRM
+if (fs.existsSync(path.join(ROOT, 'catalogo-extra.js'))) eval(fs.readFileSync(path.join(ROOT, 'catalogo-extra.js'), 'utf8'));
 const PRODS = window.SANOU_PRODUCTOS;
 
 const SITE = 'https://sanou.com.ar';

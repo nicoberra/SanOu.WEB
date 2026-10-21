@@ -1021,6 +1021,8 @@ async function renderProductos() {
                 <i class="fas fa-search"></i>
                 <input type="text" id="buscarProd" placeholder="Buscar producto…" oninput="filtrarProductos()">
             </div>
+            <button class="panel-btn-add" onclick="abrirFormProductoNuevo()"><i class="fas fa-plus"></i> Nuevo producto</button>
+            <button class="panel-btn-add prod-btn-cat" onclick="abrirFormCategoria()"><i class="fas fa-folder-plus"></i> Nueva categoría</button>
         </div>
         <p class="prod-ayuda">Precio, stock, destacado y costo en USD. Se guarda al instante. El costo se convierte a pesos al dólar actual.</p>
         <div class="prod-cats" id="prodCats"></div>
@@ -1057,7 +1059,8 @@ function renderProdCats(){
     const conProd = {};
     productos.forEach(p => { conProd[catDeProducto(p.nombre)] = true; });
     // categorías conocidas con productos + cualquier otra suelta que aparezca
-    const orden = Object.keys(nombres).filter(k => conProd[k]);
+    const extraCats = ((window.SANOU_EXTRA || {}).categorias || []).map(c => c.key);
+    const orden = Object.keys(nombres).filter(k => conProd[k] || extraCats.includes(k));
     Object.keys(conProd).forEach(k => { if(!orden.includes(k)) orden.push(k); });
     const claves = ['all', ...orden];
     cont.innerHTML = claves.map(k =>
@@ -1169,6 +1172,10 @@ function pintarProductos(lista, q) {
             ${bloqueCosto(p, i)}
             ${cp ? `<div class="prod-rec rec-cargando" id="rec-${i}" data-folder="${esc(fo)}"><i class="fas fa-spinner fa-spin"></i> Buscando recorte…</div>
             <button class="prod-link-btn" onclick="copiarLinkProducto(${cp.id}, this)"><i class="fas fa-link"></i> Copiar link del producto</button>
+            ${cp.extra ? `<div class="prod-btns prod-extra-btns">
+                <button class="prod-fotos-btn" onclick="abrirFormProductoNuevo(${cp.id})"><i class="fas fa-pen"></i> Editar ficha</button>
+                <button class="prod-fotos-btn prod-borrar-btn" onclick="borrarProductoCatalogo(${cp.id})"><i class="fas fa-trash"></i> Borrar producto</button>
+            </div>` : ''}
             <div class="prod-btns">
                 <button class="prod-fotos-btn" onclick="abrirFotos('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-camera"></i> Fotos</button>
                 <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadreFoto('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-up-down-left-right"></i> Encuadre foto</button>
@@ -1297,11 +1304,130 @@ async function cargarFotos(msg){
             const url = `${FOTOS_BASE}${encodeURIComponent(_fotosProd.cf)}/${encodeURIComponent(_fotosProd.fo)}/${encodeURIComponent(fn)}?_=${Date.now()}`;
             return `<div class="foto-item" data-fn="${esc(fn)}"><img src="${url}" loading="lazy" draggable="false" onerror="this.style.opacity=.25">
                 <span class="foto-orden">${i===0?'★ Principal':(i+1)}</span>
-                <button class="foto-del" onclick="borrarFoto('${esc(fn).replace(/'/g,"\\'")}')"><i class="fas fa-trash"></i></button></div>`;
+                <button class="foto-del" onclick="borrarFoto('${esc(fn).replace(/'/g,"\\'")}')"><i class="fas fa-trash"></i></button>
+                <div class="foto-acc">
+                    <button class="foto-acc-btn" onclick="copiarFoto('${url}', this)" title="Copiar la foto"><i class="fas fa-copy"></i> Copiar</button>
+                    <a class="foto-acc-btn" href="${url}" download="${esc(_fotosProd.fo + '-' + fn)}" title="Descargar la foto"><i class="fas fa-download"></i></a>
+                </div></div>`;
         }).join('') : '<div class="panel-vacio-chico">Este producto no tiene fotos todavía. Subí la primera con el botón de arriba.</div>';
         if(fotos.length > 1) habilitarReordenFotos(grid);
     } catch(e){ if(m) m.textContent = 'No se pudieron cargar las fotos.'; }
 }
+// Copia la foto para pegarla (WhatsApp, Instagram, mails). El portapapeles solo acepta PNG: se convierte.
+// En el celular, si no se puede copiar, abre "Compartir" con la foto; si tampoco, la descarga.
+async function copiarFoto(url, btn){
+    const listo = txt => { const o = btn.innerHTML; btn.innerHTML = '<i class="fas fa-check"></i> ' + txt; btn.classList.add('ok'); setTimeout(() => { btn.innerHTML = o; btn.classList.remove('ok'); }, 1800); };
+    let blob = null;
+    try { blob = await (await fetch(url)).blob(); } catch (e) { window.open(url, '_blank'); return; }
+    const aPng = async b => { const bmp = await createImageBitmap(b); const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height; c.getContext('2d').drawImage(bmp, 0, 0); return await new Promise(r => c.toBlob(r, 'image/png')); };
+    try {
+        if (!navigator.clipboard || !window.ClipboardItem) throw new Error('sin portapapeles');
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': aPng(blob) })]);
+        listo('¡Copiada!');
+        return;
+    } catch (e) {}
+    try {
+        const nombre = (url.split('/').pop().split('?')[0] || 'foto').replace(/\.\w+$/, '') + '.png';
+        const file = new File([await aPng(blob)], nombre, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+        const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = nombre; a.click(); listo('Descargada');
+    } catch (e) { /* cancelado */ }
+}
+
+// ── Catálogo: categorías y productos nuevos (se guardan en la web y en la planilla) ──
+function abrirFormCategoria(){
+    document.getElementById('modalTitulo').textContent = 'Nueva categoría';
+    document.getElementById('modalBody').innerHTML = `
+        <form class="panel-form" onsubmit="guardarCategoria(event)">
+            <label>Nombre de la categoría</label>
+            <input id="ncNombre" required maxlength="50" placeholder="Ej: Llaves de impacto">
+            <p class="prod-ayuda">Aparece en la web (tarjeta de categoría y filtro) en unos minutos. Después agregale productos con "Nuevo producto".</p>
+            <button class="panel-btn-add" type="submit" id="ncBtn"><i class="fas fa-check"></i> Crear categoría</button>
+        </form>`;
+    abrirModal(); setTimeout(() => document.getElementById('ncNombre').focus(), 100);
+}
+async function guardarCategoria(e){
+    e.preventDefault();
+    const btn = document.getElementById('ncBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando…';
+    try {
+        const r = await crmW({ action: 'cat_agregar', tab: 'Clientes', nombre: document.getElementById('ncNombre').value.trim(), existentes: Object.keys(catNombres()).join(',') });
+        const C = window.SANOU_CAT_NAMES, otros = C.otros; delete C.otros; C[r.key] = r.nombre; if (otros) C.otros = otros;
+        (window.SANOU_EXTRA = window.SANOU_EXTRA || { categorias: [], productos: [] }).categorias.push({ key: r.key, nombre: r.nombre });
+        cerrarModal(); prodCat = r.key; renderProdCats(); filtrarProductos();
+        alert('Categoría "' + r.nombre + '" creada. En unos minutos aparece en la web.');
+    } catch (err) { alert(err.message || 'No se pudo crear la categoría.'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Crear categoría'; }
+}
+function filaSpec(l, v){
+    return `<div class="np-spec"><input class="np-spec-l" maxlength="60" placeholder="Ej: Fuerza" value="${esc(l || '')}"><input class="np-spec-v" maxlength="120" placeholder="Ej: 10 Ton" value="${esc(v || '')}"><button type="button" class="cli-btn cli-del" onclick="this.parentNode.remove()" title="Quitar"><i class="fas fa-xmark"></i></button></div>`;
+}
+// Sin id: producto nuevo. Con id: editar la ficha de un producto agregado desde el CRM.
+function abrirFormProductoNuevo(id){
+    const cp = id ? catProds().find(x => x.id === id) : null;
+    const cats = catNombres();
+    const catSel = cp ? cp.category : (prodCat !== 'all' ? prodCat : '');
+    document.getElementById('modalTitulo').textContent = cp ? 'Editar ficha' : 'Nuevo producto';
+    document.getElementById('modalBody').innerHTML = `
+        <form class="panel-form np-form" onsubmit="guardarProductoNuevo(event, ${cp ? cp.id : 0})">
+            <label>Nombre del producto</label>
+            <input id="npNombre" required maxlength="90" placeholder="Ej: Pinza Hidráulica HHY-240" value="${esc(cp ? cp.name : '')}" ${cp ? 'readonly' : ''}>
+            <label>Categoría</label>
+            <select id="npCat" required>
+                <option value="">Elegí…</option>
+                ${Object.keys(cats).map(k => `<option value="${esc(k)}" ${k === catSel ? 'selected' : ''}>${esc(cats[k])}</option>`).join('')}
+            </select>
+            ${cp ? '' : `<div class="np-grid">
+                <div><label>Precio (transferencia)</label><input id="npPrecio" inputmode="numeric" placeholder="Ej: 150000"></div>
+                <div><label>Precio Mercado Libre (opcional)</label><input id="npMl" inputmode="numeric" placeholder="Ej: 169999"></div>
+                <div><label>Costo USD (opcional)</label><input id="npCosto" inputmode="decimal" placeholder="Ej: 45.5"></div>
+                <div class="np-checks"><label class="np-check"><input type="checkbox" id="npStock" checked> En stock</label><label class="np-check"><input type="checkbox" id="npDest"> Destacado</label></div>
+            </div>`}
+            <label>Etiqueta (opcional)</label>
+            <input id="npBadge" maxlength="30" placeholder="Ej: 6–240 mm² · 3 en 1 · Nuevo" value="${esc(cp && cp.badge || '')}">
+            <label>Descripción</label>
+            <textarea id="npDesc" rows="3" maxlength="1500" placeholder="Qué es, para qué sirve, qué incluye.">${esc(cp && cp.desc || '')}</textarea>
+            <label>Características</label>
+            <div id="npSpecs">${(cp && cp.specs && cp.specs.length ? cp.specs : [{}, {}, {}]).map(x => filaSpec(x.l, x.v)).join('')}</div>
+            <button type="button" class="prod-fotos-btn" onclick="document.getElementById('npSpecs').insertAdjacentHTML('beforeend', filaSpec())"><i class="fas fa-plus"></i> Agregar característica</button>
+            <p class="prod-ayuda">${cp ? 'Los cambios se ven en la web en unos minutos.' : 'Se agrega a la planilla de precios y a la web (aparece en unos minutos). Después te abro las fotos para que le subas las imágenes.'}</p>
+            <button class="panel-btn-add" type="submit" id="npBtn"><i class="fas fa-check"></i> ${cp ? 'Guardar cambios' : 'Agregar producto'}</button>
+        </form>`;
+    abrirModal(); if (!cp) setTimeout(() => document.getElementById('npNombre').focus(), 100);
+}
+async function guardarProductoNuevo(e, id){
+    e.preventDefault();
+    const val = k => (document.getElementById(k) || {}).value || '';
+    const specs = [...document.querySelectorAll('#npSpecs .np-spec')].map(d => ({ l: d.querySelector('.np-spec-l').value.trim(), v: d.querySelector('.np-spec-v').value.trim() })).filter(x => x.l && x.v);
+    const btn = document.getElementById('npBtn'), txt = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando…';
+    try {
+        if (id) {
+            const r = await crmW({ action: 'prod_editar', tab: 'Clientes', id, categoria: val('npCat'), desc: val('npDesc').trim(), badge: val('npBadge').trim(), specs: JSON.stringify(specs) });
+            const p = catProds().find(x => x.id === id); if (p) Object.assign(p, r.producto, { price: p.price, extra: true });
+            cerrarModal(); renderProdCats(); filtrarProductos();
+            return;
+        }
+        const nombre = val('npNombre').trim();
+        const r = await crmW({ action: 'prod_agregar', tab: 'Clientes', nombre, categoria: val('npCat'), precio: val('npPrecio'), ml: val('npMl'),
+            costousd: val('npCosto'), stock: String(document.getElementById('npStock').checked), destacado: String(document.getElementById('npDest').checked),
+            badge: val('npBadge').trim(), desc: val('npDesc').trim(), specs: JSON.stringify(specs), idmax: String(Math.max(0, ...catProds().map(x => x.id || 0))) });
+        catProds().push(Object.assign({}, r.producto, { price: 0, extra: true }));
+        productos.push({ nombre, precio: val('npPrecio'), stock: document.getElementById('npStock').checked, ml: val('npMl'), destacado: document.getElementById('npDest').checked, costousd: val('npCosto') });
+        cacheSet('productos', productos);
+        cerrarModal(); prodCat = r.producto.category; renderProdCats(); filtrarProductos();
+        setTimeout(() => abrirFotos(nombre), 250);   // seguir con las fotos
+    } catch (err) { alert(err.message || 'No se pudo guardar.'); btn.disabled = false; btn.innerHTML = txt; }
+}
+async function borrarProductoCatalogo(id){
+    const p = catProds().find(x => x.id === id); if (!p) return;
+    if (!await confirmar('¿Borrar "' + p.name + '"? Se saca de la web y de la planilla de precios. Las fotos quedan guardadas.', 'Sí, borrar')) return;
+    try {
+        await crmW({ action: 'prod_borrar', tab: 'Clientes', id });
+        const L = catProds(); L.splice(L.indexOf(p), 1);
+        productos = productos.filter(x => String(x.nombre).trim().toLowerCase() !== p.name.toLowerCase());
+        cacheSet('productos', productos); renderProdCats(); filtrarProductos();
+    } catch (err) { alert(err.message || 'No se pudo borrar.'); }
+}
+
 // Reordenar fotos arrastrando con el dedo (o el mouse). Mantener apretado ~una décima y mover.
 function habilitarReordenFotos(grid){
     let dragEl=null, ph=null, offX=0, offY=0, timer=null, activo=false, sx=0, sy=0, fromEl=null;
@@ -1346,7 +1472,7 @@ function habilitarReordenFotos(grid){
     }
     function onDown(e){
         const el=e.target.closest('.foto-item');
-        if(!el || e.target.closest('.foto-del')) return;
+        if(!el || e.target.closest('.foto-del, .foto-acc')) return;
         const p=pos(e); sx=p.x; sy=p.y; fromEl=el;
         timer=setTimeout(()=>iniciar(el,p), 130);
     }

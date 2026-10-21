@@ -863,3 +863,21 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 .est-ok .estado-dot{background:#25D366;box-shadow:0 0 0 3px rgba(37,211,102,.18)}
 .est-mal .estado-dot{background:#ff5a52;box-shadow:0 0 0 3px rgba(255,90,82,.18)}
 @media (prefers-reduced-motion:reduce){.estado-menu{animation:none}.estado-op{transition:none}}
+
+/* Catálogo desde el CRM: nuevo producto / categoría */
+.prod-btn-cat{background:var(--neg3)!important;color:var(--blanco)!important;border:1px solid var(--linea)!important}
+.np-form label{margin-top:10px}
+.np-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.np-checks{display:flex;gap:16px;align-items:flex-end;padding-bottom:8px}
+.np-check{display:flex;align-items:center;gap:8px;font-weight:700;cursor:pointer}
+.np-check input{width:18px;height:18px;accent-color:var(--am)}
+.np-spec{display:grid;grid-template-columns:1fr 1.4fr 40px;gap:8px;margin-bottom:8px}
+.prod-extra-btns{margin-top:6px}
+.prod-borrar-btn{color:#ff6b6b!important;border-color:rgba(255,107,107,.35)!important}
+@media (max-width:520px){.np-grid{grid-template-columns:1fr}}
+/* Fotos: copiar y descargar */
+.foto-acc{position:absolute;left:6px;top:6px;display:flex;gap:6px}
+.foto-acc-btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:none;border-radius:8px;background:rgba(0,0,0,.65);color:#fff;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer;text-decoration:none;backdrop-filter:blur(4px)}
+.foto-acc-btn:hover{background:rgba(0,0,0,.85)}
+.foto-acc-btn.ok{background:#25D366}
+.foto-item .foto-orden{z-index:2}

@@ -146,6 +146,8 @@ body{font-family:Arial,sans-serif;background:#f2f2f2;color:#111}
 <div class="cat-footer"><b>San Ou</b> — Herramientas hidráulicas profesionales &nbsp;|&nbsp; sanou.com.ar &nbsp;|&nbsp; +54 9 11 3175-1517</div>
 
 <script src="catalogo-productos.js"></script>
+
+<script src="catalogo-extra.js"></script>
 <script src="catalogo-fuente.js"></script>
 <script>
 const PRICES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdbPDoIrVhs0zQPEB_wu_rMGz5280eSTygqqTKpjqaFpcZLWN0fSet_4wKgzcZNNEuk2PfK-i0/pub?output=csv';
@@ -212,7 +214,7 @@ function firstImg(p) {
 }
 
 function renderCatalogo() {
-    const catOrder = ['pinzas','dobladoras','cortahierro','mordazas','bombas','sacabocados','cilindros','cortadoras','extractores','punzonadoras','motores'];
+    const catOrder = Object.keys(CAT_NAMES).filter(k => k !== 'otros');   // incluye las categorías agregadas desde el CRM
     let body = '';
     catOrder.forEach(cat => {
         const prods = products.filter(p => p.category === cat || (p.extraCategories || []).includes(cat));
