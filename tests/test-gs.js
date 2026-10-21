@@ -457,5 +457,43 @@ test('recorte 3D: solo PNG, con la clave, y se guarda en recortes/<carpeta>.png'
   verdad(!!env.repo['recortes/HHY-70A.png'], 'quedó en el repo');
 });
 
+// GitHub "atrasado": el listado de la carpeta tarda en reflejar lo subido/borrado (lo que le pasaba a Nicolás).
+function conRepoAtrasado() {
+  const env = conRepo(); const archivos = {}; let foto = null;   // foto = listado viejo congelado
+  const base = env.ctx.ghApi;
+  env.ctx.ghApi = (method, path, payload) => {
+    const ruta = decodeURIComponent(path.replace(/^contents\//, '').replace(/\?.*$/, ''));
+    if (/^productos\//.test(ruta)) {
+      if (method === 'get' && !/\.\w+$/.test(ruta)) {   // listado de carpeta: devuelve el viejo si está congelado
+        const lista = foto || Object.keys(archivos).filter(k => k.startsWith(ruta + '/')).map(k => ({ type: 'file', name: k.split('/').pop() }));
+        return { code: 200, json: lista };
+      }
+      if (method === 'get') return archivos[ruta] ? { code: 200, json: { sha: 's' } } : { code: 404, json: null };
+      if (method === 'put') { if (archivos[ruta]) return { code: 422, json: {} }; archivos[ruta] = 1; return { code: 201, json: {} }; }
+      if (method === 'delete') { delete archivos[ruta]; return { code: 200, json: {} }; }
+    }
+    return base(method, path, payload);
+  };
+  env.congelar = () => { foto = Object.keys(archivos).map(k => ({ type: 'file', name: k.split('/').pop() })); };
+  env.archivos = archivos; return env;
+}
+const subir = env => env.llamar({ action: 'foto_subir', tab: 'Clientes', auth: env.AUTH, catFolder: 'repuestos', folder: 'x', data: 'AAAA' }).json;
+const listar = env => env.llamar({ action: 'fotos_list', tab: 'Clientes', auth: env.AUTH, catFolder: 'repuestos', folder: 'x' }).json.fotos;
+test('fotos: subir varias seguidas con GitHub atrasado no repite nombres', () => {
+  const env = conRepoAtrasado();
+  env.congelar();   // el listado sigue vacío aunque se suban fotos
+  igual(subir(env).foto, '1.webp'); igual(subir(env).foto, '2.webp'); igual(subir(env).foto, '3.webp');
+  igual(listar(env).join(','), '1.webp,2.webp,3.webp', 'aparecen aunque GitHub no las liste todavía');
+});
+test('fotos: una foto borrada no vuelve a aparecer aunque GitHub todavía la liste', () => {
+  const env = conRepoAtrasado();
+  subir(env); subir(env); subir(env);
+  env.congelar();   // GitHub sigue mostrando las 3
+  igual(env.llamar({ action: 'foto_borrar', tab: 'Clientes', auth: env.AUTH, catFolder: 'repuestos', folder: 'x', filename: '2.webp' }).json.borrada, true);
+  igual(listar(env).join(','), '1.webp,3.webp');
+  const man = JSON.parse(Buffer.from(env.repo['fotos.json'].b64, 'base64').toString('utf8'));
+  igual(man['repuestos/x'].join(','), '1.webp,3.webp', 'el índice de la web tampoco la tiene');
+});
+
 console.log(`\n${ok} OK, ${fallas} con error`);
 process.exit(fallas ? 1 : 0);

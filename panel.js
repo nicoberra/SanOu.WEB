@@ -1684,7 +1684,8 @@ async function borrarFoto(fn){
     const m = document.getElementById('fotosMsg'); if(m) m.textContent = 'Borrando…';
     try {
         await crmW({ action:'foto_borrar', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, filename:fn });
-        setTimeout(()=>cargarFotos('✓ Borrada.'), 1500);
+        const el = document.querySelector(`.foto-item[data-fn="${CSS.escape(fn)}"]`); if (el) el.remove();   // se va al instante
+        cargarFotos('✓ Borrada. En la web se actualiza en ~1 minuto.');
     } catch(e){ if(m) m.textContent = 'No se pudo borrar. Reintentá.'; }
 }
 
