@@ -420,11 +420,41 @@ test('catálogo: editar y borrar solo productos agregados desde el CRM', () => {
   const env = conRepo();
   const p = env.llamar({ action: 'prod_agregar', tab: 'Clientes', auth: env.AUTH, nombre: 'Producto Nuevo X1', categoria: 'otros', precio: '1000', idmax: '50' }).json.producto;
   igual(env.llamar({ action: 'prod_editar', tab: 'Clientes', auth: env.AUTH, id: p.id, desc: 'Nueva descripción', badge: 'Nuevo' }).json.producto.desc, 'Nueva descripción');
-  verdad(/Solo se pueden/.test(env.llamar({ action: 'prod_editar', tab: 'Clientes', auth: env.AUTH, id: 3, desc: 'x' }).json.error));
+  // los productos de siempre también se editan (quedan en "ediciones")
+  igual(env.llamar({ action: 'prod_editar', tab: 'Clientes', auth: env.AUTH, id: 3, desc: 'Ficha nueva', specs: JSON.stringify([{ l: 'A', v: '1' }, { l: 'B', v: '2' }, { l: 'C', v: '3' }, { l: 'D', v: '4' }]) }).json.ok, true);
   igual(env.llamar({ action: 'prod_borrar', tab: 'Clientes', auth: env.AUTH, id: p.id }).json.ok, true);
   const filas = env.planillas[env.ctx.PRECIOS_ID].getSheetByName('Precios').rows;
   verdad(!filas.some(f => f[0] === 'Producto Nuevo X1'), 'se borró la fila de la planilla');
   verdad(!/Producto Nuevo X1/.test(textoRepo(env, 'catalogo-extra.js')), 'se sacó del catálogo');
+});
+
+test('catálogo: producto de siempre → editar ficha, sacar de la web y volver a publicar', () => {
+  const env = conRepo();
+  env.llamar({ action: 'prod_editar', tab: 'Clientes', auth: env.AUTH, id: 2, desc: 'Nueva "ficha"', badge: 'Oferta', categoria: 'pinzas',
+    specs: JSON.stringify([{ l: 'A', v: '1' }, { l: 'B', v: '2' }, { l: 'C', v: '3' }, { l: 'D', v: '4' }]) });
+  igual(env.llamar({ action: 'prod_borrar', tab: 'Clientes', auth: env.AUTH, id: 3 }).json.oculto, true);
+  const filas = () => env.planillas[env.ctx.PRECIOS_ID].getSheetByName('Precios').rows.length;
+  const antes = filas();
+  const w = () => { const x = { SANOU_CAT_NAMES: { pinzas: 'P', otros: 'O' }, SANOU_PRODUCTOS: [{ id: 2, name: 'Dos', category: 'pinzas', desc: 'vieja', specs: [] }, { id: 3, name: 'Tres', category: 'pinzas' }] };
+    vm.runInNewContext(textoRepo(env, 'catalogo-extra.js'), { window: x }); return x; };
+  let x = w();
+  igual(x.SANOU_PRODUCTOS.length, 1, 'el 3 sale de la web');
+  igual(x.SANOU_BORRADOS[0].id, 3);
+  igual(x.SANOU_PRODUCTOS[0].desc, 'Nueva ″ficha″'); igual(x.SANOU_PRODUCTOS[0].badge, 'Oferta');
+  igual(x.SANOU_PRODUCTOS[0].allSpecs.length, 4); igual(x.SANOU_PRODUCTOS[0].specs.length, 3, 'la tarjeta muestra las 3 primeras');
+  igual(filas(), antes, 'la fila de la planilla queda');
+  igual(env.llamar({ action: 'prod_restaurar', tab: 'Clientes', auth: env.AUTH, id: 3 }).json.ok, true);
+  x = w(); igual(x.SANOU_PRODUCTOS.length, 2, 'vuelve a la web');
+});
+
+test('recorte 3D: solo PNG, con la clave, y se guarda en recortes/<carpeta>.png', () => {
+  const env = conRepo();
+  const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]).toString('base64');
+  igual(env.llamar({ action: 'recorte_subir', tab: 'Clientes', folder: 'HHY-70A', data: png }).json.error, 'No autorizado');
+  verdad(/PNG/.test(env.llamar({ action: 'recorte_subir', tab: 'Clientes', auth: env.AUTH, folder: 'HHY-70A', data: Buffer.from('jpg').toString('base64') }).json.error));
+  verdad(/inválido/.test(env.llamar({ action: 'recorte_subir', tab: 'Clientes', auth: env.AUTH, folder: '../x', data: png }).json.error));
+  igual(env.llamar({ action: 'recorte_subir', tab: 'Clientes', auth: env.AUTH, folder: 'HHY-70A', data: png }).json.recorte, 'HHY-70A.png');
+  verdad(!!env.repo['recortes/HHY-70A.png'], 'quedó en el repo');
 });
 
 console.log(`\n${ok} OK, ${fallas} con error`);

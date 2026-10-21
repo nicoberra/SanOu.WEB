@@ -1214,12 +1214,16 @@ function pintarProductos(lista, q) {
                 </label>
             </div>
             ${bloqueCosto(p, i)}
-            ${cp ? `<div class="prod-rec rec-cargando" id="rec-${i}" data-folder="${esc(fo)}"><i class="fas fa-spinner fa-spin"></i> Buscando recorte…</div>
+            ${!cp && borradoDe(p.nombre) ? `<div class="prod-borrado"><span><i class="fas fa-eye-slash"></i> Sacado de la web</span>
+                <button class="prod-fotos-btn" onclick="restaurarProducto(${borradoDe(p.nombre).id})"><i class="fas fa-rotate-left"></i> Volver a publicar</button></div>` : ''}
+            ${cp ? `<div class="prod-rec-fila"><div class="prod-rec rec-cargando" id="rec-${i}" data-folder="${esc(fo)}"><i class="fas fa-spinner fa-spin"></i> Buscando recorte…</div>
+            <label class="prod-fotos-btn prod-rec-subir" title="PNG con fondo transparente para el efecto 3D de la tienda"><i class="fas fa-cube"></i> <span>Subir recorte PNG</span>
+                <input type="file" accept="image/png" hidden data-folder="${esc(fo)}" data-rec="rec-${i}" onchange="subirRecorte(this)"></label></div>
             <button class="prod-link-btn" onclick="copiarLinkProducto(${cp.id}, this)"><i class="fas fa-link"></i> Copiar link del producto</button>
-            ${cp.extra ? `<div class="prod-btns prod-extra-btns">
+            <div class="prod-btns prod-extra-btns">
                 <button class="prod-fotos-btn" onclick="abrirFormProductoNuevo(${cp.id})"><i class="fas fa-pen"></i> Editar ficha</button>
-                <button class="prod-fotos-btn prod-borrar-btn" onclick="borrarProductoCatalogo(${cp.id})"><i class="fas fa-trash"></i> Borrar producto</button>
-            </div>` : ''}
+                <button class="prod-fotos-btn prod-borrar-btn" onclick="borrarProductoCatalogo(${cp.id})"><i class="fas fa-trash"></i> ${cp.extra ? 'Borrar producto' : 'Sacar de la web'}</button>
+            </div>
             <div class="prod-btns">
                 <button class="prod-fotos-btn" onclick="abrirFotos('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-camera"></i> Fotos</button>
                 <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadreFoto('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-up-down-left-right"></i> Encuadre foto</button>
@@ -1246,9 +1250,37 @@ function marcarRecortes(){
             });
     });
 }
+// Sube el recorte 3D (PNG transparente) del producto. Se manda tal cual (solo se achica si es enorme).
+async function subirRecorte(input){
+    const file = input.files && input.files[0]; input.value = '';
+    if (!file) return;
+    const lbl = input.closest('label'), span = lbl.querySelector('span'), txt = span.textContent;
+    if (file.type !== 'image/png') { alert('El recorte tiene que ser un PNG con fondo transparente.'); return; }
+    span.textContent = 'Subiendo…'; lbl.classList.add('subiendo');
+    try {
+        let dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+        if (file.size > 4 * 1024 * 1024) dataUrl = await achicarPng(dataUrl, 1800);
+        let auth = ''; try { auth = localStorage.getItem('sanou_auth') || ''; } catch (e) {}
+        const params = new URLSearchParams({ action: 'recorte_subir', tab: 'Clientes', folder: input.dataset.folder, data: dataUrl.replace(/^data:[^,]*,/, ''), auth });
+        const r = await fetch(CRM_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+        const j = await r.json().catch(() => null);
+        if (!j || !j.ok) throw new Error((j && j.error) || 'Sin respuesta del servidor');
+        const badge = document.getElementById(input.dataset.rec); if (badge) { badge.className = 'prod-rec'; pintarRecBadge(badge, true); }
+        span.textContent = 'Cambiar recorte PNG';
+        alert('Recorte subido. En la tienda se ve en ~1 minuto.');
+    } catch (e) { span.textContent = txt; alert('No se pudo subir el recorte: ' + (e.message || 'error')); }
+    lbl.classList.remove('subiendo');
+}
+function achicarPng(dataUrl, max){
+    return new Promise((res, rej) => { const img = new Image(); img.onload = () => {
+        const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL('image/png')); }; img.onerror = rej; img.src = dataUrl; });
+}
 function pintarRecBadge(el, tiene){
     el.classList.remove('rec-cargando');
-    if(tiene){ el.classList.add('rec-si'); el.innerHTML = '<i class="fas fa-cube"></i> Con recorte 3D'; }
+    if(tiene){ el.classList.add('rec-si'); el.innerHTML = '<i class="fas fa-cube"></i> Con recorte 3D';
+        const s = el.parentNode && el.parentNode.querySelector('.prod-rec-subir span'); if (s) s.textContent = 'Cambiar recorte PNG'; }
     else { el.classList.add('rec-no'); el.innerHTML = '<i class="fas fa-circle-xmark"></i> Sin recorte PNG'; }
 }
 // Copia el link directo a la ficha del producto en la web (abre ese producto solo).
@@ -1443,7 +1475,8 @@ function abrirFormProductoNuevo(id){
             <label>Descripción</label>
             <textarea id="npDesc" rows="3" maxlength="1500" placeholder="Qué es, para qué sirve, qué incluye.">${esc(cp && cp.desc || '')}</textarea>
             <label>Características</label>
-            <div id="npSpecs">${(cp && cp.specs && cp.specs.length ? cp.specs : [{}, {}, {}]).map(x => filaSpec(x.l, x.v)).join('')}</div>
+            <div id="npSpecs">${(cp && (cp.allSpecs || cp.specs) && (cp.allSpecs || cp.specs).length ? (cp.allSpecs || cp.specs) : [{}, {}, {}]).map(x => filaSpec(x.l, x.v)).join('')}</div>
+            <small class="prod-ayuda">Las 3 primeras se ven en la tarjeta de la tienda; todas, en la ficha del producto.</small>
             <button type="button" class="prod-fotos-btn" onclick="document.getElementById('npSpecs').insertAdjacentHTML('beforeend', filaSpec())"><i class="fas fa-plus"></i> Agregar característica</button>
             <p class="prod-ayuda">${cp ? 'Los cambios se ven en la web en unos minutos.' : 'Se agrega a la planilla de precios y a la web (aparece en unos minutos). Después te abro las fotos para que le subas las imágenes.'}</p>
             <button class="panel-btn-add" type="submit" id="npBtn"><i class="fas fa-check"></i> ${cp ? 'Guardar cambios' : 'Agregar producto'}</button>
@@ -1459,7 +1492,8 @@ async function guardarProductoNuevo(e, id){
     try {
         if (id) {
             const r = await crmW({ action: 'prod_editar', tab: 'Clientes', id, categoria: val('npCat'), desc: val('npDesc').trim(), badge: val('npBadge').trim(), specs: JSON.stringify(specs) });
-            const p = catProds().find(x => x.id === id); if (p) Object.assign(p, r.producto, { price: p.price, extra: true });
+            const p = catProds().find(x => x.id === id);
+            if (p) { const ex = p.extra; ['category', 'badge', 'desc', 'specs', 'allSpecs'].forEach(k => { if (r.producto[k] !== undefined) p[k] = r.producto[k]; }); p.extra = ex; }
             cerrarModal(); renderProdCats(); filtrarProductos();
             return;
         }
@@ -1474,15 +1508,31 @@ async function guardarProductoNuevo(e, id){
         setTimeout(() => abrirFotos(nombre), 250);   // seguir con las fotos
     } catch (err) { alert(err.message || 'No se pudo guardar.'); btn.disabled = false; btn.innerHTML = txt; }
 }
+// Productos sacados de la web (los de siempre): siguen en la planilla y se pueden volver a publicar.
+function borradoDe(nombre){
+    const n = String(nombre || '').trim().toLowerCase();
+    return (window.SANOU_BORRADOS || []).find(x => String(x.sheetName || x.name).trim().toLowerCase() === n || String(x.name).trim().toLowerCase() === n) || null;
+}
 async function borrarProductoCatalogo(id){
     const p = catProds().find(x => x.id === id); if (!p) return;
-    if (!await confirmar('¿Borrar "' + p.name + '"? Se saca de la web y de la planilla de precios. Las fotos quedan guardadas.', 'Sí, borrar')) return;
+    const txt = p.extra ? '¿Borrar "' + p.name + '"? Se saca de la web y de la planilla de precios. Las fotos quedan guardadas.'
+                        : '¿Sacar "' + p.name + '" de la web? Su fila queda en la planilla y lo podés volver a publicar cuando quieras.';
+    if (!await confirmar(txt, p.extra ? 'Sí, borrar' : 'Sí, sacar de la web')) return;
     try {
         await crmW({ action: 'prod_borrar', tab: 'Clientes', id });
         const L = catProds(); L.splice(L.indexOf(p), 1);
-        productos = productos.filter(x => String(x.nombre).trim().toLowerCase() !== p.name.toLowerCase());
+        if (p.extra) productos = productos.filter(x => String(x.nombre).trim().toLowerCase() !== p.name.toLowerCase());
+        else (window.SANOU_BORRADOS = window.SANOU_BORRADOS || []).push(p);
         cacheSet('productos', productos); renderProdCats(); filtrarProductos();
     } catch (err) { alert(err.message || 'No se pudo borrar.'); }
+}
+async function restaurarProducto(id){
+    const B = window.SANOU_BORRADOS || [], p = B.find(x => x.id === id); if (!p) return;
+    try {
+        await crmW({ action: 'prod_restaurar', tab: 'Clientes', id });
+        B.splice(B.indexOf(p), 1); catProds().push(p);
+        renderProdCats(); filtrarProductos();
+    } catch (err) { alert(err.message || 'No se pudo volver a publicar.'); }
 }
 
 // Reordenar fotos arrastrando con el dedo (o el mouse). Mantener apretado ~una décima y mover.
@@ -1598,7 +1648,7 @@ async function subirUnaFoto(file){
     const params = new URLSearchParams({ action:'foto_subir', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, data: dataUrl.replace(/^data:[^,]*,/, ''), auth });
     const res = await fetch(CRM_URL, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params.toString() });
     const j = await res.json().catch(() => null);
-    if (!j || !j.ok) throw new Error((j && j.error) || 'Sin respuesta del servidor');
+    if (!j || !j.ok || j.foto === false) throw new Error((j && j.error) || 'el servidor no pudo guardarla');
 }
 async function subirArchivosFotos(lista){
     if (!_fotosProd) return;

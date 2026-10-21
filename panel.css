@@ -897,3 +897,8 @@ button.prod-vendidos:active{transform:scale(.96)}
 .comp-tel{font-size:.82rem;color:var(--gris2)}
 .comp-ped{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;background:var(--neg2);border:1px solid var(--linea);border-radius:9px;color:var(--gris2);font:inherit;font-size:.82rem;padding:7px 10px;cursor:pointer;text-align:left}
 .comp-ped:hover{border-color:rgba(255,212,0,.4);color:#fff}
+.prod-borrado{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(255,107,107,.08);border:1px dashed rgba(255,107,107,.4);border-radius:12px;padding:10px 12px;color:#ff9b9b;font-weight:700;font-size:.85rem}
+.prod-rec-fila{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.prod-rec-fila .prod-rec{flex:1;min-width:150px}
+.prod-rec-subir{cursor:pointer;flex:1;min-width:150px;justify-content:center}
+.prod-rec-subir.subiendo{opacity:.6;pointer-events:none}

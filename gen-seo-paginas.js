@@ -20,6 +20,10 @@ eval(fs.readFileSync(path.join(ROOT, 'catalogo-productos.js'), 'utf8'));
   const C = window.SANOU_CAT_NAMES, P = window.SANOU_PRODUCTOS, okKey = k => /^[a-z0-9-]{1,40}$/.test(String(k));
   (E.categorias || []).forEach(c => { if (c && okKey(c.key) && !C[c.key]) { const o = C.otros; delete C.otros; C[c.key] = limpio(c.nombre); if (o) C.otros = o; } });
   (E.productos || []).forEach(p => { const id = parseInt(p && p.id, 10); if (id > 0 && okKey(p.category) && !P.some(x => x.id === id)) P.push(Object.assign(limpio(p), { id, price: 0, extra: true })); });
+  const ED = E.ediciones || {};
+  P.forEach(x => { const e = ED[x.id]; if (!e) return; ['category', 'badge', 'desc', 'specs', 'allSpecs'].forEach(k => { if (e[k] === undefined || (k === 'category' && !okKey(e[k]))) return; x[k] = limpio(e[k]); }); });
+  const B = (E.borrados || []).map(i => parseInt(i, 10));
+  for (let i = P.length - 1; i >= 0; i--) if (B.includes(P[i].id)) P.splice(i, 1);   // sacados de la web: sin página
 })();
 // Fotos reales (fotos.json, lo mantiene el CRM). Un producto sin fotos no tiene página ni entra al sitemap.
 let MAN_FOTOS = {}; try { MAN_FOTOS = JSON.parse(fs.readFileSync(path.join(ROOT, 'fotos.json'), 'utf8')); } catch (e) {}

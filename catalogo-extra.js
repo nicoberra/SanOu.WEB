@@ -17,4 +17,12 @@ window.SANOU_EXTRA = {"categorias":[{"key":"repuestos","nombre":"Repuestos"},{"k
     if (!p || !(parseInt(p.id, 10) > 0) || !/^[a-z0-9-]{1,40}$/.test(String(p.category)) || P.some(function (x) { return x.id === parseInt(p.id, 10); })) return;
     var n = {}; for (var k in p) n[k] = limpio(p[k]); n.id = parseInt(p.id, 10); n.price = 0; n.extra = true; P.push(n);
   });
+  var ED = E.ediciones || {}, CAMPOS = ["category", "badge", "desc", "specs", "allSpecs"];   // fichas editadas desde el CRM
+  P.forEach(function (x) {
+    var e = ED[x.id]; if (!e) return;
+    CAMPOS.forEach(function (k) { if (e[k] === undefined) return; if (k === "category" && !/^[a-z0-9-]{1,40}$/.test(String(e[k]))) return; x[k] = limpio(e[k]); });
+  });
+  var B = (E.borrados || []).map(function (i) { return parseInt(i, 10); });   // sacados de la web desde el CRM
+  window.SANOU_BORRADOS = [];
+  for (var i = P.length - 1; i >= 0; i--) if (B.indexOf(P[i].id) >= 0) window.SANOU_BORRADOS.unshift(P.splice(i, 1)[0]);
 })();
