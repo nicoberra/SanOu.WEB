@@ -11,3 +11,7 @@ mapa-editable/*.png
 
 # Posteos de Instagram (fuentes HTML y PNG; no son parte de la web)
 posteos-instagram/
+
+# Herramienta local para subir fotos puestas a mano en las carpetas
+subir-fotos-carpeta.py
+Subir fotos de la carpeta.bat
