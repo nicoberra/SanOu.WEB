@@ -22,6 +22,9 @@ jobs:
         run: node tests/test-gs.js
       - name: Chequeos estáticos de la web
         run: node tests/test-front.js
+      - name: Meta Commerce AI (inventario, publicaciones, agentes, API) — sin red ni credenciales
+        working-directory: meta-commerce
+        run: npm test
       - name: Instalar Playwright (solo para esta corrida)
         run: |
           npm i --no-save --no-package-lock playwright@1.58.2

@@ -1,0 +1,17 @@
+{
+  "name": "sanou-meta-commerce",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Meta Commerce AI: departamento de Facebook (Marketplace, Messenger, Meta Ads) gestionado por agentes, multiempresa. Primer cliente: San Ou.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server/index.js",
+    "worker": "node src/worker/index.js",
+    "sync": "node scripts/sync-catalog.js",
+    "demo": "node scripts/demo.js",
+    "test": "node --test test/*.test.js"
+  }
+}
