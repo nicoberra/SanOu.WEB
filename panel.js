@@ -1217,7 +1217,7 @@ function pintarProductos(lista, q) {
             ${!cp && borradoDe(p.nombre) ? `<div class="prod-borrado"><span><i class="fas fa-eye-slash"></i> Sacado de la web</span>
                 <button class="prod-fotos-btn" onclick="restaurarProducto(${borradoDe(p.nombre).id})"><i class="fas fa-rotate-left"></i> Volver a publicar</button></div>` : ''}
             ${cp ? `<div class="prod-rec-fila"><div class="prod-rec rec-cargando" id="rec-${i}" data-folder="${esc(fo)}"><i class="fas fa-spinner fa-spin"></i> Buscando recorte…</div>
-            <label class="prod-fotos-btn prod-rec-subir" title="PNG con fondo transparente para el efecto 3D de la tienda"><i class="fas fa-cube"></i> <span>Subir recorte PNG</span>
+            <label class="prod-fotos-btn prod-rec-subir" title="Tocá o arrastrá acá el PNG con fondo transparente (efecto 3D de la tienda)"><i class="fas fa-cube"></i> <span>Subir recorte PNG</span>
                 <input type="file" accept="image/png" hidden data-folder="${esc(fo)}" data-rec="rec-${i}" onchange="subirRecorte(this)"></label></div>
             <button class="prod-link-btn" onclick="copiarLinkProducto(${cp.id}, this)"><i class="fas fa-link"></i> Copiar link del producto</button>
             <div class="prod-btns prod-extra-btns">
@@ -1251,8 +1251,8 @@ function marcarRecortes(){
     });
 }
 // Sube el recorte 3D (PNG transparente) del producto. Se manda tal cual (solo se achica si es enorme).
-async function subirRecorte(input){
-    const file = input.files && input.files[0]; input.value = '';
+async function subirRecorte(input, archivo){
+    const file = archivo || (input.files && input.files[0]); input.value = '';
     if (!file) return;
     const lbl = input.closest('label'), span = lbl.querySelector('span'), txt = span.textContent;
     if (file.type !== 'image/png') { alert('El recorte tiene que ser un PNG con fondo transparente.'); return; }
@@ -1271,6 +1271,19 @@ async function subirRecorte(input){
     } catch (e) { span.textContent = txt; alert('No se pudo subir el recorte: ' + (e.message || 'error')); }
     lbl.classList.remove('subiendo');
 }
+// Arrastrar el PNG desde la compu y soltarlo sobre el recuadro del recorte de cada producto.
+(function soltarRecortes(){
+    const zona = e => e.target.closest && e.target.closest('.prod-rec-fila');
+    const esArchivo = e => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
+    document.addEventListener('dragover', e => { const z = zona(e); if (!z || !esArchivo(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; z.classList.add('soltando'); });
+    document.addEventListener('dragleave', e => { const z = zona(e); if (z && !z.contains(e.relatedTarget)) z.classList.remove('soltando'); });
+    document.addEventListener('drop', e => {
+        const z = zona(e); if (!z || !esArchivo(e)) return;
+        e.preventDefault(); z.classList.remove('soltando');
+        const input = z.querySelector('.prod-rec-subir input'), f = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (input && f) subirRecorte(input, f);
+    });
+})();
 function achicarPng(dataUrl, max){
     return new Promise((res, rej) => { const img = new Image(); img.onload = () => {
         const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
