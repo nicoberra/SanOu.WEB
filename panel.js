@@ -1281,15 +1281,27 @@ function abrirFotos(nombre){
     document.getElementById('modalTitulo').textContent = 'Fotos — ' + nombre;
     document.getElementById('modalBody').innerHTML = `
         <div class="fotos-wrap">
-            <label class="fotos-subir"><i class="fas fa-camera"></i> Subir foto
-                <input type="file" accept="image/*" onchange="subirFoto(this)" hidden>
+            <label class="fotos-subir"><i class="fas fa-camera"></i> Subir fotos
+                <input type="file" accept="image/*" multiple onchange="subirFoto(this)" hidden>
             </label>
-            <div class="fotos-tip"><i class="fas fa-hand-pointer"></i> Mantené apretada una foto y arrastrala para cambiar el orden. La <b>★ Principal</b> es la que se ve primero.</div>
+            <div class="fotos-tip"><i class="fas fa-cloud-arrow-up"></i> También podés <b>arrastrar fotos desde la compu</b> y soltarlas acá (varias a la vez).<br><i class="fas fa-hand-pointer"></i> Mantené apretada una foto y arrastrala para cambiar el orden. La <b>★ Principal</b> es la que se ve primero.</div>
+            <div class="fotos-soltar" id="fotosSoltar"><i class="fas fa-cloud-arrow-up"></i> Soltá las fotos para subirlas</div>
             <div class="fotos-msg" id="fotosMsg"></div>
             <div class="fotos-grid" id="fotosGrid">${skel('fotos')}</div>
         </div>`;
     abrirModal();
+    habilitarSoltarFotos(document.querySelector('#modalBody .fotos-wrap'));
     cargarFotos();
+}
+// Arrastrar fotos desde la compu (archivos) y soltarlas en la ventana: se suben todas, de a una.
+function habilitarSoltarFotos(zona){
+    if (!zona) return;
+    const esArchivo = e => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
+    let n = 0;
+    zona.addEventListener('dragenter', e => { if (!esArchivo(e)) return; e.preventDefault(); n++; zona.classList.add('soltando'); });
+    zona.addEventListener('dragover', e => { if (!esArchivo(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+    zona.addEventListener('dragleave', e => { if (!esArchivo(e)) return; if (--n <= 0) { n = 0; zona.classList.remove('soltando'); } });
+    zona.addEventListener('drop', e => { if (!esArchivo(e)) return; e.preventDefault(); n = 0; zona.classList.remove('soltando'); subirArchivosFotos(e.dataTransfer.files); });
 }
 async function cargarFotos(msg){
     if(!_fotosProd) return;
@@ -1530,17 +1542,34 @@ function redimensionarImg(file, maxLado, calidad){
     });
 }
 async function subirFoto(input){
-    const file = input.files && input.files[0]; if(!file || !_fotosProd) return;
-    const m = document.getElementById('fotosMsg'); if(m) m.textContent = 'Procesando imagen…';
-    try {
-        const dataUrl = await redimensionarImg(file, 1600, 0.85);
-        const b64 = dataUrl.replace(/^data:[^,]*,/, '');
-        if(m) m.textContent = 'Subiendo…';
-        const params = new URLSearchParams({ action:'foto_subir', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, data:b64 });
-        await fetch(CRM_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params.toString() });
-        input.value = '';
-        setTimeout(()=>cargarFotos('✓ Subida. Puede tardar ~1 min en verse en la web.'), 4500);
-    } catch(e){ if(m) m.textContent = 'No se pudo subir la foto. Reintentá.'; }
+    const files = input.files ? [...input.files] : [];
+    input.value = '';
+    subirArchivosFotos(files);
+}
+// Sube una foto (achicada a 1600 px, WebP) con la clave del CRM y confirma con la respuesta del servidor.
+// Antes iba sin la clave y en modo "a ciegas": el servidor la rechazaba y el CRM decía "Subida" igual.
+async function subirUnaFoto(file){
+    const dataUrl = await redimensionarImg(file, 1600, 0.85);
+    let auth = ''; try { auth = localStorage.getItem('sanou_auth') || ''; } catch (e) {}
+    const params = new URLSearchParams({ action:'foto_subir', tab:'Clientes', catFolder:_fotosProd.cf, folder:_fotosProd.fo, data: dataUrl.replace(/^data:[^,]*,/, ''), auth });
+    const res = await fetch(CRM_URL, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params.toString() });
+    const j = await res.json().catch(() => null);
+    if (!j || !j.ok) throw new Error((j && j.error) || 'Sin respuesta del servidor');
+}
+async function subirArchivosFotos(lista){
+    if (!_fotosProd) return;
+    const files = [...(lista || [])].filter(f => /^image\//.test(f.type));
+    const m = document.getElementById('fotosMsg');
+    if (!files.length) { if (m) m.textContent = 'Solo se pueden subir imágenes (JPG, PNG, WebP).'; return; }
+    let ok = 0, err = '';
+    for (let i = 0; i < files.length; i++) {
+        if (m) m.textContent = files.length > 1 ? `Subiendo ${i + 1} de ${files.length}…` : 'Subiendo…';
+        try { await subirUnaFoto(files[i]); ok++; } catch (e) { err = e.message || 'error'; }
+    }
+    const txt = ok === files.length ? `✓ ${ok === 1 ? 'Foto subida' : ok + ' fotos subidas'}. Puede tardar ~1 min en verse en la web.`
+              : ok ? `Se subieron ${ok} de ${files.length}. Las demás fallaron (${err}). Reintentá esas.`
+              : `No se pudo subir: ${err}. Reintentá.`;
+    if (ok) cargarFotos(txt); else if (m) m.textContent = txt;
 }
 async function borrarFoto(fn){
     if(!_fotosProd) return;

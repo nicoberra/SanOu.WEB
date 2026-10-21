@@ -881,3 +881,7 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible { outline: 
 .foto-acc-btn:hover{background:rgba(0,0,0,.85)}
 .foto-acc-btn.ok{background:#25D366}
 .foto-item .foto-orden{z-index:2}
+/* Fotos: soltar archivos arrastrados desde la compu */
+.fotos-wrap{position:relative}
+.fotos-soltar{display:none;position:absolute;inset:-6px;z-index:5;border:2px dashed var(--am);border-radius:16px;background:rgba(20,20,20,.88);color:var(--am);font-weight:800;font-size:1.05rem;align-items:center;justify-content:center;gap:10px;pointer-events:none}
+.fotos-wrap.soltando .fotos-soltar{display:flex}
