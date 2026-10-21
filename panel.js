@@ -782,12 +782,39 @@ function cambiarVistaClientes(v) {
     filtrarClientes();
 }
 
+// Distancia de edición (cuántas letras hay que cambiar/agregar/sacar), para tolerar errores de tipeo.
+function distEdicion(a, b){
+    const m = a.length, n = b.length; if (Math.abs(m - n) > 2) return 9;
+    let prev = Array.from({ length: n + 1 }, (_, j) => j);
+    for (let i = 1; i <= m; i++) {
+        const cur = [i];
+        for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        prev = cur;
+    }
+    return prev[n];
+}
+// ¿El texto del cliente coincide con la búsqueda? 2 = todas las palabras están; 1 = están con algún error de tipeo; 0 = no.
+function coincideBusqueda(texto, q){
+    const t = claveNombre(texto), palabras = claveNombre(q).split(' ').filter(Boolean);
+    if (!palabras.length) return 2;
+    const digitos = String(texto).replace(/\D/g, ''), qDig = String(q).replace(/\D/g, '');
+    if (qDig.length >= 5 && digitos.includes(qDig)) return 2;   // teléfono o CUIT, con o sin guiones/espacios
+    if (palabras.every(p => t.includes(p))) return 2;
+    const tokens = t.split(' ');
+    const parecida = p => p.length >= 5 && tokens.some(w => {
+        const tope = p.length >= 7 ? 2 : 1;
+        return distEdicion(p, w.slice(0, p.length)) <= tope || distEdicion(p, w) <= tope;
+    });
+    return palabras.every(p => t.includes(p) || parecida(p)) ? 1 : 0;
+}
 function filtrarClientes() {
-    const q = (document.getElementById('buscarCli')?.value || '').toLowerCase().trim();
-    let base = clientes.filter(c => vistaClientes === 'web' ? esWeb(c) : !esWeb(c));
-    if (q) base = base.filter(c =>
-        (c.nombre + ' ' + c.empresa + ' ' + c.telefono + ' ' + c.ciudad + ' ' + c.email + ' ' + c.razon).toLowerCase().includes(q));
-    pintarClientes(base);
+    const q = (document.getElementById('buscarCli')?.value || '').trim();
+    if (!q) { pintarClientes(clientes.filter(c => vistaClientes === 'web' ? esWeb(c) : !esWeb(c))); return; }
+    // Con algo escrito se busca en TODOS los usuarios (web y cargados por vos), en todos sus datos.
+    const campos = c => [c.nombre, c.empresa, c.razon, c.cuit, c.telefono, c.email, c.ciudad, c.direccion, c.notas].filter(Boolean).join(' ');
+    const conPuntaje = clientes.map(c => ({ c, p: coincideBusqueda(campos(c), q) })).filter(x => x.p);
+    const exactos = conPuntaje.filter(x => x.p === 2);
+    pintarClientes((exactos.length ? exactos : conPuntaje).map(x => x.c));   // si no hay exactos, los parecidos (errores de tipeo)
 }
 
 function pintarClientes(lista) {
