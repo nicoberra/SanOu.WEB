@@ -173,7 +173,19 @@ const imgRoot = p => { const i = getImgs(p); return i.length ? '/' + i[0].split(
 
 const prodSlug = p => slug(p.name) + '-' + p.id; // único: nombre + id
 const prodUrl = p => `${SITE}/producto/${prodSlug(p)}.html`;
-const catUrl = key => `${SITE}/categoria/${CATS[key].slug}.html`;
+// Categorías creadas desde el CRM (ej. Repuestos): textos genéricos a partir del nombre ('otros' queda última).
+Object.keys(window.SANOU_CAT_NAMES || {}).forEach(key => {
+  if (CATS[key] || !PRODS.some(p => p.category === key)) return;   // sin productos con foto: sin página
+  const nombre = String(window.SANOU_CAT_NAMES[key]);
+  const intro = `${nombre} San Ou para herramientas hidráulicas. Importador directo, stock y envíos a todo el país.`;
+  const otros = CATS.otros; delete CATS.otros;
+  CATS[key] = { slug: slug(nombre), nombre, kw: nombre.toLowerCase(), intro };
+  if (otros) CATS.otros = otros;
+  if (!SEO_CATS[key]) SEO_CATS[key] = { kp: nombre.toLowerCase(), h1: nombre, h2: `Modelos de ${nombre.toLowerCase()}`,
+    title: `${nombre} para herramientas hidráulicas | San Ou`.slice(0, 60),
+    desc: `${nombre} para herramientas hidráulicas San Ou. Importador directo, stock y envíos a todo el país.`, intro };
+});
+const catUrl = key =>`${SITE}/categoria/${CATS[key].slug}.html`;
 
 // ── Head común ──
 function head(opts) {
