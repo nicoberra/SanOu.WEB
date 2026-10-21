@@ -7,8 +7,20 @@ const ROOT = __dirname;  // corré: node gen-seo-paginas.js (regenera /categoria
 
 global.window = {};
 eval(fs.readFileSync(path.join(ROOT, 'catalogo-productos.js'), 'utf8'));
-// + categorías y productos agregados desde el CRM
-if (fs.existsSync(path.join(ROOT, 'catalogo-extra.js'))) eval(fs.readFileSync(path.join(ROOT, 'catalogo-extra.js'), 'utf8'));
+// + categorías y productos agregados desde el CRM: se leen SOLO los datos (JSON), sin ejecutar el archivo,
+// y con la misma limpieza que hace la web (sin < > ` \ y con comillas tipográficas).
+(function sumarCatalogoExtra() {
+  const f = path.join(ROOT, 'catalogo-extra.js');
+  if (!fs.existsSync(f)) return;
+  const m = fs.readFileSync(f, 'utf8').match(/window\.SANOU_EXTRA\s*=\s*(\{[\s\S]*?\});\s*\n/);
+  if (!m) return;
+  let E; try { E = JSON.parse(m[1]); } catch (e) { return; }
+  const limpio = v => typeof v === 'string' ? v.replace(/[<>`\\]/g, '').replace(/"/g, '\u2033').replace(/'/g, '\u2019')
+    : Array.isArray(v) ? v.map(limpio) : (v && typeof v === 'object') ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, limpio(x)])) : v;
+  const C = window.SANOU_CAT_NAMES, P = window.SANOU_PRODUCTOS, okKey = k => /^[a-z0-9-]{1,40}$/.test(String(k));
+  (E.categorias || []).forEach(c => { if (c && okKey(c.key) && !C[c.key]) { const o = C.otros; delete C.otros; C[c.key] = limpio(c.nombre); if (o) C.otros = o; } });
+  (E.productos || []).forEach(p => { const id = parseInt(p && p.id, 10); if (id > 0 && okKey(p.category) && !P.some(x => x.id === id)) P.push(Object.assign(limpio(p), { id, price: 0, extra: true })); });
+})();
 const PRODS = window.SANOU_PRODUCTOS;
 
 const SITE = 'https://sanou.com.ar';
@@ -182,7 +194,7 @@ function head(opts) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/seo-paginas.css">
-    ${opts.jsonld.map(j => `<script type="application/ld+json"${j['@type'] === 'Product' ? ' id="ld-product"' : ''}>\n${JSON.stringify(j, null, 2)}\n</script>`).join('\n    ')}
+    ${opts.jsonld.map(j => `<script type="application/ld+json"${j['@type'] === 'Product' ? ' id="ld-product"' : ''}>\n${JSON.stringify(j, null, 2).replace(/</g, '\\u003c')}\n</script>`).join('\n    ')}
 </head>`;
 }
 
