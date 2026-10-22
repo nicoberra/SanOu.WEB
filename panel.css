@@ -909,3 +909,8 @@ button.prod-vendidos:active{transform:scale(.96)}
 /* Foto chiquita del producto en su tarjeta (para identificarlo rápido) */
 .prod-top .prod-mini{width:46px;height:46px;flex:0 0 46px;border-radius:10px;object-fit:contain;background:#fff;padding:2px;border:1px solid var(--linea)}
 .prod-top .prod-mini.pk-ic{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);color:#888;font-size:1.1rem}
+
+/* Ganancia del mes en verde (rojo si da negativa) */
+.dash-card-gan .dash-val{color:#4ade80}
+.dash-card-gan .dash-val.negativa{color:#f87171}
+.dash-card-gan .dash-ic{color:#4ade80}

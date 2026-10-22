@@ -297,7 +297,7 @@ function pintarDashboard(){
         <div class="dash-cards">
             ${card('Esta semana', fmtMoney(factSemana), ventas.filter(x=>x.fecha>=iniSemana).length + ' ventas', 'fa-calendar-week', 'facturacion', true)}
             ${card('Este mes', fmtMoney(factMes), ventas.filter(x=>x.fecha>=iniMes).length + ' ventas', 'fa-calendar-days', 'facturacion', true)}
-            <div class="dash-card" onclick="navegar('pedidos')" id="ganMesCard">
+            <div class="dash-card dash-card-gan" onclick="navegar('pedidos')" id="ganMesCard">
                 <div class="dash-ic"><i class="fas fa-arrow-trend-up"></i></div>
                 <div class="dash-val dash-val-sm" id="ganMesVal">—</div>
                 <div class="dash-tit">Ganancia (mes)</div>
@@ -335,6 +335,7 @@ function pintarDashboard(){
         pedMes.forEach(p => { const g = gananciaPedido(p); if (g.medible && g.venta > 0) { gan += g.ganancia; medibles++; } });
         if (!dolarValor()) { val.textContent = '—'; sub.textContent = 'sin cotización del dólar'; return; }
         val.textContent = fmtMoney(gan);
+        val.classList.toggle('negativa', gan < 0);   // verde si gana, rojo si pierde
         sub.textContent = medibles ? `${medibles} de ${pedMes.length} con costo` : 'cargá el costo USD de los productos';
     });
 }
