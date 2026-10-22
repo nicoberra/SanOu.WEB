@@ -2281,8 +2281,8 @@ function msgPresupuesto(c){
     const est = c.estado || 'Abierta';
     if (/ganad/i.test(est)) return `${hola}. ¡Gracias por confirmar el presupuesto${num}!${lista}${total}\n\nYa lo estamos preparando. Te aviso apenas esté listo para retirar en el depósito o para enviártelo.`;
     if (/perdid/i.test(est)) return `${hola}. Te quería agradecer por consultarnos por el presupuesto${num}. Si más adelante necesitás estas herramientas o cualquier otra, escribime y te armo uno nuevo.`;
-    if (vencido) return `${hola} por el presupuesto${num} que te pasamos:${lista}${total}\n\nVenció el ${vence}. Si te sigue interesando, te lo actualizo con los precios y el stock de hoy.`;
-    return `${hola} por el presupuesto${num} que te pasamos:${lista}${total}${vence ? `\nVálido hasta el ${vence}.` : ''}\n\n¿Pudiste verlo? Si te sirve, lo confirmamos y te lo preparamos para retirar en el depósito o te lo enviamos. Cualquier duda, quedo a disposición.`;
+    if (vencido) return `${hola} por el presupuesto${num} que te pasamos:${lista}${total}\n\nVenció el ${vence}. ¿Te sigue interesando avanzar con la compra? Si querés, te lo actualizo con los precios y el stock de hoy.`;
+    return `${hola} por el presupuesto${num} que te pasamos:${lista}${total}${vence ? `\nVálido hasta el ${vence}.` : ''}\n\n¿Querés que avancemos con la compra? Si me confirmás, te lo reservamos y coordinamos el retiro en el depósito o el envío. Cualquier duda, quedo a disposición.`;
 }
 function badgeEstado(e){
     const cls = {'Pendiente':'est-pend','Entregado':'est-cobr','Cobrado':'est-cobr','Hecho':'est-hecho',
