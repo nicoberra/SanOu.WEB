@@ -905,3 +905,7 @@ button.prod-vendidos:active{transform:scale(.96)}
 .prod-rec-fila{position:relative;border-radius:12px;transition:box-shadow .15s}
 .prod-rec-fila.soltando{box-shadow:0 0 0 2px var(--am);background:rgba(255,212,0,.06)}
 .prod-rec-fila.soltando .prod-rec-subir span::after{content:' — soltá el PNG acá'}
+
+/* Foto chiquita del producto en su tarjeta (para identificarlo rápido) */
+.prod-top .prod-mini{width:46px;height:46px;flex:0 0 46px;border-radius:10px;object-fit:contain;background:#fff;padding:2px;border:1px solid var(--linea)}
+.prod-top .prod-mini.pk-ic{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);color:#888;font-size:1.1rem}

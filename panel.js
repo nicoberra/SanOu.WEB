@@ -1063,6 +1063,7 @@ async function refrescarDolar(){ const el=document.getElementById('barraDolar');
 
 async function renderProductos() {
     prodCat = 'all';
+    fotosActuales().then(cambio => { if (cambio && seccionActual === 'productos' && productos.length) filtrarProductos(); });
     const v = document.getElementById('vista');
     v.innerHTML = `
         <div class="dol-bar" id="barraDolar"></div>
@@ -1241,6 +1242,7 @@ function pintarProductos(lista, q) {
         return `
         <div class="prod-card${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
             <div class="prod-top">
+                ${cp ? imgTag(cp, 'prod-mini') : ''}
                 <span class="prod-nombre">${esc(p.nombre)}${p.stock ? '' : ' <span class="prod-badge-sinstock">Sin stock</span>'}</span>
                 <button type="button" class="prod-vendidos${vt.vend ? '' : ' cero'}" onclick="verCompradores(${i})" title="Ver quiénes lo compraron"><i class="fas fa-bag-shopping"></i> ${vt.vend} vendido${vt.vend === 1 ? '' : 's'}${vt.curso ? ` <small>+${vt.curso} en curso</small>` : ''}</button>
                 <span class="prod-ok" id="prodok-${i}"><i class="fas fa-check"></i> Guardado</span>
@@ -2651,6 +2653,22 @@ function gananciaPedido(p){
     const venta = montoVenta(p);
     const gan = venta - costo;
     return { costo, ganancia: gan, pct: venta > 0 ? Math.round(gan / venta * 100) : 0, medible, venta };
+}
+// Fotos actuales de cada producto (fotos.json, igual que la tienda): así se ven las recién cambiadas.
+let _fotosActuales = null;
+function fotosActuales(){
+    if (!_fotosActuales) _fotosActuales = fetch('fotos.json?_=' + Date.now(), { cache: 'no-store' })
+        .then(r => r.ok ? r.json() : {})
+        .then(man => {
+            let cambio = false;
+            (window.SANOU_PRODUCTOS || []).forEach(p => {
+                const l = man[(p.catFolder || p.category) + '/' + (p.folder || p.name)];
+                if (Array.isArray(l) && l.length && JSON.stringify(l) !== JSON.stringify(p.imgs)) { p.imgs = l; cambio = true; }
+            });
+            return cambio;
+        })
+        .catch(() => false);
+    return _fotosActuales;
 }
 function getImgsPanel(p){
     if(!p||!p.imgs||p.imgs===0) return [];
