@@ -52,7 +52,7 @@
     // ── Pintar resumen ──
     function pintar() {
         const t = totales();
-        $('ckItems').innerHTML = cart.map(i => `<li class="ck-item"><span class="ck-item-ico">${fotoDe(i) ? `<img src="${esc(fotoDe(i))}" alt="" width="52" height="52" loading="lazy" decoding="async" onerror="this.outerHTML='<i class=&quot;fas ${esc(i.icon || 'fa-screwdriver-wrench')}&quot; aria-hidden=&quot;true&quot;></i>'">` : `<i class="fas ${esc(i.icon || 'fa-screwdriver-wrench')}" aria-hidden="true"></i>`}<em>${i.qty}</em></span><span class="ck-item-nom">${esc(i.name)}</span><span class="ck-item-pr">${fmt((st.pago === 'transferencia' ? precioTr(i) : i.price) * i.qty)}</span></li>`).join('');
+        $('ckItems').innerHTML = cart.map(i => `<li class="ck-item"><span class="ck-item-ico">${fotoDe(i) ? `<img src="${esc(fotoDe(i))}" alt="" width="52" height="52" loading="lazy" decoding="async" onerror="this.outerHTML='<i class=&quot;fas ${esc(i.icon || 'fa-screwdriver-wrench')}&quot; aria-hidden=&quot;true&quot;></i>'">` : `<i class="fas ${esc(i.icon || 'fa-screwdriver-wrench')}" aria-hidden="true"></i>`}<em>${i.qty}</em></span><span class="ck-item-nom">${esc(i.name)}${i.inStock === false ? '<small class="ck-item-res">Reserva · entrega en 20 días</small>' : ''}</span><span class="ck-item-pr">${fmt((st.pago === 'transferencia' ? precioTr(i) : i.price) * i.qty)}</span></li>`).join('');
         $('ckSubtotal').textContent = fmt(st.pago === 'transferencia' ? t.subTr : t.sub);
         const envDet = $('ckEnvioDet'), envMon = $('ckEnvioMonto');
         if (st.entrega === 'retiro') { envDet.textContent = 'Retiro en el depósito'; envMon.textContent = 'Sin cargo'; }

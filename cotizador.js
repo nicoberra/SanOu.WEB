@@ -206,7 +206,7 @@ function agregarItem(valor) {
     if (!p) return;
     // Aviso de stock: en el CRM se puede cotizar un producto sin stock (ej. "a pedido"),
     // pero que quede claro antes de agregarlo.
-    if (p.inStock === false && !confirm('⚠️ "' + p.name + '" está SIN STOCK.\n¿Querés agregarlo igual a la cotización?')) return;
+    if (p.inStock === false && !confirm('⚠️ "' + p.name + '" está SIN STOCK: se entrega a reserva en 20 días.\n¿Agregarlo a la cotización?')) return;
     items.push({ uid: ++_uid, id, nombre: p.name, desc: (p.specs || []).map(s => s.l + ': ' + s.v).join(' · '),
                  cantidad: 1, precioFinal: p.price > 0 ? p.price : 0, sinStock: p.inStock === false });
     renderItems();
@@ -307,7 +307,7 @@ function renderSelector() {
         html += `<optgroup label="${CAT_NAMES[cat]}">`;
         lista.forEach(p => {
             const precio = p.price > 0 ? ' — ' + money(p.price) : ' — (sin precio)';
-            const sinStock = p.inStock === false ? ' ⛔ SIN STOCK' : '';
+            const sinStock = p.inStock === false ? ' ⏳ RESERVA 20 DÍAS' : '';
             html += `<option value="${p.id}">${p.name}${precio}${sinStock}</option>`;
         });
         html += '</optgroup>';
@@ -343,7 +343,7 @@ function pintarItems() {
             return `<tr class="${may ? 'fila-' + it.tipo : ''}">
                 <td class="col-n">${i + 1}</td>
                 <td class="col-desc">
-                    <strong>${esc(it.nombre)}</strong>${it.sinStock ? ' <span class="cot-stock-out no-print">SIN STOCK</span>' : ''}
+                    <strong>${esc(it.nombre)}</strong>${it.sinStock ? ' <span class="cot-stock-out no-print">RESERVA 20 DÍAS</span>' : ''}
                     ${it.desc ? `<span class="cot-item-desc">${esc(it.desc)}</span>` : ''}
                     ${bajoMin ? `<span class="cot-aviso-min no-print">⚠️ Menos del mínimo (${it.minimo}): pasá esas unidades a precio unitario.</span>` : ''}
                     ${may && it.tipo === 'mayorista' && it.pUni > 0 && !tieneUni ? `<button type="button" class="cot-sumar-uni no-print" onclick="sumarUnitario(${it.uid})">+ unidades a precio unitario</button>` : ''}

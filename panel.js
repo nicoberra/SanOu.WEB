@@ -1244,7 +1244,7 @@ function pintarProductos(lista, q) {
         <div class="prod-card${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
             <div class="prod-top">
                 ${cp ? imgTag(cp, 'prod-mini') : ''}
-                <span class="prod-nombre">${esc(p.nombre)}${p.stock ? '' : ' <span class="prod-badge-sinstock">Sin stock</span>'}</span>
+                <span class="prod-nombre">${esc(p.nombre)}${p.stock ? '' : ' <span class="prod-badge-sinstock">Sin stock · reserva 20 días</span>'}</span>
                 <button type="button" class="prod-vendidos${vt.vend ? '' : ' cero'}" onclick="verCompradores(${i})" title="Ver quiénes lo compraron"><i class="fas fa-bag-shopping"></i> ${vt.vend} vendido${vt.vend === 1 ? '' : 's'}${vt.curso ? ` <small>+${vt.curso} en curso</small>` : ''}</button>
                 <span class="prod-ok" id="prodok-${i}"><i class="fas fa-check"></i> Guardado</span>
             </div>
@@ -2415,7 +2415,7 @@ function verPedidoWeb(id){
     const its = itemsPedido(p), envio = Number(String(p.enviomonto || '').replace(/[^\d]/g, '')) || 0;
     const retiro = p.envio !== 'Sí';
     const filas = its.length
-        ? its.map(i => `<tr><td>${esc(i.n)}</td><td class="num">${i.q}</td><td class="num">${fmtMoney(i.u)}</td><td class="num"><b>${fmtMoney(i.u * i.q)}</b></td></tr>`).join('')
+        ? its.map(i => `<tr><td>${esc(i.n)}${i.r ? ' <span class="prod-badge-sinstock">Reserva · 20 días</span>' : ''}</td><td class="num">${i.q}</td><td class="num">${fmtMoney(i.u)}</td><td class="num"><b>${fmtMoney(i.u * i.q)}</b></td></tr>`).join('')
         : `<tr><td colspan="4">${esc(p.detalle || '')}</td></tr>`;
     const wa = waLink(p.telefono, msgPedido(p));
     document.getElementById('modalTitulo').textContent = 'Compra web';
@@ -2719,7 +2719,7 @@ function renderPicker(){
         const enPed=pedidoItems.find(x=>norm(x.nombre)===norm(p.name));
         const sinStock = stockDe(p.name) === false;
         return `<div class="pk-card${sinStock?' pk-card-sinstock':''}" onclick="agregarAlPedido(${gi})">
-            <div class="pk-img-wrap">${imgTag(p,'pk-img')}${sinStock?'<span class="pk-sinstock">Sin stock</span>':''}</div>
+            <div class="pk-img-wrap">${imgTag(p,'pk-img')}${sinStock?'<span class="pk-sinstock">Reserva 20 días</span>':''}</div>
             <div class="pk-info"><div class="pk-nombre">${esc(p.name)}</div><div class="pk-precio">${pr?fmtMoney(pr):'consultar'}</div></div>
             ${enPed?`<span class="pk-qty">${enPed.cantidad}</span>`:`<span class="pk-add"><i class="fas fa-plus"></i></span>`}
         </div>`;

@@ -5396,3 +5396,8 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 .cart-total-transfer{justify-content:space-between;align-items:center;margin:6px 0 10px;padding:8px 12px;border-radius:10px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.22);font-size:.86rem;color:var(--gray-light)}
 .cart-total-transfer i{color:var(--green);margin-right:4px}
 .cart-total-transfer b{color:var(--green);font-size:1.02rem}
+
+/* Sin stock = se vende a reserva (entrega en 20 días): la tarjeta sigue activa */
+.stock-chip--reserva { background: rgba(96,165,250,0.12); color: #93c5fd; border-color: rgba(96,165,250,0.38); }
+.cart-item-reserva { font-size: 0.74rem; font-weight: 700; color: #93c5fd; margin: 2px 0 4px; }
+.cart-item-reserva i { font-size: 0.68rem; margin-right: 3px; }

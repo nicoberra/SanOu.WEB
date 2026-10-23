@@ -298,7 +298,7 @@ function paginaProducto(p) {
       category: cat.nombre,
       ...(p.badge ? { additionalProperty: [{ '@type': 'PropertyValue', name: 'Característica', value: p.badge }] } : {}),
       offers: { '@type': 'Offer', ...(pr && pr.precio > 0 ? { price: String(pr.precio) } : {}), priceCurrency: 'ARS',
-        availability: sinStock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock', url, itemCondition: 'https://schema.org/NewCondition', seller: { '@type': 'Organization', name: 'San Ou' } }
+        availability: sinStock ? 'https://schema.org/BackOrder' : 'https://schema.org/InStock', url, itemCondition: 'https://schema.org/NewCondition', seller: { '@type': 'Organization', name: 'San Ou' } }
     },
     {
       '@context': 'https://schema.org', '@type': 'BreadcrumbList',
@@ -363,7 +363,7 @@ function paginaProducto(p) {
         </div>
     </main>
     <script src="/catalogo-fuente.js" defer></script>
-    <script src="/precio-seo.js" defer></script>` + footerCategorias(p.category);
+    <script src="/precio-seo.js?v=20261023a" defer></script>` + footerCategorias(p.category);
 }
 
 // ── Página de CATEGORÍA ──
@@ -395,7 +395,7 @@ function paginaCategoria(key) {
   ];
 
   const cards = ordenados.map(p => `<a class="seo-cat-card" href="/producto/${prodSlug(p)}.html">
-                    <div class="seo-cat-card-img"><img src="${imgRoot(p)}" alt="${esc(p.name)} — ${esc(seo.kp)}" loading="lazy">${p.inStock === false ? '<span class="seo-chip-out">Sin stock</span>' : ''}</div>
+                    <div class="seo-cat-card-img"><img src="${imgRoot(p)}" alt="${esc(p.name)} — ${esc(seo.kp)}" loading="lazy">${p.inStock === false ? '<span class="seo-chip-out">Reserva 20 días</span>' : ''}</div>
                     <div class="seo-cat-card-body">
                         <h3>${esc(p.name)}</h3>
                         ${p.badge ? `<span class="seo-badge sm">${esc(p.badge)}</span>` : ''}

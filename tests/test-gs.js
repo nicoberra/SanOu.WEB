@@ -533,5 +533,16 @@ test('velocidad: una lista grande se guarda en trozos y vuelve igual', () => {
   igual(JSON.stringify(a), JSON.stringify(b)); igual(b.length, 400);
 });
 
+test('reserva: un producto sin stock se puede comprar y queda anotado como reserva a 20 días', () => {
+  const env = entorno(); env.ctx.productosPorNombre = () => ({ 'pinza hhy-70a': { precio: 70000, stock: false } });
+  const r = env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro' })).json;
+  igual(r.ok, true); igual(r.total, 140000);
+  const h = env.planillas[env.ctx.CRM_ID].getSheetByName('Pedidos'), tit = h.rows[0], fila = h.rows[1];
+  const col = t => fila[tit.indexOf(t)];
+  verdad(/RESERVA, entrega en 20 días/.test(col('Detalle')), 'el detalle dice reserva');
+  verdad(/RESERVA: entrega en 20 días/.test(col('Entrega')), 'la entrega avisa los 20 días');
+  igual(JSON.parse(col('Productos (JSON)'))[0].r, 1);
+});
+
 console.log(`\n${ok} OK, ${fallas} con error`);
 process.exit(fallas ? 1 : 0);

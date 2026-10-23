@@ -930,7 +930,7 @@ function discountBadge(p) {
 // Tarjeta de producto (compartida entre la grilla de productos y la de destacados)
 function stockChipHTML(p) {
     if (p.inStock === false)
-        return '<span class="stock-chip stock-chip--out">Sin stock · reingreso en ~90 días</span>';
+        return '<span class="stock-chip stock-chip--reserva"><i class="fas fa-clock"></i> Sin stock · Reservalo: entrega en 20 días</span>';
     // quedan: unidades exactas que quedan (se carga en catalogo-productos.js).
     if (p.quedan === 1)
         return '<span class="stock-chip stock-chip--low"><i class="fas fa-fire"></i> ¡Queda 1 sola en stock!</span>';
@@ -945,7 +945,7 @@ function productCardHTML(p) {
     const isFav = getFavs().includes(p.id);
     const stockChip = stockChipHTML(p);
     return `
-        <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
+        <div class="product-card${p.inStock === false ? ' a-reserva' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
             ${discountBadge(p)}
             <button class="fav-icon-btn${isFav ? ' active' : ''}" data-id="${p.id}" onclick="event.stopPropagation(); toggleFav(${p.id})" title="Guardar en favoritos">
                 <i class="fas fa-heart"></i>
@@ -961,11 +961,11 @@ function productCardHTML(p) {
                 <div class="specs-table">${specsRows(p.specs)}</div>
                 ${priceHTML(p)}
                 <div class="product-buttons" onclick="event.stopPropagation()">
-                    <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
-                        Agregar al carrito
+                    <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" >
+                        ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
                     </button>
-                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
-                        Compra rápida
+                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})" >
+                        ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
                     </button>
                 </div>
                 <button class="btn-ver-detalle" onclick="event.stopPropagation(); openModal(${p.id})">
@@ -1042,11 +1042,11 @@ function openModal(id) {
                 ${p.price > 0 ? `<div class="product-price-bar"><span class="price-label">Precio</span><div class="price-values">${p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="price-amount">${fmt(p.price)}</span></div></div>${transferHTML(p)}` : '<div class="modal-consultar">Consultar precio por WhatsApp</div>'}
                 ${stockChipHTML(p)}
                 <div class="modal-buttons">
-                    <button class="btn-add-cart" onclick="addToCart(${p.id}); closeModal()" ${p.inStock === false ? 'disabled' : ''}>
-                        Agregar al carrito
+                    <button class="btn-add-cart" onclick="addToCart(${p.id}); closeModal()" >
+                        ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
                     </button>
-                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
-                        Compra rápida
+                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})" >
+                        ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
                     </button>
                 </div>
             </div>
@@ -1273,7 +1273,7 @@ function searchProducts(query) {
         grid.innerHTML = `<div class="tienda-vacio"><i class="fas fa-magnifying-glass"></i><h4>No encontramos "${qSeguro}"</h4><p>Probá con el modelo (ej. HHY-70A) o el tipo de herramienta. Si no lo tenemos a la vista, te lo conseguimos.</p><div class="tienda-vacio-btns"><button type="button" onclick="filterProducts('all')">Ver todos los productos</button><a href="https://wa.me/5491131751517?text=${encodeURIComponent('Hola San Ou! Busco: ' + query)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Preguntar por WhatsApp</a></div></div>`;
     } else {
         grid.innerHTML = list.map(p => `
-            <div class="product-card${p.inStock === false ? ' out-of-stock' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
+            <div class="product-card${p.inStock === false ? ' a-reserva' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
                 ${cardMedia(p)}
                 <div class="product-info">
                     <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
@@ -1282,11 +1282,11 @@ function searchProducts(query) {
                     <div class="specs-table">${specsRows(p.specs)}</div>
                     ${priceHTML(p)}
                     <div class="product-buttons" onclick="event.stopPropagation()">
-                        <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
-                            Agregar al carrito
+                        <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" >
+                            ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
                         </button>
-                        <button class="btn-quick-buy" onclick="quickBuy(${p.id})" ${p.inStock === false ? 'disabled' : ''}>
-                            Compra rápida
+                        <button class="btn-quick-buy" onclick="quickBuy(${p.id})" >
+                            ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
                         </button>
                     </div>
                     <button class="btn-ver-detalle" onclick="event.stopPropagation(); openModal(${p.id})">
@@ -1302,12 +1302,8 @@ function searchProducts(query) {
 // ─── CARRITO ─────────────────────────────────────────────────────
 function addToCart(id) {
     const product = products.find(p => p.id === id);
-    // No se puede agregar un producto sin stock (vale para la grilla, el modal y la compra rápida).
-    if (product && product.inStock === false) {
-        if (typeof showToast === 'function') showToast('Ese producto está sin stock. Reingreso en ~90 días.');
-        else alert('Ese producto está sin stock por el momento.');
-        return;
-    }
+    // Sin stock = se vende como RESERVA, con entrega en 20 días (se avisa acá, en el carrito y en el pago).
+    if (product && product.inStock === false && typeof showToast === 'function') showToast('Va como reserva: entrega en 20 días.');
     if (product) sanouTrack('carrito', product.name);
     // GA4 — agregar al carrito
     if (typeof gtag !== 'undefined') {
@@ -1338,10 +1334,11 @@ function addToCart(id) {
     const btn = document.getElementById(`add-${id}`);
     if (btn) {
         btn.classList.add('added');
+        const antes = btn.innerHTML;   // "Agregar al carrito" o "Reservar"
         btn.innerHTML = '<i class="fas fa-check"></i> ¡Agregado!';
         setTimeout(() => {
             btn.classList.remove('added');
-            btn.innerHTML = '<i class="fas fa-cart-plus"></i> Agregar al carrito';
+            btn.innerHTML = antes;
         }, 1800);
     }
 }
@@ -1404,6 +1401,7 @@ function updateCartUI() {
             ${media}
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
+                ${item.inStock === false ? '<div class="cart-item-reserva"><i class="fas fa-clock"></i> Reserva · entrega en 20 días</div>' : ''}
                 <div class="cart-item-unit">Precio unitario: ${fmt(item.price)}</div>
                 <div class="cart-item-subtotal">Subtotal: ${fmt(item.price * item.qty)}</div>
                 <div class="cart-item-controls">

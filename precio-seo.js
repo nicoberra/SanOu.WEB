@@ -42,7 +42,7 @@
                     + (old > precio * 1.03 ? '<span class="seo-precio-old">' + fmt(old) + '</span>' : '')
                     + '<span class="seo-precio-now">' + fmt(precio) + '</span>'
                     + (transfer > 0 && transfer < precio ? '<span class="seo-precio-transfer">Con transferencia <b>' + fmt(transfer) + '</b> · ahorrás ' + fmt(precio - transfer) + '</span>' : '')
-                    + (sinStock ? '<span class="seo-precio-stock out">Sin stock · reingreso en ~90 días</span>'
+                    + (sinStock ? '<span class="seo-precio-stock out">Sin stock · Reservalo: entrega en 20 días</span>'
                                 : '<span class="seo-precio-stock ok">En stock · envío a todo el país</span>');
                 el.classList.add('cargado');
                 // Completar el precio en los datos estructurados (Product) para Google
@@ -53,7 +53,7 @@
                         if (j.offers) {
                             j.offers.price = String(precio);
                             j.offers.priceCurrency = 'ARS';
-                            j.offers.availability = sinStock ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock';
+                            j.offers.availability = sinStock ? 'https://schema.org/BackOrder' : 'https://schema.org/InStock';
                         }
                         ld.textContent = JSON.stringify(j);
                     }
