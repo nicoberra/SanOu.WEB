@@ -208,6 +208,23 @@ test('catálogo: la caché se invalida al guardar un producto desde el CRM', () 
   verdad(env.llamar({ action: 'catalogo', tab: 'Clientes' }).json.csv.includes('$85.000'));
 });
 
+test('stock: la cantidad se guarda en la columna G y acomoda el tilde En stock', () => {
+  const env = entorno();
+  const prod = () => env.llamar({ action: 'productos_list', tab: 'Clientes', auth: env.AUTH }).json;
+  const de = (n) => { const j = prod(); return j.rows.find(x => x.nombre === n); };
+  env.llamar({ action: 'productos_save', tab: 'Clientes', auth: env.AUTH, nombre: 'Pinza Prueba A', cantidad: '5' });
+  let a = de('Pinza Prueba A'); igual(a.cantidad, 5); igual(a.stock, true);
+  env.llamar({ action: 'productos_save', tab: 'Clientes', auth: env.AUTH, nombre: 'Pinza Prueba A', cantidad: '0' });
+  a = de('Pinza Prueba A'); igual(a.cantidad, 0); igual(a.stock, false);
+  env.llamar({ action: 'productos_save', tab: 'Clientes', auth: env.AUTH, nombre: 'Pinza Prueba A', stock: 'true' });
+  a = de('Pinza Prueba A'); igual(a.cantidad, ''); igual(a.stock, true);
+  env.llamar({ action: 'productos_save', tab: 'Clientes', auth: env.AUTH, nombre: 'Pinza Prueba A', cantidad: '3' });
+  env.llamar({ action: 'productos_save', tab: 'Clientes', auth: env.AUTH, nombre: 'Pinza Prueba A', stock: 'false' });
+  a = de('Pinza Prueba A'); igual(a.cantidad, 0); igual(a.stock, false);
+  const csv = env.llamar({ action: 'catalogo', tab: 'Clientes' }).json.csv;
+  verdad(!/cantidad/i.test(csv.split('\n')[0]), 'la cantidad no sale en el catálogo público');
+});
+
 test('lista mayorista pública con caché que se borra al guardar', () => {
   const env = entorno();
   igual(env.llamar({ action: 'mayorista_list' }).json.rows.length, 2);

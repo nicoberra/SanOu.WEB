@@ -1244,7 +1244,7 @@ function pintarProductos(lista, q) {
         <div class="prod-card${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
             <div class="prod-top">
                 ${cp ? imgTag(cp, 'prod-mini') : ''}
-                <span class="prod-nombre">${esc(p.nombre)}${p.stock ? '' : ' <span class="prod-badge-sinstock">Sin stock · reserva 20 días</span>'}</span>
+                <span class="prod-nombre">${esc(p.nombre)}${p.stock ? (p.cantidad > 0 ? ` <span class="prod-badge-cant${p.cantidad <= 2 ? ' poco' : ''}">${p.cantidad} en stock</span>` : '') : ' <span class="prod-badge-sinstock">Sin stock · reserva 20 días</span>'}</span>
                 <button type="button" class="prod-vendidos${vt.vend ? '' : ' cero'}" onclick="verCompradores(${i})" title="Ver quiénes lo compraron"><i class="fas fa-bag-shopping"></i> ${vt.vend} vendido${vt.vend === 1 ? '' : 's'}${vt.curso ? ` <small>+${vt.curso} en curso</small>` : ''}</button>
                 <span class="prod-ok" id="prodok-${i}"><i class="fas fa-check"></i> Guardado</span>
             </div>
@@ -1256,6 +1256,10 @@ function pintarProductos(lista, q) {
                 <label class="prod-num">Precio ML
                     <input type="text" inputmode="numeric" value="${esc(precioTxt(p.ml))}"
                         onchange="guardarProducto(${i},'ml',this.value)">
+                </label>
+                <label class="prod-num">Cantidad en stock
+                    <input type="text" inputmode="numeric" value="${p.cantidad === '' || p.cantidad == null ? '' : esc(p.cantidad)}" placeholder="Sin cargar"
+                        onchange="guardarProducto(${i},'cantidad',this.value)">
                 </label>
                 <label class="prod-sw">
                     <input type="checkbox" ${p.stock ? 'checked' : ''} onchange="guardarProducto(${i},'stock',this.checked)">
@@ -1397,7 +1401,16 @@ let _prodTimers = {};
 async function guardarProducto(i, campo, valor) {
     const p = productos[i];
     if (!p) return;
-    p[campo] = valor;
+    if (campo === 'cantidad') {   // con número, el "En stock" se acomoda solo (0 = sin stock → reserva 20 días)
+        valor = String(valor).replace(/[^\d]/g, '');
+        p.cantidad = valor === '' ? '' : +valor;
+        if (valor !== '') p.stock = +valor > 0;
+        filtrarProductos();
+    } else if (campo === 'stock') {   // tilde a mano: igual que el backend
+        if (!valor && p.cantidad > 0) p.cantidad = 0;
+        if (valor && p.cantidad === 0) p.cantidad = '';
+    }
+    if (campo !== 'cantidad') p[campo] = valor;
     if (campo === 'costousd' || campo === 'stock') filtrarProductos();   // actualizar pesos/ganancia o el cartel "Sin stock"
     if (campo === 'precio') sincronizarPrecioAMayorista(p.nombre, valor);  // conectado con el unitario del mayorista
     try {
@@ -1534,6 +1547,7 @@ function abrirFormProductoNuevo(id){
                 <div><label>Precio (transferencia)</label><input id="npPrecio" inputmode="numeric" placeholder="Ej: 150000"></div>
                 <div><label>Precio Mercado Libre (opcional)</label><input id="npMl" inputmode="numeric" placeholder="Ej: 169999"></div>
                 <div><label>Costo USD (opcional)</label><input id="npCosto" inputmode="decimal" placeholder="Ej: 45.5"></div>
+                <div><label>Cantidad en stock (opcional)</label><input id="npCant" inputmode="numeric" placeholder="Ej: 5"></div>
                 <div class="np-checks"><label class="np-check"><input type="checkbox" id="npStock" checked> En stock</label><label class="np-check"><input type="checkbox" id="npDest"> Destacado</label></div>
             </div>`}
             <label>Etiqueta (opcional)</label>
@@ -1565,10 +1579,11 @@ async function guardarProductoNuevo(e, id){
         }
         const nombre = val('npNombre').trim();
         const r = await crmW({ action: 'prod_agregar', tab: 'Clientes', nombre, categoria: val('npCat'), precio: val('npPrecio'), ml: val('npMl'),
-            costousd: val('npCosto'), stock: String(document.getElementById('npStock').checked), destacado: String(document.getElementById('npDest').checked),
+            costousd: val('npCosto'), cantidad: val('npCant'), stock: String(document.getElementById('npStock').checked), destacado: String(document.getElementById('npDest').checked),
             badge: val('npBadge').trim(), desc: val('npDesc').trim(), specs: JSON.stringify(specs), idmax: String(Math.max(0, ...catProds().map(x => x.id || 0))) });
         catProds().push(Object.assign({}, r.producto, { price: 0, extra: true }));
-        productos.push({ nombre, precio: val('npPrecio'), stock: document.getElementById('npStock').checked, ml: val('npMl'), destacado: document.getElementById('npDest').checked, costousd: val('npCosto') });
+        const cantNp = val('npCant').replace(/[^\d]/g, '');
+        productos.push({ nombre, precio: val('npPrecio'), stock: cantNp !== '' ? +cantNp > 0 : document.getElementById('npStock').checked, ml: val('npMl'), destacado: document.getElementById('npDest').checked, costousd: val('npCosto'), cantidad: cantNp === '' ? '' : +cantNp });
         cacheSet('productos', productos);
         cerrarModal(); prodCat = r.producto.category; renderProdCats(); filtrarProductos();
         setTimeout(() => abrirFotos(nombre), 250);   // seguir con las fotos

@@ -391,6 +391,8 @@ body:not(.bloqueado) .panel-lock{display:none}
 .prod-card{background:var(--neg2);border:1px solid var(--linea);border-radius:14px;padding:14px 15px;margin-bottom:10px}
 .prod-card-sinstock{border-color:rgba(226,59,59,.5)}
 .prod-badge-sinstock{display:inline-block;background:#e23b3b;color:#fff;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:6px;letter-spacing:.4px;text-transform:uppercase;vertical-align:middle;margin-left:6px}
+.prod-badge-cant{display:inline-block;background:rgba(34,197,94,.16);color:#4ade80;border:1px solid rgba(74,222,128,.4);font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:6px;letter-spacing:.4px;text-transform:uppercase;vertical-align:middle;margin-left:6px}
+.prod-badge-cant.poco{background:rgba(255,215,0,.14);color:#FFD700;border-color:rgba(255,215,0,.45)}
 .prod-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .prod-nombre{font-weight:700;font-size:.95rem;color:#fff}
 .prod-ok{font-size:.72rem;color:#4ade80;opacity:0;transition:opacity .2s;white-space:nowrap;display:flex;align-items:center;gap:5px}
