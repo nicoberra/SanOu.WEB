@@ -875,7 +875,7 @@ function modalMedia(p) {
         return `<div class="modal-icon"><i class="fas ${p.icon}"></i></div>`;
     }
     if (items.length === 1 && items[0].type === 'img') {
-        return `<div class="modal-img"><img src="${items[0].src}" alt="${p.name}" onerror="this.parentElement.outerHTML='<div class=\\'modal-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'"></div>`;
+        return `<div class="modal-img" style="--fondo:url('${items[0].src}')"><img src="${items[0].src}" alt="${p.name}" onerror="this.parentElement.outerHTML='<div class=\\'modal-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'"></div>`;
     }
 
     const slides = items.map((item, i) => {
@@ -883,7 +883,9 @@ function modalMedia(p) {
         const inner = item.type === 'video'
             ? buildVideoContent(item.src)
             : `<img src="${item.src}" alt="${p.name} ${i + 1}" onerror="this.style.display='none'">`;
-        return `<div class="carousel-slide${active}">${inner}</div>`;
+        // --fondo: la misma foto, difuminada, rellena el alto extra en compu (la foto entra entera)
+        const fondo = item.type === 'video' ? '' : ` style="--fondo:url('${item.src}')"`;
+        return `<div class="carousel-slide${active}"${fondo}>${inner}</div>`;
     }).join('');
 
     const dots = items.map((_, i) =>

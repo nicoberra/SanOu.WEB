@@ -1767,6 +1767,34 @@ section { padding: 90px 0; }
 .modal-price { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: var(--yellow); letter-spacing: 1px; }
 .modal-consultar { color: var(--gray); font-size: 0.85rem; font-style: italic; }
 .modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* Compu: la foto ocupa todo el alto visible del detalle (queda fija mientras se leen las specs).
+   La foto entra entera (contain) y la misma imagen difuminada rellena el espacio que sobra. */
+@media (min-width: 701px) {
+    .modal-product > .modal-carousel,
+    .modal-product > .modal-img {
+        position: sticky;
+        top: 28px;
+        aspect-ratio: auto;
+        height: calc(92dvh - 106px);
+        min-height: 380px;
+        isolation: isolate;
+    }
+    .modal-product .carousel-slide[style*="--fondo"]::before,
+    .modal-product > .modal-img::before {
+        content: '';
+        position: absolute;
+        inset: -40px;
+        background: var(--fondo) center / cover no-repeat;
+        filter: blur(28px) saturate(1.1);
+        transform: scale(1.1);
+        z-index: -1;
+    }
+    .modal-product .carousel-slide img,
+    .modal-product > .modal-img img {
+        position: relative;
+        object-fit: contain;
+    }
+}
 @media (max-width: 700px) {
     .modal-product {
         grid-template-columns: 1fr;
