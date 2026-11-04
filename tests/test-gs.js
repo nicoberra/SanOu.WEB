@@ -561,5 +561,103 @@ test('reserva: un producto sin stock se puede comprar y queda anotado como reser
   igual(JSON.parse(col('Productos (JSON)'))[0].r, 1);
 });
 
+// ── Leads de Instagram (v37): lista.html → "Te asesoramos" ──
+const LEAD = { action: 'lead_add', tab: 'Clientes', nombre: 'Juan Gómez', whatsapp: '11 3175-1517', rubro: 'Electricista',
+  trabajo: 'Crimpar terminales de 95 mm²', utm_source: 'instagram', utm_medium: 'dm', utm_campaign: 'lista', pagina: '/lista.html', t: '9000' };
+const filaLead = env => { const h = env.planillas[env.ctx.CRM_ID].getSheetByName('Leads'); const tit = h.rows[0]; return t => h.rows[h.rows.length - 1][tit.indexOf(t)]; };
+
+test('leads: el formulario guarda el lead con rubro, trabajo, utm y página de origen', () => {
+  const env = entorno();
+  const r = env.llamar(LEAD).json;
+  igual(r.ok, true); verdad(/^l\d+/.test(r.id), 'devuelve id');
+  const col = filaLead(env);
+  igual(col('Nombre'), 'Juan Gómez'); igual(col('WhatsApp'), '1131751517'); igual(col('Rubro'), 'Electricista');
+  igual(col('utm_source'), 'instagram'); igual(col('utm_medium'), 'dm'); igual(col('utm_campaign'), 'lista');
+  igual(col('Página de origen'), '/lista.html'); igual(col('Estado'), 'Nuevo'); igual(filasDe(env, 'Leads'), 1);
+});
+test('leads: el texto se sanea (invisibles y fórmulas = + - @) y los utm raros se limpian', () => {
+  const env = entorno();
+  env.llamar(Object.assign({}, LEAD, { nombre: '=HYPERLINK("x")​ Ana', trabajo: '+cmd|calc @A1', utm_campaign: 'li<s>ta"x', whatsapp: '‪+54 9 11 2222-3333‬' })).json;
+  const col = filaLead(env);
+  verdad(!/^[=+\-@]/.test(col('Nombre')) && !/​/.test(col('Nombre')), 'nombre sin fórmula ni invisibles: ' + col('Nombre'));
+  verdad(!/^[=+\-@]/.test(col('Trabajo a realizar')), 'trabajo sin fórmula');
+  igual(col('utm_campaign'), 'listax'); igual(col('WhatsApp'), '5491122223333');
+});
+test('leads: campo trampa, bot rápido y datos inválidos no guardan nada', () => {
+  const env = entorno();
+  igual(env.llamar(Object.assign({}, LEAD, { web: 'spam' })).json.ok, true);
+  igual(env.llamar(Object.assign({}, LEAD, { t: '300' })).json.ok, true);
+  igual(filasDe(env, 'Leads') > 0 ? filasDe(env, 'Leads') : 0, 0, 'trampas: ninguna fila');
+  verdad(/WhatsApp/.test(env.llamar(Object.assign({}, LEAD, { whatsapp: '123' })).json.error));
+  verdad(/rubro/.test(env.llamar(Object.assign({}, LEAD, { rubro: 'Hacker' })).json.error));
+  verdad(/nombre/.test(env.llamar(Object.assign({}, LEAD, { nombre: ' ' })).json.error));
+});
+test('leads: el mismo WhatsApp no duplica y tiene límite de envíos', () => {
+  const env = entorno();
+  const a = env.llamar(LEAD).json, b = env.llamar(LEAD).json;
+  igual(b.id, a.id); igual(b.repetido, true); igual(filasDe(env, 'Leads'), 1);
+  const c = env.llamar(LEAD).json;   // 3.º intento en 10 min: todavía entra (devuelve el mismo)
+  igual(c.ok, true);
+  const d = env.llamar(LEAD).json;   // 4.º: límite por WhatsApp
+  igual(d.ok, false); verdad(/Demasiadas/.test(d.error));
+  igual(env.llamar(Object.assign({}, LEAD, { whatsapp: '1144445555' })).json.ok, true, 'otro número sí entra');
+});
+test('leads: listar y pasar a cliente exigen la clave del CRM', () => {
+  const env = entorno(); env.llamar(LEAD);
+  igual(env.llamar({ action: 'list', tab: 'Leads' }).json.error, 'No autorizado');
+  igual(env.llamar({ action: 'add', tab: 'Leads', nombre: 'x' }).json.error, 'No autorizado');
+  igual(env.llamar({ action: 'lead_a_cliente', tab: 'Clientes', id: 'l1' }).json.error, 'No autorizado');
+  const rows = env.llamar({ action: 'list', tab: 'Leads', auth: env.AUTH }).json.rows;
+  igual(rows.length, 1); igual(rows[0].utmcampaign, 'lista');
+});
+test('leads: pasar a cliente crea el usuario y lo vincula por ID (sin duplicar)', () => {
+  const env = entorno();
+  const id = env.llamar(LEAD).json.id;
+  const r = env.llamar({ action: 'lead_a_cliente', tab: 'Clientes', id, auth: env.AUTH }).json;
+  igual(r.ok, true); igual(r.existente, false); verdad(r.clienteid);
+  const cli = env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.rows;
+  igual(cli.length, 1); igual(cli[0].id, r.clienteid); igual(String(cli[0].telefono), '1131751517'); igual(cli[0].origen, 'lead');
+  const lead = env.llamar({ action: 'list', tab: 'Leads', auth: env.AUTH }).json.rows[0];
+  igual(lead.clienteid, r.clienteid); igual(lead.estado, 'Cliente');
+  const r2 = env.llamar({ action: 'lead_a_cliente', tab: 'Clientes', id, auth: env.AUTH }).json;
+  igual(r2.clienteid, r.clienteid); igual(env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.rows.length, 1, 'idempotente');
+  igual(env.llamar({ action: 'lead_a_cliente', tab: 'Clientes', id: 'nada', auth: env.AUTH }).json.ok, false);
+});
+test('leads: si el WhatsApp ya es un usuario, se vincula a ese', () => {
+  const env = entorno();
+  env.llamar({ action: 'add', tab: 'Clientes', nombre: 'Juan G (taller)', telefono: '54 9 11 3175-1517', auth: env.AUTH });
+  const cid = env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.rows[0].id;
+  const id = env.llamar(LEAD).json.id;
+  const r = env.llamar({ action: 'lead_a_cliente', tab: 'Clientes', id, auth: env.AUTH }).json;
+  igual(r.existente, true); igual(r.clienteid, cid);
+  igual(env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.rows.length, 1);
+});
+test('utm: el pedido por transferencia y el presupuesto web guardan la campaña', () => {
+  const env = conProductos();
+  igual(env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro', utm_source: 'instagram', utm_medium: 'dm', utm_campaign: '=lista' })).json.ok, true);
+  const p = env.llamar({ action: 'list', tab: 'Pedidos', auth: env.AUTH }).json.rows[0];
+  igual(p.utmsource, 'instagram'); igual(p.utmmedium, 'dm'); igual(p.utmcampaign, 'lista');
+  env.llamar({ action: 'add', tab: 'Cotizaciones', cliente: 'Ana', telefono: '1155550000', detalle: '1x Pinza', monto: '1', utm_source: 'instagram', utm_campaign: 'lista' });
+  const c = env.llamar({ action: 'list', tab: 'Cotizaciones', auth: env.AUTH }).json.rows[0];
+  igual(c.utmsource, 'instagram'); igual(c.utmcampaign, 'lista');
+  // sin utm: columnas vacías
+  env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro', cid: 'otro999' }));
+  igual(env.llamar({ action: 'list', tab: 'Pedidos', auth: env.AUTH }).json.rows[1].utmcampaign, '');
+});
+test('utm: Mercado Pago lleva la campaña en la preferencia y la graba en el pedido pagado', () => {
+  const env = conProductos(); let body = null;
+  env.ctx.MP_TOKEN = 'TEST';
+  env.ctx.mpApi = (m, path, b) => {
+    if (m === 'post') { body = b; return { code: 201, json: { init_point: 'https://mp.test/x' } }; }
+    return { code: 200, json: { id: 777, status: 'approved', status_detail: 'accredited', transaction_amount: 176000, external_reference: 'web-1',
+      payment_type_id: 'credit_card', metadata: Object.assign({}, body.metadata) } };
+  };
+  igual(env.llamar(Object.assign({}, PEDIDO, { action: 'mp_preferencia', zona: 'retiro', utm_source: 'instagram', utm_medium: 'dm', utm_campaign: 'lista' })).json.ok, true);
+  igual(body.metadata.utm_campaign, 'lista');
+  env.ctx.mpRegistrarPago('777');
+  const p = env.llamar({ action: 'list', tab: 'Pedidos', auth: env.AUTH }).json.rows[0];
+  igual(p.utmsource, 'instagram'); igual(p.utmcampaign, 'lista');
+});
+
 console.log(`\n${ok} OK, ${fallas} con error`);
 process.exit(fallas ? 1 : 0);

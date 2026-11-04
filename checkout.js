@@ -228,7 +228,8 @@
         btn.disabled = true; $('ckBtnTxt').textContent = 'Procesando…';
         try {
             const accion = st.pago === 'mp' ? 'mp_preferencia' : 'pedido_transferencia';
-            const r = await jsonp(Object.assign({ action: accion, tab: 'Clientes', items: JSON.stringify(items), cid: cid(datos.telefono + '|' + JSON.stringify(items) + '|' + datos.zona + '|' + st.pago) }, datos));
+            const utm = window.sanouUtmParams ? window.sanouUtmParams() : {};   // campaña de origen (Instagram, etc.)
+            const r = await jsonp(Object.assign({ action: accion, tab: 'Clientes', items: JSON.stringify(items), cid: cid(datos.telefono + '|' + JSON.stringify(items) + '|' + datos.zona + '|' + st.pago) }, utm, datos));
             if (!r || !r.ok) throw new Error((r && r.error) || 'No pudimos procesar el pedido.');
             if (typeof gtag !== 'undefined') gtag('event', 'begin_checkout', { value: r.total, currency: 'ARS', payment_type: st.pago });
             if (st.pago === 'mp') { $('ckBtnTxt').textContent = 'Abriendo Mercado Pago…'; window.location.href = r.init_point; return; }

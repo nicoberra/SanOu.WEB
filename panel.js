@@ -174,6 +174,7 @@ function navegar(sec) {
     else if (sec === 'cotizaciones') renderCotizador();
     else if (sec === 'pedidos') renderPedidos();
     else if (sec === 'marketing') renderMarketing();
+    else if (sec === 'leads') renderLeads();
     else enConstruccion(sec);
 }
 
@@ -2393,6 +2394,11 @@ async function renderPedidos(){
 }
 // ── Compras web ──
 function itemsPedido(p){ try { const a = JSON.parse(p.items || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+// Campaña de origen (utm) de un pedido o presupuesto web: "instagram · lista".
+function badgeCampania(p){
+    const t = [p.utmsource, p.utmcampaign].filter(Boolean).join(' · ');
+    return t ? `<span class="pg-badge pg-utm" title="Vino de una campaña (utm_source · utm_campaign)"><i class="fas fa-bullhorn"></i> ${esc(t)}</span> ` : '';
+}
 function badgePago(p){
     const e = p.pagoestado || '', cls = e === 'Pagado' ? 'pg-ok' : e === 'Comprobante recibido' ? 'pg-comp' : 'pg-esp';
     const ic = p.pago === 'Mercado Pago' ? 'fa-credit-card' : 'fa-building-columns';
@@ -2436,7 +2442,7 @@ function verPedidoWeb(id){
     document.getElementById('modalTitulo').textContent = 'Compra web';
     document.getElementById('modalBody').innerHTML = `
         <div class="pw-ficha">
-            <div class="pw-cab">${badgePago(p)} ${badgeEstado(estPed(p.estado))}<span class="pw-id">Pedido #${esc(String(p.id).slice(-6).toUpperCase())} · ${esc(String(p.fecha||'').slice(0,16))}</span></div>
+            <div class="pw-cab">${badgePago(p)} ${badgeCampania(p)}${badgeEstado(estPed(p.estado))}<span class="pw-id">Pedido #${esc(String(p.id).slice(-6).toUpperCase())} · ${esc(String(p.fecha||'').slice(0,16))}</span></div>
             <h4><i class="fas fa-box"></i> Productos</h4>
             <table class="pw-tabla"><thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead><tbody>${filas}</tbody>
             <tfoot>${envio ? `<tr><td colspan="3">Envío</td><td class="num">${fmtMoney(envio)}</td></tr>` : ''}<tr class="pw-total"><td colspan="3">Total ${p.pago === 'Transferencia' ? '(precio transferencia)' : ''}</td><td class="num">${fmtMoney(montoVenta(p))}</td></tr></tfoot></table>
@@ -3224,3 +3230,109 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
     window.addEventListener('resize', cerrar);
     window.addEventListener('scroll', cerrar, true);
 })();
+
+
+// ─── LEADS (Instagram → lista.html → "Te asesoramos") ───────────
+// Se guardan en la pestaña "Leads" del CRM. Filtro por fecha y por utm_campaign; "Pasar a cliente"
+// crea (o vincula, si el WhatsApp ya existe) el usuario y deja el lead atado por su ID permanente.
+let leads = cacheGet('leads') || [], _leadsCargados = false;
+const leadF = { desde: '', hasta: '', camp: '' };
+function fechaISO(f){ const d = parseFechaCRM(f); if (!d) return ''; const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
+async function renderLeads(){
+    const v = document.getElementById('vista');
+    v.innerHTML = `
+        <div class="panel-sec-head leads-filtros">
+            <label class="leads-f">Desde <input type="date" id="leadDesde" value="${esc(leadF.desde)}" onchange="leadF.desde=this.value;filtrarLeads()"></label>
+            <label class="leads-f">Hasta <input type="date" id="leadHasta" value="${esc(leadF.hasta)}" onchange="leadF.hasta=this.value;filtrarLeads()"></label>
+            <label class="leads-f">Campaña <select id="leadCamp" onchange="leadF.camp=this.value;filtrarLeads()"></select></label>
+            <button class="panel-btn-add leads-limpiar" onclick="leadF.desde=leadF.hasta=leadF.camp='';renderLeads()"><i class="fas fa-eraser"></i> Limpiar</button>
+        </div>
+        <div class="leads-resumen" id="leadsResumen"></div>
+        <div class="panel-lista" id="listaLeads">${leads.length ? '' : skel()}</div>`;
+    if (leads.length) filtrarLeads();
+    try {
+        if (!_leadsCargados || stale('leads')) {
+            const r = await crm({ action: 'list', tab: 'Leads' });
+            if (!r || r.ok !== true) throw new Error((r && r.error) || 'sin respuesta');
+            leads = r.rows || []; cacheSet('leads', leads); _leadsCargados = true;
+        }
+        if (seccionActual === 'leads') filtrarLeads();
+    } catch (e) {
+        if (seccionActual === 'leads' && !leads.length) document.getElementById('listaLeads').innerHTML =
+            errorCarga('No se pudieron cargar los leads. Revisá tu conexión (o que el backend esté en la versión v37).', 'renderLeads()');
+    }
+}
+function filtrarLeads(){
+    const sel = document.getElementById('leadCamp');
+    if (sel) {
+        const camps = [...new Set(leads.map(l => String(l.utmcampaign || '')))].sort();
+        sel.innerHTML = `<option value="">Todas</option>` + camps.map(c => `<option value="${esc(c || '(sin)')}"${(leadF.camp === (c || '(sin)')) ? ' selected' : ''}>${esc(c || 'Sin campaña')}</option>`).join('');
+    }
+    const lista = leads.filter(l => {
+        const f = fechaISO(l.fecha);
+        if (leadF.desde && f < leadF.desde) return false;
+        if (leadF.hasta && f > leadF.hasta) return false;
+        if (leadF.camp && (String(l.utmcampaign || '') || '(sin)') !== leadF.camp) return false;
+        return true;
+    }).sort((a, b) => (parseFechaCRM(b.fecha)?.getTime() || 0) - (parseFechaCRM(a.fecha)?.getTime() || 0));
+    const conv = lista.filter(l => l.clienteid).length;
+    const res = document.getElementById('leadsResumen');
+    if (res) res.innerHTML = `<span><b>${lista.length}</b> lead${lista.length === 1 ? '' : 's'}</span><span><b>${conv}</b> pasado${conv === 1 ? '' : 's'} a cliente</span>` +
+        (lista.length ? `<span><b>${Math.round(conv * 100 / lista.length)}%</b> conversión</span>` : '');
+    pintarLeads(lista);
+}
+function pintarLeads(lista){
+    const cont = document.getElementById('listaLeads'); if (!cont) return;
+    if (!lista.length) {
+        cont.innerHTML = leads.length ? vacio('fa-filter', 'Sin leads en ese filtro', 'Probá con otras fechas o con otra campaña.')
+            : vacio('fa-bullseye', 'Todavía no hay leads', 'Cuando alguien complete "Te asesoramos" en sanou.com.ar/lista.html, aparece acá.');
+        return;
+    }
+    cont.innerHTML = lista.map(l => {
+        const wa = waLink(l.whatsapp, '¡Hola ' + (l.nombre || '') + '! Te escribo de San Ou por la consulta que dejaste en la lista de precios.');
+        const camp = [l.utmsource, l.utmmedium, l.utmcampaign].filter(Boolean).join(' / ');
+        const btn = l.clienteid
+            ? `<button class="cli-btn lead-ok" onclick="verClienteDeLead('${esc(l.clienteid)}')" title="Ver el usuario"><i class="fas fa-user-check"></i></button>`
+            : `<button class="panel-btn-add lead-pasar" id="lp_${esc(l.id)}" onclick="pasarLeadACliente('${esc(l.id)}')"><i class="fas fa-user-plus"></i> Pasar a cliente</button>`;
+        return `
+        <div class="cli-card lead-card">
+            <div class="cli-avatar">${esc((l.nombre || '?').charAt(0).toUpperCase())}</div>
+            <div class="cli-info">
+                <div class="cli-nombre">${esc(l.nombre) || '(sin nombre)'} ${l.rubro ? `<span class="lead-rubro">${esc(l.rubro)}</span>` : ''}${l.clienteid ? '<span class="lead-estado">Cliente</span>' : ''}</div>
+                ${l.trabajo ? `<div class="cli-sub lead-trabajo">${esc(l.trabajo)}</div>` : ''}
+                <div class="cli-contacto">
+                    <span><i class="fas fa-calendar"></i> ${esc(String(l.fecha || '').slice(0, 16))}</span>
+                    ${l.whatsapp ? `<span><i class="fab fa-whatsapp"></i> ${esc(l.whatsapp)}</span>` : ''}
+                    ${camp ? `<span><i class="fas fa-bullhorn"></i> ${esc(camp)}</span>` : ''}
+                </div>
+            </div>
+            <div class="cli-acciones">
+                ${wa ? `<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
+                ${btn}
+            </div>
+        </div>`;
+    }).join('');
+}
+async function pasarLeadACliente(id){
+    const b = document.getElementById('lp_' + id);
+    if (b) { b.disabled = true; b.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Pasando…'; }
+    try {
+        const r = await crmW({ action: 'lead_a_cliente', tab: 'Clientes', id });   // "listo" solo con ok:true del servidor
+        const l = leads.find(x => x.id === id);
+        if (l) { l.clienteid = r.clienteid; l.estado = 'Cliente'; cacheSet('leads', leads); }
+        _clientesCargados = false;   // que Usuarios lo traiga en la próxima visita
+        filtrarLeads();
+        alert(r.existente ? 'Ese WhatsApp ya era un usuario: el lead quedó vinculado a él.' : 'Listo: el lead ya está en Usuarios.');
+    } catch (e) {
+        if (b) { b.disabled = false; b.innerHTML = '<i class="fas fa-user-plus"></i> Pasar a cliente'; }
+        alert('No se pudo pasar a cliente: ' + e.message);
+    }
+}
+async function verClienteDeLead(cid){
+    navegar('clientes');
+    if (!clientes.some(c => String(c.id) === String(cid))) {
+        try { const r = await crm({ action: 'list', tab: 'Clientes' }); if (r && r.ok && r.rows) { clientes = r.rows; cacheSet('clientes', clientes); _clientesCargados = true; } } catch (e) {}
+    }
+    if (clientes.some(c => String(c.id) === String(cid))) verCliente(String(cid));
+    else alert('No encontré ese usuario. Puede que lo hayan borrado de la planilla.');
+}

@@ -916,3 +916,19 @@ button.prod-vendidos:active{transform:scale(.96)}
 .dash-card-gan .dash-val{color:#4ade80}
 .dash-card-gan .dash-val.negativa{color:#f87171}
 .dash-card-gan .dash-ic{color:#4ade80}
+
+/* ── Leads (v37) ── */
+.leads-filtros{flex-wrap:wrap;gap:10px;align-items:flex-end}
+.leads-f{display:flex;flex-direction:column;gap:5px;color:var(--gris2);font-size:.78rem;font-weight:700}
+.leads-f input,.leads-f select{background:var(--neg2);border:1px solid var(--linea);border-radius:10px;color:var(--blanco);font:inherit;font-size:.9rem;padding:9px 11px;min-width:140px;color-scheme:dark}
+.leads-limpiar{background:var(--neg3)!important;color:var(--gris2)!important}
+.leads-resumen{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--gris2);font-size:.86rem;margin:0 0 12px}
+.leads-resumen b{color:var(--am)}
+.lead-card{cursor:default}
+.lead-rubro,.lead-estado{display:inline-block;margin-left:6px;font-size:.7rem;font-weight:700;border-radius:20px;padding:2px 9px;vertical-align:middle}
+.lead-rubro{background:rgba(255,212,0,.12);color:var(--am)}
+.lead-estado{background:rgba(37,211,102,.14);color:#6fdc8c}
+.lead-trabajo{white-space:pre-line}
+.lead-pasar{font-size:.8rem!important;padding:8px 12px!important;white-space:nowrap}
+.lead-ok{color:#6fdc8c}
+.pg-utm{background:rgba(255,212,0,.12);color:var(--am)}

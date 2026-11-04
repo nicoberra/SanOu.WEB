@@ -1542,7 +1542,8 @@ async function confirmarPagoMP(e) {
         const r = await crmJsonp({
             action: 'mp_preferencia', tab: 'Clientes',
             items: JSON.stringify(items), zona, nombre, email, telefono,
-            cid: sanouCid(telefono + '|' + JSON.stringify(items) + '|' + zona)
+            cid: sanouCid(telefono + '|' + JSON.stringify(items) + '|' + zona),
+            ...(window.sanouUtmParams ? window.sanouUtmParams() : {})   // campaña de origen (Instagram, etc.)
         });
         if (r && r.ok && r.init_point) {
             sanouTrack('compra', cart.map(i => `${i.qty}x ${i.name}`).join(', '), { monto: r.total, contacto: [nombre, email].filter(Boolean).join(' · ') });
@@ -1647,7 +1648,8 @@ function guardarCotizacionWeb(d) {
             detalle:  detalle,
             monto:    String(Math.round(d.total)),
             estado:   'Abierta',
-            notas:    'web|' + JSON.stringify(d.datos)   // datos completos para reabrir el mismo PDF desde el CRM
+            notas:    'web|' + JSON.stringify(d.datos),   // datos completos para reabrir el mismo PDF desde el CRM
+            ...(window.sanouUtmParams ? window.sanouUtmParams() : {})   // campaña de origen (Instagram, etc.)
         });
         const url = CLIENTES_URL + '?' + params.toString();
         // Si falla la red, se reintenta una vez a los 3 s (gracias al cid no se duplica).
