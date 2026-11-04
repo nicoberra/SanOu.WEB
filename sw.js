@@ -61,7 +61,7 @@ self.addEventListener('fetch', (e) => {
 const API = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
 self.addEventListener('push', (e) => {
   e.waitUntil((async () => {
-    let titulo = '🛒 Nueva compra en la web', cuerpo = 'Tocá para ver el pedido en el CRM.';
+    let titulo = '🛒 Nueva compra en la web', cuerpo = 'Tocá para ver el pedido en el CRM.', seccion = '';
     try {
       const c = await caches.open('sanou-push');
       const r = await c.match('/__push_pt');
@@ -70,13 +70,13 @@ self.addEventListener('push', (e) => {
         const res = await fetch(API + '?action=push_ultimos&tab=Pedidos&pt=' + encodeURIComponent(pt) + '&_=' + Date.now());
         const j = await res.json();
         const a = j && j.ok && j.avisos && j.avisos[0];
-        if (a && Date.now() - a.ts < 15 * 60 * 1000) { titulo = a.t; cuerpo = a.b; }
+        if (a && Date.now() - a.ts < 15 * 60 * 1000) { titulo = a.t; cuerpo = a.b; seccion = a.s || ''; }
       }
     } catch (err) { /* sin conexión o sin clave: aviso genérico */ }
     await self.registration.showNotification(titulo, {
       body: cuerpo, icon: '/icon-192.png', badge: '/tuerca-icon.png',
       tag: 'sanou-web-' + Date.now(), renotify: true, vibrate: [120, 60, 120],
-      data: { url: '/panel.html#pedidos-web' }
+      data: seccion === 'leads' ? { url: '/panel.html#leads', tipo: 'ir-leads' } : { url: '/panel.html#pedidos-web', tipo: 'ir-pedidos-web' }
     });
   })());
 });
@@ -86,7 +86,7 @@ self.addEventListener('notificationclick', (e) => {
   e.waitUntil((async () => {
     const abiertas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const w of abiertas) {
-      if (w.url.indexOf('/panel.html') >= 0) { await w.focus(); w.postMessage({ tipo: 'ir-pedidos-web' }); return; }
+      if (w.url.indexOf('/panel.html') >= 0) { await w.focus(); w.postMessage({ tipo: (e.notification.data && e.notification.data.tipo) || 'ir-pedidos-web' }); return; }
     }
     await self.clients.openWindow(url);
   })());

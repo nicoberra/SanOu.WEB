@@ -213,6 +213,7 @@ function cargarInicio(){
             if (d.Seguimientos) { seguimientos = d.Seguimientos; cacheSet('seguimientos', seguimientos); _segCargados = true; }
             if (d.Cotizaciones) { cotizaciones = d.Cotizaciones; cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
             if (d.productos)    { productos = d.productos;       cacheSet('productos', productos);       _preciosCargados = true; }
+            if (d.Leads)        { leads = d.Leads;               cacheSet('leads', leads);               _leadsCargados = true; pintarAvisoLeads(); }
             return true;
         } catch (e) { return false; }
         finally { setTimeout(() => { _inicioEnCurso = null; }, 0); }
@@ -292,6 +293,7 @@ function pintarDashboard(){
         </button>` : '';
     v.innerHTML = `
         ${webHTML}
+        ${leadsDashHTML()}
         ${agendaHTML}
 
         <h4 class="dash-sec">💰 Facturación</h4>
@@ -3081,7 +3083,8 @@ document.addEventListener('DOMContentLoaded', () => {
     hidratarCache();   // datos guardados = apertura instantánea
     if (accesoVigente()) {
         document.body.classList.remove('bloqueado');
-        if (location.hash === '#pedidos-web') { pedTab = 'web'; navegar('pedidos'); } else navegar('panel');
+        if (location.hash === '#pedidos-web') { pedTab = 'web'; navegar('pedidos'); } else if (location.hash === '#leads') navegar('leads'); else navegar('panel');
+        pintarAvisoLeads();
         pushActivo().then(on => { if (on) guardarAuthParaAvisos(); });
     }
     else {
@@ -3117,12 +3120,14 @@ window.addEventListener('pageshow', buscarVersionNueva);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') buscarVersionNueva(); });
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible' || document.body.classList.contains('bloqueado')) return;
+    actualizarLeads().then(() => { if (seccionActual === 'leads') filtrarLeads(); else if (seccionActual === 'panel') pintarDashboard(); });   // ¿llegaron leads nuevos?
     if (seccionActual === 'panel' || seccionActual === 'pedidos') ensurePedidos(true).then(() => {
         if (seccionActual === 'panel') pintarDashboard(); else if (seccionActual === 'pedidos') { pintarTabsPed(); filtrarPedidos(); }
     });
 });
 if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
     if (e.data && e.data.tipo === 'ir-pedidos-web' && !document.body.classList.contains('bloqueado')) { pedTab = 'web'; ensurePedidos(true).then(() => navegar('pedidos')); }
+    if (e.data && e.data.tipo === 'ir-leads' && !document.body.classList.contains('bloqueado')) { _leadsCargados = false; navegar('leads'); }
 });
 
 // ─── TIRAR PARA RECARGAR (pull-to-refresh) ──────────────────────
@@ -3256,7 +3261,7 @@ async function renderLeads(){
             if (!r || r.ok !== true) throw new Error((r && r.error) || 'sin respuesta');
             leads = r.rows || []; cacheSet('leads', leads); _leadsCargados = true;
         }
-        if (seccionActual === 'leads') filtrarLeads();
+        if (seccionActual === 'leads') { filtrarLeads(); setTimeout(marcarLeadsVistos, 1500); }
     } catch (e) {
         if (seccionActual === 'leads' && !leads.length) document.getElementById('listaLeads').innerHTML =
             errorCarga('No se pudieron cargar los leads. Revisá tu conexión (o que el backend esté en la versión v37).', 'renderLeads()');
@@ -3335,4 +3340,36 @@ async function verClienteDeLead(cid){
     }
     if (clientes.some(c => String(c.id) === String(cid))) verCliente(String(cid));
     else alert('No encontré ese usuario. Puede que lo hayan borrado de la planilla.');
+}
+
+// ── Aviso de leads nuevos: número en el botón "Leads" y tarjeta en el Panel ──
+const _lVisto = () => { try { return parseInt(localStorage.getItem('sanou_leads_visto') || '0', 10); } catch (e) { return 0; } };
+const tsLead = l => (parseFechaCRM(l.fecha)?.getTime() || 0);
+function leadsNuevos(){ const v = _lVisto(); return leads.filter(l => !l.clienteid && tsLead(l) > v); }
+function marcarLeadsVistos(){
+    const m = Math.max(0, ...leads.map(tsLead));
+    if (m) try { localStorage.setItem('sanou_leads_visto', String(m)); } catch (e) {}
+    pintarAvisoLeads();
+}
+function pintarAvisoLeads(){
+    const b = document.querySelector('.panel-nav-btn[data-sec="leads"]'); if (!b) return;
+    const n = leadsNuevos().length;
+    let em = b.querySelector('.nav-nuevo');
+    if (!n) { if (em) em.remove(); return; }
+    if (!em) { em = document.createElement('em'); em.className = 'nav-nuevo'; b.appendChild(em); }
+    em.textContent = n; em.title = n + (n === 1 ? ' lead nuevo' : ' leads nuevos');
+}
+function leadsDashHTML(){
+    const n = leadsNuevos();
+    if (!n.length) return '';
+    return `<button class="dash-web nuevo" onclick="navegar('leads')">
+            <span class="dash-web-ic"><i class="fas fa-bullseye"></i><em>${n.length}</em></span>
+            <span class="dash-web-txt"><b>${n.length} lead${n.length > 1 ? 's' : ''} nuevo${n.length > 1 ? 's' : ''} de la lista de precios</b>
+            <small>${esc(n.slice(0, 3).map(l => l.nombre + (l.rubro ? ' (' + l.rubro + ')' : '')).join(' · '))}</small></span>
+            <i class="fas fa-arrow-right"></i>
+        </button>`;
+}
+async function actualizarLeads(){
+    try { const r = await crm({ action: 'list', tab: 'Leads' }); if (r && r.ok === true && r.rows) { leads = r.rows; cacheSet('leads', leads); _leadsCargados = true; } } catch (e) {}
+    pintarAvisoLeads();
 }

@@ -632,6 +632,19 @@ test('leads: si el WhatsApp ya es un usuario, se vincula a ese', () => {
   igual(r.existente, true); igual(r.clienteid, cid);
   igual(env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.rows.length, 1);
 });
+test('leads: un lead nuevo avisa al CRM (push que abre Leads) y viene en inicio', () => {
+  const env = entorno();
+  env.llamar({ action: 'push_suscribir', tab: 'Pedidos', endpoint: 'https://fcm.googleapis.com/fcm/send/abc', auth: env.AUTH });
+  let enviados = [];
+  env.ctx.UrlFetchApp.fetchAll = reqs => { enviados = reqs; return reqs.map(() => ({ getResponseCode: () => 201, getContentText: () => '' })); };
+  env.llamar(LEAD);
+  igual(enviados.length, 1, 'se manda el aviso');
+  const av = env.llamar({ action: 'push_ultimos', tab: 'Pedidos', auth: env.AUTH }).json.avisos[0];
+  verdad(/Nuevo lead: Juan Gómez/.test(av.t)); igual(av.s, 'leads'); verdad(/Electricista/.test(av.b));
+  enviados = []; env.llamar(LEAD); igual(enviados.length, 0, 'el mismo WhatsApp repetido no vuelve a avisar');
+  const d = env.llamar({ action: 'inicio', tab: 'Clientes', auth: env.AUTH }).json.datos;
+  igual(d.Leads.length, 1);
+});
 test('utm: el pedido por transferencia y el presupuesto web guardan la campaña', () => {
   const env = conProductos();
   igual(env.llamar(Object.assign({}, PEDIDO, { zona: 'retiro', utm_source: 'instagram', utm_medium: 'dm', utm_campaign: '=lista' })).json.ok, true);

@@ -932,3 +932,5 @@ button.prod-vendidos:active{transform:scale(.96)}
 .lead-pasar{font-size:.8rem!important;padding:8px 12px!important;white-space:nowrap}
 .lead-ok{color:#6fdc8c}
 .pg-utm{background:rgba(255,212,0,.12);color:var(--am)}
+.panel-nav-btn{position:relative}
+.nav-nuevo{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:#ff4d4d;color:#fff;font-style:normal;font-size:.68rem;font-weight:800;line-height:1}
