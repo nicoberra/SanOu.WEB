@@ -22,9 +22,13 @@ jobs:
         run: node tests/test-gs.js
       - name: Chequeos estáticos de la web
         run: node tests/test-front.js
+      # Sin descargar navegadores: el runner de GitHub ya trae Google Chrome
+      # ("npx playwright install --with-deps" fallaba en ubuntu-latest).
       - name: Instalar Playwright (solo para esta corrida)
-        run: |
-          npm i --no-save --no-package-lock playwright@1.58.2
-          npx playwright install --with-deps chromium
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm i --no-save --no-package-lock playwright@1.58.2
       - name: Prueba de humo en navegador (celular y compu)
+        env:
+          SMOKE_CHANNEL: chrome
         run: node tests/smoke.mjs

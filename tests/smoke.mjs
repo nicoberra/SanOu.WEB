@@ -27,7 +27,7 @@ const PAGINAS = ['/index.html', '/mayorista.html', '/mayoristas.html', '/envios.
   '/guia-crimpadoras-hidraulicas.html', '/categoria/crimpadoras-hidraulicas.html', '/producto/pinza-hidraulica-hhy-70a-1.html', '/pago.html', '/checkout.html'];
 const BLOQUEAR = /script\.google\.com|script\.googleusercontent\.com|googletagmanager|google-analytics|klaviyo|facebook\.net|api\.mercadopago/;
 
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.SMOKE_CHANNEL ? { channel: process.env.SMOKE_CHANNEL } : {});  // en CI usa el Chrome que ya trae la máquina
 let fallas = 0;
 for (const [ancho, alto, nombre] of [[390, 844, 'celular'], [1440, 900, 'compu']]) {
   const ctx = await browser.newContext({ viewport: { width: ancho, height: alto } });
