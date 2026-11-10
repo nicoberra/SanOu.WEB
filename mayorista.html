@@ -112,7 +112,8 @@
             font-size: .72rem; font-weight: 700; padding: 4px 9px; border-radius: 7px; margin-bottom: 12px;
         }
         .may-prices { margin-top: auto; }
-        .may-price-may { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+        .may-price-may { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: 8px; }
+        .may-price-may .val, .may-price-uni .val { white-space: nowrap; }
         .may-price-may .lbl { color: var(--gray); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
         .may-price-may .val { color: var(--yellow); font-size: 1.3rem; font-weight: 900; font-family: 'Inter', sans-serif; }
         .may-price-uni { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 4px; }
@@ -125,6 +126,31 @@
             display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .2s;
         }
         .may-wa:hover { opacity: .88; }
+        /* Características desplegables (tocar la foto, el nombre o "Ver características") */
+        .may-grid { align-items: start; }
+        .may-card .may-media, .may-card .may-name { cursor: pointer; }
+        .may-ver {
+            display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin: -4px 0 10px;
+            background: none; border: 0; padding: 4px 0; color: var(--gray-light); font: inherit;
+            font-size: .78rem; font-weight: 700; cursor: pointer; transition: color .2s;
+        }
+        .may-ver i { transition: transform .3s cubic-bezier(.25,.46,.45,.94); font-size: .7rem; }
+        .may-ver:hover { color: var(--yellow); }
+        .may-ver:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; border-radius: 4px; }
+        .may-card.abierta .may-ver { color: var(--yellow); }
+        .may-card.abierta .may-ver i { transform: rotate(180deg); }
+        .may-card.abierta { border-color: rgba(255,215,0,.45); }
+        .may-det { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.25,.46,.45,.94); }
+        .may-card.abierta .may-det { grid-template-rows: 1fr; }
+        .may-det > div { overflow: hidden; min-height: 0; }
+        .may-det-in { padding-bottom: 12px; opacity: 0; transform: translateY(-6px); transition: opacity .25s, transform .3s; }
+        .may-card.abierta .may-det-in { opacity: 1; transform: none; transition-delay: .08s; }
+        .may-desc { color: var(--gray-light); font-size: .78rem; line-height: 1.45; margin-bottom: 9px; }
+        .may-specs { list-style: none; margin: 0; padding: 0; border-top: 1px solid rgba(255,255,255,.07); }
+        .may-specs li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.07); font-size: .74rem; line-height: 1.3; }
+        .may-specs li span { color: var(--gray); }
+        .may-specs li b { color: #fff; font-weight: 700; text-align: right; }
+        @media (prefers-reduced-motion: reduce) { .may-det, .may-det-in, .may-ver i { transition: none; } }
         .may-loading { text-align: center; color: var(--gray); padding: 60px 0; font-size: .95rem; }
         /* Estados: cargando (skeleton), vacío y error con acción */
         .may-skel { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; padding: 10px 0 40px; opacity: 0; animation: maySkelIn .2s ease .3s forwards; }
@@ -321,6 +347,17 @@
             return 'Compra mínima: ' + n + (n === 1 ? ' unidad' : ' unidades');
         }
 
+        let detN = 0;
+        // Tocar la foto, el nombre o "Ver características" abre/cierra la ficha (el botón de WhatsApp no).
+        document.addEventListener('click', function (e) {
+            const card = e.target.closest('.may-card.con-det');
+            if (!card || e.target.closest('.may-wa') || e.target.closest('.may-det')) return;
+            if (!e.target.closest('.may-media, .may-name, .may-ver')) return;
+            const abierta = card.classList.toggle('abierta');
+            const b = card.querySelector('.may-ver');
+            if (b) b.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+        });
+
         function cardHTML(r) {
             const prod = r._prod;
             const folder = prod ? (prod.folder || prod.name) : '';
@@ -354,10 +391,21 @@
             const waTxt = encodeURIComponent('Hola San Ou! Quiero precio mayorista de: ' + r.producto);
             const minBadge = (!apagado && r.minimo) ? `<div class="may-min"><i class="fas fa-layer-group"></i> ${minTexto(r.minimo)}</div>` : '';
 
-            return `<div class="may-card${apagado ? ' agotado' : ''}">
+            // Características del catálogo (descripción + ficha técnica), desplegables al tocar.
+            const specs = prod ? ((prod.allSpecs && prod.allSpecs.length) ? prod.allSpecs : (prod.specs || [])) : [];
+            const hayDet = prod && (prod.desc || specs.length);
+            const detId = 'mayDet' + (++detN);
+            const det = hayDet ? `<button type="button" class="may-ver" aria-expanded="false" aria-controls="${detId}">Ver características <i class="fas fa-chevron-down"></i></button>
+                    <div class="may-det" id="${detId}"><div><div class="may-det-in">
+                        ${prod.desc ? `<p class="may-desc">${esc(prod.desc)}</p>` : ''}
+                        ${specs.length ? `<ul class="may-specs">${specs.map(s => `<li><span>${esc(s.l)}</span><b>${esc(s.v)}</b></li>`).join('')}</ul>` : ''}
+                    </div></div></div>` : '';
+
+            return `<div class="may-card${apagado ? ' agotado' : ''}${hayDet ? ' con-det' : ''}">
                 ${media}${tag}</div>
                 <div class="may-info">
                     <div class="may-name">${esc(r.producto)}</div>
+                    ${det}
                     ${minBadge}
                     <div class="may-prices">${precios}${nota}</div>
                     <a class="may-wa" href="https://wa.me/${WA}?text=${waTxt}" target="_blank"><i class="fab fa-whatsapp"></i> Consultar</a>
