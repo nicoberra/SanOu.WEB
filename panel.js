@@ -162,9 +162,9 @@ let seccionActual = 'clientes';
 let clientes = [];
 
 const SECCIONES = [
-    ['facturacion','fa-coins','Facturación'], ['clientes','fa-users','Usuarios'], ['productos','fa-screwdriver-wrench','Productos'],
-    ['mayorista','fa-tags','Mayorista'], ['leads','fa-bullseye','Leads'], ['cotizaciones','fa-file-invoice-dollar','Cotizaciones'],
-    ['pedidos','fa-box','Pedidos'], ['estadisticas','fa-chart-pie','Estadísticas'], ['marketing','fa-bullhorn','Marketing']];
+    ['facturacion','$$','Facturación'], ['clientes','fa-users','Usuarios'], ['productos','fa-screwdriver-wrench','Productos'],
+    ['mayorista','fa-boxes-stacked','Mayorista'], ['pedidos','fa-box','Pedidos'], ['cotizaciones','fa-file-invoice-dollar','Cotizaciones'],
+    ['leads','fa-bullseye','Leads'], ['estadisticas','fa-chart-pie','Estadísticas'], ['marketing','fa-bullhorn','Marketing']];
 const esCelu = () => { try { return matchMedia('(max-width:899px)').matches; } catch (e) { return false; } };
 function navegar(sec, opts) {
     opts = opts || {};
@@ -318,7 +318,7 @@ function pintarDashboard(){
         </button>` : '';
     // Celular: cuadrados para entrar a cada sección + resumen corto (el tablero completo queda para la compu).
     const badge = { cotizaciones: cotAbiertas.length, leads: (typeof leadsNuevos === 'function' ? leadsNuevos().length : 0), pedidos: webNue.length };
-    const homeGrid = `<div class="home-grid">${SECCIONES.map(([sec, ic, nom]) => `<button type="button" class="home-tile" onclick="abrirDesdeInicio(this,'${sec}')"><i class="fas ${ic}"></i>${nom}${badge[sec] ? `<span class="bd">${badge[sec]}</span>` : ''}</button>`).join('')}</div>`;
+    const homeGrid = `<div class="home-grid">${SECCIONES.map(([sec, ic, nom]) => `<button type="button" class="home-tile" onclick="abrirDesdeInicio(this,'${sec}')">${ic.startsWith('fa-') ? `<i class="fas ${ic}"></i>` : `<span class="home-ic-txt">${ic}</span>`}${nom}${badge[sec] ? `<span class="bd">${badge[sec]}</span>` : ''}</button>`).join('')}</div>`;
     // Resumen del mes en una sola tarjeta: facturación (amarillo) y ganancia (verde) + cantidad de ventas.
     const homeResumen = `<div class="home-resumen"><h4 class="dash-sec">Resumen del mes</h4>
             <div class="home-res" onclick="navegar('facturacion')">
@@ -326,11 +326,20 @@ function pintarDashboard(){
                 <div class="home-res-col"><span class="home-res-lbl">Ganancia</span><b class="home-res-gan" id="homeGan">—</b><small id="homeGanSub">calculando…</small></div>
                 <div class="home-res-ventas"><i class="fas fa-bag-shopping"></i> ${nVentasMes} ${nVentasMes === 1 ? 'venta' : 'ventas'} este mes</div>
             </div></div>`;
+    const ultWeb = pedidos.filter(esPedWeb).sort((a, b) => tsPed(b) - tsPed(a)).slice(0, 5);
+    const nuevosWeb = new Set(webNue);
+    const homeWeb = `<div class="home-web"><h4 class="dash-sec">🛒 Ventas web</h4>${ultWeb.length
+        ? `<div class="home-web-lista">${ultWeb.map(p => `<button type="button" class="home-web-it${nuevosWeb.has(p) ? ' nuevo' : ''}" onclick="pedTab='web';navegar('pedidos')">
+                <span class="hw-a"><b>${esc(p.cliente || 'Cliente web')}</b>${nuevosWeb.has(p) ? '<em>NUEVA</em>' : ''}</span>
+                <span class="hw-m">${esc(montoTxt(p.monto) || '-')}</span>
+                <span class="hw-s">${esc(p.pagoestado || estPed(p.estado))}${p.fecha ? ' · ' + esc(fechaTxt(p.fecha)) : ''}</span></button>`).join('')}</div>`
+        : `<div class="home-web-vacio">Todavía no hay compras desde la web.</div>`}</div>`;
     v.innerHTML = `
         ${webHTML}
         ${leadsDashHTML()}
         ${agendaHTML}
         ${homeGrid}
+        ${homeWeb}
         ${homeResumen}
         <div class="dash-detalle">
         <h4 class="dash-sec">💰 Facturación</h4>
