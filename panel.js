@@ -161,8 +161,30 @@ function errorCarga(texto, accion) {
 let seccionActual = 'clientes';
 let clientes = [];
 
-function navegar(sec) {
+const SECCIONES = [
+    ['facturacion','fa-coins','Facturación'], ['clientes','fa-users','Usuarios'], ['productos','fa-screwdriver-wrench','Productos'],
+    ['mayorista','fa-tags','Mayorista'], ['leads','fa-bullseye','Leads'], ['cotizaciones','fa-file-invoice-dollar','Cotizaciones'],
+    ['pedidos','fa-box','Pedidos'], ['estadisticas','fa-chart-pie','Estadísticas'], ['marketing','fa-bullhorn','Marketing']];
+const esCelu = () => { try { return matchMedia('(max-width:899px)').matches; } catch (e) { return false; } };
+function navegar(sec, opts) {
+    opts = opts || {};
+    const antes = seccionActual;
     seccionActual = sec;
+    // Celular: cada sección se abre a pantalla completa con "‹ Inicio" arriba y queda en el historial,
+    // así el "atrás" del teléfono y el gesto desde el borde izquierdo vuelven al inicio.
+    document.body.classList.toggle('en-sec', sec !== 'panel');
+    const t = SECCIONES.find(x => x[0] === sec); const st = document.getElementById('secTitulo'); if (st) st.textContent = t ? t[2] : '';
+    if (esCelu()) {
+        try {
+            if (sec !== 'panel' && !opts.desdeHistorial) {
+                if (history.state && history.state.sec) history.replaceState({ sec }, '', location.pathname);
+                else history.pushState({ sec }, '', location.pathname);
+            }
+        } catch (e) {}
+        const v = document.getElementById('vista');
+        if (v && antes !== sec && !opts.sinAnim) { v.classList.remove('entra', 'vuelve'); void v.offsetWidth; v.classList.add(sec === 'panel' ? 'vuelve' : 'entra'); }
+        window.scrollTo(0, 0);
+    }
     document.querySelectorAll('.panel-nav-btn').forEach(b =>
         b.classList.toggle('active', b.dataset.sec === sec));
     if (sec === 'panel') renderDashboard();
@@ -291,11 +313,19 @@ function pintarDashboard(){
             <small>${webPend.length} por despachar${webPend.filter(p=>p.pagoestado==='Comprobante recibido').length ? ' · ' + webPend.filter(p=>p.pagoestado==='Comprobante recibido').length + ' con comprobante para revisar' : ''}${webPend.filter(p=>p.pagoestado==='Esperando transferencia').length ? ' · ' + webPend.filter(p=>p.pagoestado==='Esperando transferencia').length + ' esperando transferencia' : ''}</small></span>
             <i class="fas fa-arrow-right"></i>
         </button>` : '';
+    // Celular: cuadrados para entrar a cada sección + resumen corto (el tablero completo queda para la compu).
+    const badge = { cotizaciones: cotAbiertas.length, leads: (typeof leadsNuevos === 'function' ? leadsNuevos().length : 0), pedidos: webNue.length };
+    const homeGrid = `<div class="home-grid">${SECCIONES.map(([sec, ic, nom]) => `<button type="button" class="home-tile" onclick="abrirDesdeInicio(this,'${sec}')"><i class="fas ${ic}"></i>${nom}${badge[sec] ? `<span class="bd">${badge[sec]}</span>` : ''}</button>`).join('')}</div>`;
+    const homeResumen = `<div class="home-resumen"><h4 class="dash-sec">Resumen</h4><div class="dash-cards">
+            ${card('Facturado este mes', fmtMoney(factMes), nVentasMes + (nVentasMes === 1 ? ' venta' : ' ventas'), 'fa-calendar-days', 'facturacion', true)}
+            ${card('Ventas este año', nVentasAnio, nVentasAnio === 1 ? 'venta' : 'ventas', 'fa-calendar', 'pedidos')}</div></div>`;
     v.innerHTML = `
         ${webHTML}
         ${leadsDashHTML()}
         ${agendaHTML}
-
+        ${homeGrid}
+        ${homeResumen}
+        <div class="dash-detalle">
         <h4 class="dash-sec">💰 Facturación</h4>
         <div class="dash-cards">
             ${card('Esta semana', fmtMoney(factSemana), ventas.filter(x=>x.fecha>=iniSemana).length + ' ventas', 'fa-calendar-week', 'facturacion', true)}
@@ -327,7 +357,9 @@ function pintarDashboard(){
             ${card('Cotizaciones abiertas', cotAbiertas.length, '', 'fa-file-invoice-dollar', 'cotizaciones')}
         </div>
 
-        ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin usuario)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}`;
+        ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin usuario)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}
+        </div>`;
+    _homeFoto = v.innerHTML;   // para mostrar el inicio "atrás" mientras se desliza para volver
 
     // Ganancia del mes (necesita costos USD + dólar): se calcula aparte para no demorar el panel.
     Promise.all([ensureProductosPrecios(), ensureDolar()]).then(() => {
@@ -3373,3 +3405,66 @@ async function actualizarLeads(){
     try { const r = await crm({ action: 'list', tab: 'Leads' }); if (r && r.ok === true && r.rows) { leads = r.rows; cacheSet('leads', leads); _leadsCargados = true; } } catch (e) {}
     pintarAvisoLeads();
 }
+
+
+// ══ Celular: inicio en cuadrados + volver deslizando desde el borde izquierdo (como en el iPhone) ══
+let _homeFoto = '', _g = null, _gestoHecho = false;
+function abrirDesdeInicio(btn, sec) {
+    btn.classList.add('toc');
+    setTimeout(() => navegar(sec), 90);
+}
+function volverInicio(opts) {
+    if (seccionActual === 'panel') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (esCelu() && history.state && history.state.sec) { history.back(); return; }   // popstate vuelve al inicio
+    navegar('panel', opts);
+}
+window.addEventListener('popstate', function () {
+    if (!esCelu()) return;
+    const st = history.state;
+    if (st && st.sec) { if (seccionActual !== st.sec) navegar(st.sec, { desdeHistorial: true }); }
+    else if (seccionActual !== 'panel') navegar('panel', { desdeHistorial: true, sinAnim: _gestoHecho });
+    _gestoHecho = false;
+});
+function _gMover(dx) {
+    const w = window.innerWidth, p = Math.min(1, dx / w);
+    [document.getElementById('vista'), document.getElementById('secBar')].forEach(el => { if (el) el.style.transform = dx ? `translateX(${dx}px)` : ''; });
+    const atras = document.getElementById('homeAtras');
+    if (atras) { atras.style.transform = `translateX(${(-0.25 + 0.25 * p) * w}px)`; atras.style.opacity = String(0.5 + 0.5 * p); }
+}
+function _gTransicion(on) {
+    const ease = on ? 'transform .26s cubic-bezier(.25,.46,.45,.94), opacity .26s' : 'none';
+    [document.getElementById('vista'), document.getElementById('secBar'), document.getElementById('homeAtras')].forEach(el => { if (el) el.style.transition = ease; });
+}
+function _gLimpiar() {
+    document.body.classList.remove('deslizando');
+    [document.getElementById('vista'), document.getElementById('secBar'), document.getElementById('homeAtras')].forEach(el => { if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; } });
+    const atras = document.getElementById('homeAtras'); if (atras) atras.innerHTML = '';
+}
+// Gesto: apoyar el dedo en el borde izquierdo (24 px) y tirar hacia la derecha.
+document.addEventListener('touchstart', function (e) {
+    if (!esCelu() || seccionActual === 'panel' || e.touches.length > 1) return;
+    if (document.querySelector('.panel-modal.active, .panel-modal-overlay.active')) return;
+    const t = e.touches[0]; if (!t || t.clientX > 24) return;
+    _g = { x0: t.clientX, y0: t.clientY, t0: Date.now(), dx: 0, activo: false };
+}, { passive: true });
+document.addEventListener('touchmove', function (e) {
+    if (!_g) return;
+    const t = e.touches[0]; const dx = t.clientX - _g.x0, dy = t.clientY - _g.y0;
+    if (!_g.activo) {
+        if (Math.abs(dy) > 14 && Math.abs(dy) > Math.abs(dx)) { _g = null; return; }   // era un scroll vertical
+        if (dx < 10) return;
+        _g.activo = true;
+        const atras = document.getElementById('homeAtras'); if (atras) atras.innerHTML = _homeFoto;
+        document.body.classList.add('deslizando'); _gTransicion(false);
+    }
+    _g.dx = Math.max(0, dx); _gMover(_g.dx);
+}, { passive: true });
+document.addEventListener('touchend', function () {
+    if (!_g) return;
+    const g = _g; _g = null; if (!g.activo) return;
+    const w = window.innerWidth, vel = g.dx / Math.max(1, Date.now() - g.t0);
+    const volver = g.dx > w * 0.33 || vel > 0.5;        // pasó un tercio o fue un tirón rápido
+    _gTransicion(true); _gMover(volver ? w : 0);
+    setTimeout(() => { _gLimpiar(); if (volver) { _gestoHecho = true; volverInicio({ sinAnim: true }); } }, 270);
+}, { passive: true });
+document.addEventListener('touchcancel', function () { _g = null; _gLimpiar(); }, { passive: true });

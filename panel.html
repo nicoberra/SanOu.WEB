@@ -16,7 +16,7 @@
     <link rel="apple-touch-icon" href="tuerca-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="panel.css?v=20261104b">
+    <link rel="stylesheet" href="panel.css?v=20261113a">
     <style>body.bloqueado .panel-app { display: none !important; }</style>
 </head>
 <body class="bloqueado">
@@ -44,14 +44,11 @@
     <!-- App -->
     <div class="panel-app">
         <header class="panel-top">
-            <div class="panel-top-left">
-                <img src="sticker.webp" alt="San Ou" class="panel-logo">
-                <span class="panel-title">CRM</span>
-                <button class="panel-refrescar" onclick="refrescarPanel(this)" title="Actualizar el CRM">
-                    <i class="fas fa-rotate"></i>
-                </button>
-            </div>
-            <button class="panel-salir" onclick="cerrarSesionPanel()" title="Salir">
+            <button class="panel-refrescar" onclick="refrescarPanel(this)" title="Actualizar el CRM" aria-label="Actualizar el CRM">
+                <i class="fas fa-rotate"></i>
+            </button>
+            <img src="sticker.webp" alt="San Ou" class="panel-logo" onclick="volverInicio()">
+            <button class="panel-salir" onclick="cerrarSesionPanel()" title="Salir" aria-label="Salir">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </header>
@@ -69,6 +66,12 @@
             <button class="panel-nav-btn" data-sec="marketing" onclick="navegar('marketing')"><i class="fas fa-bullhorn"></i> Marketing</button>
         </nav>
 
+        <!-- Celular: barra para volver al inicio (también se vuelve deslizando desde el borde izquierdo) -->
+        <div class="sec-bar" id="secBar">
+            <button type="button" onclick="volverInicio()" aria-label="Volver al inicio"><i class="fas fa-chevron-left"></i> Inicio</button>
+            <span id="secTitulo"></span>
+        </div>
+        <div class="home-atras" id="homeAtras" aria-hidden="true"></div>
         <main class="panel-main" id="vista"></main>
     </div>
 
@@ -97,7 +100,7 @@
     <script src="catalogo-productos.js"></script>
 
     <script src="catalogo-extra.js"></script>
-    <script src="panel.js?v=20261104b"></script>
+    <script src="panel.js?v=20261113a"></script>
     <script src="panel-mejoras.js"></script>
     <!-- Registro del Service Worker (PWA instalable). Network-first: datos siempre frescos. -->
     <script>

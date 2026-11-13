@@ -49,11 +49,10 @@ body:not(.bloqueado) .panel-lock{display:none}
 
 /* ── Estructura ── */
 .panel-app{max-width:900px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-.panel-top{display:flex;align-items:center;justify-content:space-between;
+.panel-top{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;
     padding:14px 18px;border-bottom:1px solid var(--linea);position:sticky;top:0;background:var(--neg);z-index:20}
 .panel-top-left{display:flex;align-items:center;gap:12px}
-.panel-logo{height:30px}
-.panel-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:1px;color:var(--am)}
+.panel-logo{height:30px;justify-self:center;cursor:pointer}
 .panel-salir{background:var(--neg3);border:none;color:var(--gris2);width:38px;height:38px;border-radius:10px;
     cursor:pointer;font-size:.95rem}
 .panel-salir:hover{color:#fff;background:#333}
@@ -585,7 +584,6 @@ body:not(.bloqueado) .panel-lock{display:none}
         padding:20px 18px; height:72px;
     }
     .panel-logo{height:32px}
-    .panel-title{font-size:1.55rem}
     .panel-salir{width:34px;height:34px;cursor:pointer}
     /* --- Navegación vertical (sidebar) --- */
     .panel-nav{
@@ -934,3 +932,42 @@ button.prod-vendidos:active{transform:scale(.96)}
 .pg-utm{background:rgba(255,212,0,.12);color:var(--am)}
 .panel-nav-btn{position:relative}
 .nav-nuevo{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:#ff4d4d;color:#fff;font-style:normal;font-size:.68rem;font-weight:800;line-height:1}
+
+/* ══ Celular/tablet: inicio en cuadrados, secciones a pantalla completa, volver deslizando ══ */
+.home-grid,.home-resumen,.sec-bar,.home-atras{display:none}
+@media (max-width:899px){
+    .panel-nav{display:none}
+    .home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 6px}
+    .home-tile{position:relative;aspect-ratio:1;border-radius:20px;background:var(--neg2);border:1px solid var(--linea);
+        color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;cursor:pointer;
+        font:inherit;font-size:.8rem;font-weight:700;padding:6px;
+        transition:transform .14s cubic-bezier(.25,.46,.45,.94),background-color .15s,border-color .15s}
+    .home-tile i{font-size:1.6rem;color:var(--am)}
+    .home-tile:active,.home-tile.toc{transform:scale(.94);background:var(--am);border-color:var(--am);color:var(--neg)}
+    .home-tile:active i,.home-tile.toc i{color:var(--neg)}
+    .home-tile .bd{position:absolute;top:7px;right:7px;min-width:22px;height:22px;border-radius:11px;background:#ff453a;color:#fff;
+        font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 6px}
+    .home-resumen{display:block}
+    .home-resumen .dash-cards{margin-bottom:6px}
+    .dash-detalle{display:none}
+    /* barra de la sección */
+    body.en-sec .sec-bar{display:flex;align-items:center;gap:8px;position:sticky;top:59px;z-index:19;background:var(--neg);
+        border-bottom:1px solid var(--linea);padding:10px 14px}
+    .sec-bar button{background:none;border:0;color:var(--am);font:inherit;font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 4px}
+    .sec-bar span{flex:1;text-align:center;font-weight:800;margin-right:70px}
+    /* entrar a una sección: desliza desde la derecha */
+    .panel-main.entra{animation:secEntra .32s cubic-bezier(.25,.46,.45,.94)}
+    @keyframes secEntra{from{transform:translateX(38%);opacity:.4}to{transform:none;opacity:1}}
+    .panel-main.vuelve{animation:homeVuelve .28s cubic-bezier(.25,.46,.45,.94)}
+    @keyframes homeVuelve{from{transform:translateX(-18%);opacity:.5}to{transform:none;opacity:1}}
+    /* gesto de volver: el inicio aparece atrás */
+    .home-atras{position:fixed;left:0;right:0;top:59px;bottom:0;z-index:1;padding:14px 18px;overflow:hidden;background:var(--neg);
+        transform-origin:left center}
+    body.deslizando .home-atras{display:block}
+    body.deslizando .panel-main,body.deslizando .sec-bar{position:relative;z-index:2;background:var(--neg);box-shadow:-24px 0 40px rgba(0,0,0,.6)}
+    body.deslizando{overflow:hidden}
+}
+@media (prefers-reduced-motion:reduce){
+    .panel-main.entra,.panel-main.vuelve{animation:none}
+    .home-tile{transition:none}
+}
