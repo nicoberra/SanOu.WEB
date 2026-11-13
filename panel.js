@@ -202,7 +202,10 @@ function navegar(sec, opts) {
 
 // ─── PANEL / TABLERO ─────────────────────────────────────────────
 let cotizaciones = [], _cotCargadas = false;
-async function ensureCotizaciones(force){ if(_cotCargadas && !force) return; try{ const r=await crm({action:'list',tab:'Cotizaciones'}); if(r&&r.ok&&r.rows){ cotizaciones=r.rows; cacheSet('cotizaciones',cotizaciones);} _cotCargadas=true; }catch(e){} }
+// Las cotizaciones con más de 3 semanas no se muestran ni cuentan (quedan guardadas en la planilla).
+const COT_DIAS_VISIBLES = 21;
+function cotVigentes(rows){ const lim = Date.now() - COT_DIAS_VISIBLES * 864e5; return (rows || []).filter(c => { const f = parseFechaCRM(c.fecha); return !f || f.getTime() >= lim; }); }
+async function ensureCotizaciones(force){ if(_cotCargadas && !force) return; try{ const r=await crm({action:'list',tab:'Cotizaciones'}); if(r&&r.ok&&r.rows){ cotizaciones=cotVigentes(r.rows); cacheSet('cotizaciones',cotizaciones);} _cotCargadas=true; }catch(e){} }
 function sumaMontos(arr){ return arr.reduce((s,x)=>s+(parseInt(String(x.monto||'').replace(/[^\d]/g,''),10)||0),0); }
 function fmtMoney(n){ return '$'+Number(n||0).toLocaleString('es-AR'); }
 
@@ -217,7 +220,7 @@ function hidratarCache(){
     clientes     = cacheGet('clientes')     || clientes;
     pedidos      = cacheGet('pedidos')      || pedidos;
     seguimientos = cacheGet('seguimientos') || seguimientos;
-    cotizaciones = cacheGet('cotizaciones') || cotizaciones;
+    cotizaciones = cotVigentes(cacheGet('cotizaciones') || cotizaciones);
     productos    = cacheGet('productos')    || productos;
 }
 
@@ -233,7 +236,7 @@ function cargarInicio(){
             if (d.Clientes)     { clientes = d.Clientes;         cacheSet('clientes', clientes);         _clientesCargados = true; }
             if (d.Pedidos)      { pedidos = d.Pedidos;           cacheSet('pedidos', pedidos);           _pedidosCargados = true; }
             if (d.Seguimientos) { seguimientos = d.Seguimientos; cacheSet('seguimientos', seguimientos); _segCargados = true; }
-            if (d.Cotizaciones) { cotizaciones = d.Cotizaciones; cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
+            if (d.Cotizaciones) { cotizaciones = cotVigentes(d.Cotizaciones); cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
             if (d.productos)    { productos = d.productos;       cacheSet('productos', productos);       _preciosCargados = true; }
             if (d.Leads)        { leads = d.Leads;               cacheSet('leads', leads);               _leadsCargados = true; pintarAvisoLeads(); }
             return true;
@@ -316,9 +319,13 @@ function pintarDashboard(){
     // Celular: cuadrados para entrar a cada sección + resumen corto (el tablero completo queda para la compu).
     const badge = { cotizaciones: cotAbiertas.length, leads: (typeof leadsNuevos === 'function' ? leadsNuevos().length : 0), pedidos: webNue.length };
     const homeGrid = `<div class="home-grid">${SECCIONES.map(([sec, ic, nom]) => `<button type="button" class="home-tile" onclick="abrirDesdeInicio(this,'${sec}')"><i class="fas ${ic}"></i>${nom}${badge[sec] ? `<span class="bd">${badge[sec]}</span>` : ''}</button>`).join('')}</div>`;
-    const homeResumen = `<div class="home-resumen"><h4 class="dash-sec">Resumen</h4><div class="dash-cards">
-            ${card('Facturado este mes', fmtMoney(factMes), nVentasMes + (nVentasMes === 1 ? ' venta' : ' ventas'), 'fa-calendar-days', 'facturacion', true)}
-            ${card('Ventas este año', nVentasAnio, nVentasAnio === 1 ? 'venta' : 'ventas', 'fa-calendar', 'pedidos')}</div></div>`;
+    // Resumen del mes en una sola tarjeta: facturación (amarillo) y ganancia (verde) + cantidad de ventas.
+    const homeResumen = `<div class="home-resumen"><h4 class="dash-sec">Resumen del mes</h4>
+            <div class="home-res" onclick="navegar('facturacion')">
+                <div class="home-res-col"><span class="home-res-lbl">Facturación</span><b class="home-res-fact">${esc(fmtMoney(factMes))}</b></div>
+                <div class="home-res-col"><span class="home-res-lbl">Ganancia</span><b class="home-res-gan" id="homeGan">—</b><small id="homeGanSub">calculando…</small></div>
+                <div class="home-res-ventas"><i class="fas fa-bag-shopping"></i> ${nVentasMes} ${nVentasMes === 1 ? 'venta' : 'ventas'} este mes</div>
+            </div></div>`;
     v.innerHTML = `
         ${webHTML}
         ${leadsDashHTML()}
@@ -364,14 +371,16 @@ function pintarDashboard(){
     // Ganancia del mes (necesita costos USD + dólar): se calcula aparte para no demorar el panel.
     Promise.all([ensureProductosPrecios(), ensureDolar()]).then(() => {
         const val = document.getElementById('ganMesVal'), sub = document.getElementById('ganMesSub');
+        const hv = document.getElementById('homeGan'), hs = document.getElementById('homeGanSub');
         if (!val || seccionActual !== 'panel') return;
         const pedMes = pedidos.filter(p => { const f = parseFechaCRM(p.fecha); return f && f >= iniMes; });
         let gan = 0, medibles = 0;
         pedMes.forEach(p => { const g = gananciaPedido(p); if (g.medible && g.venta > 0) { gan += g.ganancia; medibles++; } });
-        if (!dolarValor()) { val.textContent = '—'; sub.textContent = 'sin cotización del dólar'; return; }
+        if (!dolarValor()) { val.textContent = '—'; sub.textContent = 'sin cotización del dólar'; if (hv) { hv.textContent = '—'; hs.textContent = 'sin cotización del dólar'; } return; }
         val.textContent = fmtMoney(gan);
         val.classList.toggle('negativa', gan < 0);   // verde si gana, rojo si pierde
         sub.textContent = medibles ? `${medibles} de ${pedMes.length} con costo` : 'cargá el costo USD de los productos';
+        if (hv) { hv.textContent = fmtMoney(gan); hv.classList.toggle('negativa', gan < 0); hs.textContent = pedMes.length && medibles < pedMes.length ? `${medibles} de ${pedMes.length} con costo` : ''; }
     });
 }
 
@@ -389,7 +398,7 @@ async function renderCotizador() {
     ensureClientes().then(() => { if (seccionActual === 'cotizaciones' && (_cotCargadas || cotizaciones.length)) pintarCotizaciones(cotizaciones); });
     try {
         const r = await crm({ action: 'list', tab: 'Cotizaciones' });
-        if (r && r.ok && r.rows) { cotizaciones = r.rows; cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
+        if (r && r.ok && r.rows) { cotizaciones = cotVigentes(r.rows); cacheSet('cotizaciones', cotizaciones); _cotCargadas = true; }
         if (seccionActual === 'cotizaciones') pintarCotizaciones(cotizaciones);
     } catch (e) { if (!cotizaciones.length) document.getElementById('listaCot').innerHTML = errorCarga('No se pudieron cargar los presupuestos. Revisá tu conexión.', 'renderCotizador()'); }
 }

@@ -948,7 +948,18 @@ button.prod-vendidos:active{transform:scale(.96)}
     .home-tile .bd{position:absolute;top:7px;right:7px;min-width:22px;height:22px;border-radius:11px;background:#ff453a;color:#fff;
         font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 6px}
     .home-resumen{display:block}
-    .home-resumen .dash-cards{margin-bottom:6px}
+    .dash-agenda{display:none}   /* "Para hoy" no se muestra en el inicio del celular */
+    .home-res{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;background:var(--neg2);border:1px solid var(--linea);border-radius:20px;padding:16px 18px;cursor:pointer;margin-bottom:6px}
+    .home-res-col{display:flex;flex-direction:column;gap:4px;min-width:0}
+    .home-res-col + .home-res-col{border-left:1px solid var(--linea);padding-left:14px}
+    .home-res-lbl{font-size:.78rem;color:var(--gris2);font-weight:600}
+    .home-res-fact,.home-res-gan{font-family:'Bebas Neue',sans-serif;font-size:2rem;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+    .home-res-fact{color:var(--am)}
+    .home-res-gan{color:#34c759}
+    .home-res-gan.negativa{color:#ff453a}
+    .home-res-col small{font-size:.7rem;color:var(--gris)}
+    .home-res-ventas{grid-column:1/-1;margin-top:10px;padding-top:10px;border-top:1px solid var(--linea);font-size:.88rem;font-weight:700;color:#fff}
+    .home-res-ventas i{color:var(--am);margin-right:4px}
     .dash-detalle{display:none}
     /* barra de la sección */
     body.en-sec .sec-bar{display:flex;align-items:center;gap:8px;position:sticky;top:59px;z-index:19;background:var(--neg);
