@@ -1084,16 +1084,36 @@ function filterProducts(filter) {
     irAProductos();
 }
 
-// Lleva a la grilla de productos de forma CONFIABLE. El scroll suave se trababa al atravesar
-// la sección "Cómo se crimpa" (pinned) y no llegaba. Hacemos un salto directo con el offset del
-// header fijo. Respeta "reducir movimiento".
+// Lleva a la grilla de productos de forma CONFIABLE (al tocar una categoría o con un link #categoria-X).
+// Problema: las secciones de arriba ("Cómo se crimpa", fotos, destacados) terminan de cargar DESPUÉS del
+// salto, crecen y empujan los productos para abajo → la pantalla quedaba en la guía de crimpado.
+// Solución: salto directo (sin scroll suave) y, durante unos segundos, si la página cambia de alto se
+// vuelve a alinear con "Productos". Se suelta apenas la persona scrollea o toca la pantalla.
+let _irProdCancel = null;
 function irAProductos() {
     const el = document.getElementById('productos');
     if (!el) return;
+    if (_irProdCancel) _irProdCancel();
     const headerH = 90; // alto aprox. del header fijo (igual que scroll-padding-top)
-    const y = el.getBoundingClientRect().top + window.pageYOffset - headerH;
-    try { window.scrollTo({ top: y, behavior: 'instant' }); }
-    catch (e) { window.scrollTo(0, y); }
+    const alinear = () => {
+        const y = Math.max(0, el.getBoundingClientRect().top + window.pageYOffset - headerH);
+        if (Math.abs(window.pageYOffset - y) < 2) return;
+        try { window.scrollTo({ top: y, behavior: 'instant' }); }
+        catch (e) { window.scrollTo(0, y); }
+    };
+    alinear();
+    let ro = null, iv = null, fin = null;
+    const soltar = () => {
+        if (ro) ro.disconnect();
+        clearInterval(iv); clearTimeout(fin);
+        ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => window.removeEventListener(ev, soltar, true));
+        _irProdCancel = null;
+    };
+    _irProdCancel = soltar;
+    ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => window.addEventListener(ev, soltar, { capture: true, passive: true }));
+    if ('ResizeObserver' in window) { ro = new ResizeObserver(alinear); ro.observe(document.body); }
+    iv = setInterval(alinear, 150);   // respaldo (fuentes, imágenes, pin de GSAP)
+    fin = setTimeout(soltar, 3500);
 }
 
 // Abrir/cerrar reseñas largas de Google
@@ -2306,7 +2326,7 @@ function dibujarCatalogo() {
             const lbl = document.getElementById('filterDropdownLabel');
             if (lbl) lbl.textContent = CAT_NAMES[cat];
             document.querySelectorAll('.filter-option').forEach(o => o.classList.toggle('active', o.dataset.filter === cat));
-            setTimeout(() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+            irAProductos();
             return;
         }
 
