@@ -363,7 +363,7 @@ function paginaProducto(p) {
         </div>
     </main>
     <script src="/catalogo-fuente.js" defer></script>
-    <script src="/precio-seo.js?v=20261114a" defer></script>` + footerCategorias(p.category);
+    <script src="/precio-seo.js?v=20261114b" defer></script>` + footerCategorias(p.category);
 }
 
 // ── Página de CATEGORÍA ──
@@ -425,7 +425,7 @@ function paginaCategoria(key) {
         </div>
     </main>
     <script src="/catalogo-fuente.js" defer></script>
-    <script src="/precio-seo.js?v=20261114a" defer></script>` + footerCategorias(key);
+    <script src="/precio-seo.js?v=20261114b" defer></script>` + footerCategorias(key);
 }
 
 // ── Escribir archivos ──

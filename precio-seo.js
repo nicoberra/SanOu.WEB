@@ -32,7 +32,10 @@
             var transfer = num(f[1]);
             var precio = (window.sanouPrecioLista ? window.sanouPrecioLista(transfer) : transfer);   // precio normal (+10%)
             var stockRaw = (f[2] || '').trim().toLowerCase();
-            mapa[clave(f[0])] = { precio: precio, transfer: transfer, old: num(f[3]), sinStock: stockRaw === 'false' || stockRaw === 'no' };
+            var old = num(f[3]);
+            // Igual que la tienda: sin precio en la planilla → se muestra el de Mercado Libre (sin precio de transferencia)
+            if (!(transfer > 0) && old > 0) { precio = old; old = 0; }
+            mapa[clave(f[0])] = { precio: precio, transfer: transfer, old: old, sinStock: stockRaw === 'false' || stockRaw === 'no' };
         }
         return mapa;
     }
