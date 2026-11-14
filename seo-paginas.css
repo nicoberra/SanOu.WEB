@@ -95,3 +95,16 @@ a:focus-visible, button:focus-visible { outline: 2px solid #FFD700; outline-offs
 /* Precio con transferencia en las fichas */
 .seo-precio-transfer{display:block;flex-basis:100%;width:100%;margin-top:6px;color:#3ddc84;font-weight:700;font-size:.92rem}
 .seo-precio-transfer b{color:#fff}
+
+/* Precio en vivo en las tarjetas de las páginas de categoría (lo completa precio-seo.js) */
+.seo-cat-precio{min-height:46px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;margin:10px 0 8px}
+.seo-cat-precio-now{color:var(--yellow);font-size:1.35rem;font-weight:900;font-family:'Inter',sans-serif;line-height:1.1}
+.seo-cat-precio-old{color:var(--gray);font-size:.85rem;text-decoration:line-through}
+.seo-cat-precio-tr{flex-basis:100%;color:#3ddc84;font-size:.8rem;font-weight:700}
+.seo-cat-precio-tr b{color:#fff}
+.seo-cat-precio-consultar{color:var(--gray-light);font-size:.92rem;font-weight:700}
+.seo-cat-precio-cargando{display:block;width:120px;height:22px;border-radius:6px;background:linear-gradient(90deg,#1c1c1c 0%,#2a2a2a 50%,#1c1c1c 100%);background-size:200% 100%;animation:seoPrecioBrillo 1.2s ease-in-out infinite}
+.seo-cat-precio.cargado{animation:seoPrecioEntra .3s ease}
+@keyframes seoPrecioBrillo{from{background-position:100% 0}to{background-position:-100% 0}}
+@keyframes seoPrecioEntra{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.seo-cat-precio-cargando,.seo-cat-precio.cargado{animation:none}}

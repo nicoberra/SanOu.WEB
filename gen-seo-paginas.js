@@ -363,7 +363,7 @@ function paginaProducto(p) {
         </div>
     </main>
     <script src="/catalogo-fuente.js" defer></script>
-    <script src="/precio-seo.js?v=20261023a" defer></script>` + footerCategorias(p.category);
+    <script src="/precio-seo.js?v=20261114a" defer></script>` + footerCategorias(p.category);
 }
 
 // ── Página de CATEGORÍA ──
@@ -400,6 +400,7 @@ function paginaCategoria(key) {
                         <h3>${esc(p.name)}</h3>
                         ${p.badge ? `<span class="seo-badge sm">${esc(p.badge)}</span>` : ''}
                         ${p.desc ? `<p>${esc(p.desc.slice(0, 110))}${p.desc.length > 110 ? '…' : ''}</p>` : ''}
+                        <div class="seo-cat-precio" data-sheet="${esc(p.sheetName || p.name)}"><span class="seo-cat-precio-cargando"></span></div>
                         <span class="seo-ver">Ver producto <i class="fas fa-angle-right"></i></span>
                     </div>
                 </a>`).join('\n                ');
@@ -422,7 +423,9 @@ function paginaCategoria(key) {
                 ${cards}
             </div>
         </div>
-    </main>` + footerCategorias(key);
+    </main>
+    <script src="/catalogo-fuente.js" defer></script>
+    <script src="/precio-seo.js?v=20261114a" defer></script>` + footerCategorias(key);
 }
 
 // ── Escribir archivos ──
