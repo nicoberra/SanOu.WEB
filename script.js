@@ -2374,6 +2374,11 @@ async function loadFotosManifest() {
     } catch (e) { /* si falla, quedan las fotos del catálogo */ }
 }
 
+// Foto de la tarjeta para las categorías nuevas (producto completo, que no se corte).
+const CAT_FOTO_EXTRA = {
+    'separador-de-bridas': 'productos/separador-de-bridas/separador-de-bridas-hidraulico-10tn-hhp-/3.webp',
+    repuestos: 'productos/repuestos/juego-de-matrices-22-a-60-mm-para-sacabo/5.webp'
+};
 // Categorías agregadas desde el CRM (catalogo-extra.js): tarjeta en "Categorías" y opción en el filtro.
 // La foto de la tarjeta es la primera foto de un producto de esa categoría.
 function sumarCategoriasExtra() {
@@ -2389,8 +2394,17 @@ function sumarCategoriasExtra() {
                 card.dataset.extra = '1';
             }
             if (card.dataset.extra && !card.style.backgroundImage) {
+                // Foto elegida a mano (producto entero, fondo blanco); si no hay, la 1ª foto de un producto.
+                const fija = CAT_FOTO_EXTRA[cat];
                 const p = products.find(x => x.category === cat && getImgs(x).length);
-                if (p) card.style.backgroundImage = `url("${encodeURI(getImgs(p)[0])}")`;
+                const src = fija || (p && getImgs(p)[0]);
+                if (src) {
+                    card.style.backgroundImage = `url("${encodeURI(src)}")`;
+                    // Se ve ENTERA (sin recortar) sobre fondo blanco, como las demás tarjetas.
+                    card.style.backgroundSize = 'contain';
+                    card.style.backgroundRepeat = 'no-repeat';
+                    card.style.backgroundColor = '#fff';
+                }
             }
         }
         if (menu && !menu.querySelector(`[data-filter="${cat}"]`)) {
