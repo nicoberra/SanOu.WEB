@@ -194,6 +194,7 @@ function head(opts) {
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-VLTJZZW8JF"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-VLTJZZW8JF');</script>
+    <script src="/meta-pixel.js?v=20261118a"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/tuerca-icon.png">
