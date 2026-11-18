@@ -1,0 +1,45 @@
+# Regenera solas las páginas de producto/categoría (SEO) y el sitemap cuando cambia algo desde el CRM
+# (productos nuevos, fichas, categorías, fotos) y dos veces por día (precios de la planilla).
+# Así todo lo que Nicolás cambia en el CRM llega también a /producto/, /categoria/ y sitemap.xml.
+name: Páginas SEO automáticas
+on:
+  push:
+    branches: [main]
+    paths:
+      - catalogo-extra.js
+      - catalogo-productos.js
+      - fotos.json
+      - gen-seo-paginas.js
+  schedule:
+    - cron: '0 12 * * *'   # 9:00 Argentina
+    - cron: '0 21 * * *'   # 18:00 Argentina
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: seo-paginas
+  cancel-in-progress: false
+jobs:
+  regenerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Regenerar páginas y sitemap
+        run: node gen-seo-paginas.js
+      - name: Chequeos estáticos (si fallan, no se publica)
+        run: node tests/test-front.js
+      - name: Publicar si cambió algo
+        run: |
+          if git diff --quiet -- producto categoria sitemap.xml && [ -z "$(git ls-files --others --exclude-standard producto categoria)" ]; then
+            echo "Sin cambios"; exit 0
+          fi
+          git config user.name "sanou-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add producto categoria sitemap.xml
+          git commit -m "Páginas SEO: regeneradas automáticamente tras cambios del CRM"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && exit 0; sleep 5; done
+          exit 1
