@@ -171,7 +171,7 @@ function getImgs(p) {
 const imgAbs = p => { const i = getImgs(p); return i.length ? SITE + '/' + i[0].split('/').map(encodeURIComponent).join('/') : SITE + '/sticker.png'; };
 const imgRoot = p => { const i = getImgs(p); return i.length ? '/' + i[0].split('/').map(encodeURIComponent).join('/') : '/sticker.png'; };
 
-const prodSlug = p => slug(p.name) + '-' + p.id; // único: nombre + id
+const prodSlug = p => p.slugSeo || (slug(p.name) + '-' + p.id); // único: nombre + id (slugSeo conserva la URL si se renombra)
 const prodUrl = p => `${SITE}/producto/${prodSlug(p)}.html`;
 // Categorías creadas desde el CRM (ej. Repuestos): textos genéricos a partir del nombre ('otros' queda última).
 Object.keys(window.SANOU_CAT_NAMES || {}).forEach(key => {
