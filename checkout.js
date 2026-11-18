@@ -248,7 +248,7 @@
         st.pedido = r.pedido; st.ut = r.ut;
         // Meta: compra confirmada por transferencia (la de Mercado Pago sale de pago.html al aprobarse).
         if (window.sanouMeta) window.sanouMeta('Purchase', { currency: 'ARS', value: Math.round(Number(r.total) || 0), content_type: 'product',
-            contents: cart.map(i => ({ id: String(i.id), quantity: i.qty })), content_ids: cart.map(i => String(i.id)) }, 'compra-' + r.pedido);
+            contents: cart.map(i => ({ id: 'sanou-' + i.id, quantity: i.qty })), content_ids: cart.map(i => 'sanou-' + i.id) }, 'compra-' + r.pedido);
         const num = '#' + String(r.pedido).slice(-6).toUpperCase();   // número corto para el cliente (el CRM lo encuentra igual)
         $('ckGrNum').textContent = num;
         $('ckGrDet').innerHTML = `<span>Pedido <b>${esc(num)}</b></span><span>Productos: <b>${esc(det)}</b></span><span>Entrega: <b>${esc(entrega)}</b></span><span>Total a transferir: <b class="ck-gr-total">${fmt(r.total)}</b></span>`;

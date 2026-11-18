@@ -14,6 +14,10 @@
     fbq('init', '1127043932906305');
     fbq('track', 'PageView');
 
+    // Los productos del catálogo de Meta (San Ou – Web, 868323896301973) usan el id 'sanou-<id de la web>'.
+    function idCat(x) { x = String(x || ''); return /^\d+$/.test(x) ? 'sanou-' + x : x; }
+    window.sanouIdCat = idCat;
+
     var MAPA = { view_item: 'ViewContent', add_to_cart: 'AddToCart', begin_checkout: 'InitiateCheckout', purchase: 'Purchase' };
 
     function datos(p) {
@@ -24,8 +28,8 @@
         var d = { currency: p.currency || 'ARS', value: Math.round(valor || 0) };
         if (items.length) {
             d.content_type = 'product';
-            d.content_ids = items.map(function (i) { return String(i.item_id || i.item_name); });
-            d.contents = items.map(function (i) { return { id: String(i.item_id || i.item_name), quantity: Number(i.quantity) || 1 }; });
+            d.content_ids = items.map(function (i) { return idCat(i.item_id || i.item_name); });
+            d.contents = items.map(function (i) { return { id: idCat(i.item_id || i.item_name), quantity: Number(i.quantity) || 1 }; });
             if (items.length === 1 && items[0].item_name) d.content_name = items[0].item_name;
         }
         return d;
@@ -55,7 +59,7 @@
         var nombre = (h1 && h1.textContent.trim()) || document.title.split('—')[0].trim();
         var m = location.pathname.match(/-(\d+)\.html$/);
         var d = { content_type: 'product', content_name: nombre, currency: 'ARS' };
-        if (m) { d.content_ids = [m[1]]; }
+        if (m) { d.content_ids = [idCat(m[1])]; }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () {
             var t = document.querySelector('h1'); if (t) d.content_name = t.textContent.trim(); window.sanouMeta('ViewContent', d);
         });
