@@ -214,7 +214,7 @@ function head(opts) {
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/styles.css">
-    <link rel="stylesheet" href="/seo-paginas.css">
+    <link rel="stylesheet" href="/seo-paginas.css?v=20261119a">
     ${opts.jsonld.map(j => `<script type="application/ld+json"${j['@type'] === 'Product' ? ' id="ld-product"' : ''}>\n${JSON.stringify(j, null, 2).replace(/</g, '\\u003c')}\n</script>`).join('\n    ')}
 </head>`;
 }
@@ -356,7 +356,12 @@ function paginaProducto(p) {
                         <a class="seo-btn-primary" href="/index.html#producto-${p.id}"><i class="fas fa-store"></i> Ver y comprar en la tienda</a>
                         <a class="seo-btn-wa" href="https://wa.me/${WA}?text=${waTxt}" target="_blank"><i class="fab fa-whatsapp"></i> Consultar por WhatsApp</a>
                     </div>
-                    <p class="seo-prod-nota"><i class="fas fa-truck"></i> Envíos a todo el país · <i class="fas fa-box"></i> Importador directo</p>
+                    <ul class="seo-compra">
+                        <li><i class="fas fa-credit-card"></i><span><b>Pagá como quieras:</b> Mercado Pago (tarjeta, débito, cuotas o dinero en cuenta) o transferencia con precio especial.</span></li>
+                        <li><i class="fas fa-truck"></i><span><b>Envíos a todo el país:</b> CABA $5.500 · GBA desde $7.000 · Interior por Vía Cargo.</span></li>
+                        <li><i class="fas fa-warehouse"></i><span><b>Retiro sin cargo</b> en nuestro depósito (Versalles, CABA), lunes a viernes de 9 a 17.</span></li>
+                        <li><i class="fas fa-shield-halved"></i><span><b>Garantía de fábrica</b> · Importador directo · <a href="/envios.html">Envíos y garantía</a></span></li>
+                    </ul>
                 </div>
             </article>
             ${specsHTML}

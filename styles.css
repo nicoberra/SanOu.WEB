@@ -5429,3 +5429,27 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 .stock-chip--reserva { background: rgba(96,165,250,0.12); color: #93c5fd; border-color: rgba(96,165,250,0.38); }
 .cart-item-reserva { font-size: 0.74rem; font-weight: 700; color: #93c5fd; margin: 2px 0 4px; }
 .cart-item-reserva i { font-size: 0.68rem; margin-right: 3px; }
+
+/* ── Ficha de producto: "Cómo comprar" y "Combinalo con" (19/11/2026) ── */
+.compra-info { margin-top: 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; }
+.ci-row { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; }
+.ci-row + .ci-row { border-top: 1px solid rgba(255,255,255,0.07); }
+.ci-row > i { color: var(--yellow); font-size: 0.95rem; width: 18px; text-align: center; margin-top: 3px; flex-shrink: 0; }
+.ci-row b { display: block; font-size: 0.82rem; color: #fff; }
+.ci-row span { display: block; font-size: 0.76rem; color: #b5b5b5; line-height: 1.45; }
+.ci-row a { color: var(--yellow); text-decoration: underline; }
+.combo-box { margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: rgba(255,215,0,0.06); border: 1px solid rgba(255,215,0,0.28); }
+.combo-tit { font-size: 0.85rem; margin: 0 0 8px; color: var(--yellow); font-weight: 800; letter-spacing: .02em; }
+.combo-item { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; padding: 8px 0; }
+.combo-item + .combo-item { border-top: 1px solid rgba(255,255,255,0.08); }
+.combo-item img { width: 64px; height: 64px; object-fit: contain; background: #fff; border-radius: 8px; }
+.combo-txt { min-width: 0; }
+.combo-nom { all: unset; cursor: pointer; display: block; font-size: 0.8rem; font-weight: 700; color: #fff; line-height: 1.3; }
+.combo-nom:hover, .combo-nom:focus-visible { color: var(--yellow); text-decoration: underline; }
+.combo-txt span { font-size: 0.78rem; color: #cfcfcf; }
+.combo-tot { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.combo-tot small { font-size: 0.74rem; color: #d8d8d8; }
+.combo-btn { background: var(--yellow); color: #0D0D0D; border: 0; border-radius: 50px; padding: 8px 14px; font-weight: 800; font-size: 0.76rem; cursor: pointer; transition: transform .15s ease, background .15s ease; }
+.combo-btn:hover { background: var(--yellow-dark); }
+.combo-btn:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) { .combo-btn { transition: none; } }

@@ -1020,6 +1020,34 @@ function mostrarTodosProductos() {
     document.getElementById('verMasWrap').style.display = 'none';
 }
 
+// ─── FICHA DE PRODUCTO: "Cómo comprar" y "Combinalo con" (19/11/2026) ───────────────
+// Datos reales de envios.html: pagos, zonas de envío con precio fijo, retiro en el depósito y garantía de fábrica.
+// No se promete fecha exacta de entrega (depende del transporte).
+function compraInfoHTML(p) {
+    return `<div class="compra-info" aria-label="Cómo comprar">
+        <div class="ci-row"><i class="fas fa-credit-card" aria-hidden="true"></i><div><b>Pagá como quieras</b><span>Mercado Pago: tarjeta, débito, cuotas o dinero en cuenta · Transferencia con precio especial</span></div></div>
+        <div class="ci-row"><i class="fas fa-truck" aria-hidden="true"></i><div><b>Envíos a todo el país</b><span>CABA $5.500 · GBA desde $7.000 · Interior por Vía Cargo</span></div></div>
+        <div class="ci-row"><i class="fas fa-warehouse" aria-hidden="true"></i><div><b>Retiro sin cargo</b><span>En nuestro depósito (Versalles, CABA) · Lunes a viernes de 9 a 17</span></div></div>
+        <div class="ci-row"><i class="fas fa-shield-halved" aria-hidden="true"></i><div><b>Garantía de fábrica</b><span>Importador directo · <a href="envios.html" target="_blank" rel="noopener">Envíos y garantía</a></span></div></div>
+    </div>`;
+}
+// Complementos REALES, solo cuando la ficha lo confirma (cilindros: "bomba recomendada"; HHM-60: no incluye bomba;
+// juego de matrices y pernos del HHK-8; cuchillas de la HHG-22; conformadores de 4 mm para la HHY-70A).
+const SANOU_COMBOS = { 19: [13], 20: [13], 21: [13], 22: [13], 23: [13], 33: [13], 13: [19, 22], 16: [56, 62], 8: [55], 1: [54] };
+function combosHTML(p) {
+    const ids = (SANOU_COMBOS[p.id] || []).filter(id => products.some(x => x.id === id && x.price > 0));
+    if (!ids.length || !(p.price > 0)) return '';
+    return `<div class="combo-box"><h3 class="combo-tit"><i class="fas fa-link" aria-hidden="true"></i> Combinalo con</h3>${ids.map(id => {
+        const c = products.find(x => x.id === id); const img = (getImgs(c) || [])[0];
+        const tot = p.price + c.price, totT = (p.precioTransfer > 0 ? p.precioTransfer : p.price) + (c.precioTransfer > 0 ? c.precioTransfer : c.price);
+        return `<div class="combo-item">
+            ${img ? `<img src="${img}" alt="${c.name}" loading="lazy" width="64" height="64">` : ''}
+            <div class="combo-txt"><button type="button" class="combo-nom" onclick="openModal(${c.id})">${c.name}</button><span>${fmt(c.price)}</span></div>
+            <div class="combo-tot"><small>Los 2: <b>${fmt(tot)}</b>${totT < tot ? ` · transferencia ${fmt(totT)}` : ''}</small>
+            <button type="button" class="combo-btn" onclick="addToCart(${p.id}); addToCart(${c.id}); closeModal()"><i class="fas fa-cart-plus" aria-hidden="true"></i> Agregar los 2</button></div>
+        </div>`; }).join('')}</div>`;
+}
+
 // ─── MODAL DE DETALLE ────────────────────────────────────────────
 function openModal(id) {
     const p = products.find(x => x.id === id);
@@ -1051,6 +1079,8 @@ function openModal(id) {
                         ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
                     </button>
                 </div>
+                ${combosHTML(p)}
+                ${compraInfoHTML(p)}
             </div>
         </div>
     `;

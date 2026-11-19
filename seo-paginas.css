@@ -108,3 +108,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid #FFD700; outline-offs
 @keyframes seoPrecioBrillo{from{background-position:100% 0}to{background-position:-100% 0}}
 @keyframes seoPrecioEntra{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.seo-cat-precio-cargando,.seo-cat-precio.cargado{animation:none}}
+
+/* Bloque "Cómo comprar" en la página de producto (19/11/2026) */
+.seo-compra { list-style: none; margin: 18px 0 0; padding: 0; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; }
+.seo-compra li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; font-size: 0.86rem; line-height: 1.45; color: #c9c9c9; }
+.seo-compra li + li { border-top: 1px solid rgba(255,255,255,0.07); }
+.seo-compra i { color: #FFD700; width: 18px; text-align: center; margin-top: 3px; flex-shrink: 0; }
+.seo-compra b { color: #fff; }
+.seo-compra a { color: #FFD700; }
