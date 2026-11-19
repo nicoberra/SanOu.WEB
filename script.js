@@ -1838,7 +1838,10 @@ async function loadPricesFromSheet() {
                 product.precioTransfer = priceVal;
                 product.price = lista(priceVal);
                 product.oldPrice = oldPriceVal > product.price * 1.03 ? oldPriceVal : 0;   // "antes" solo si es al menos 3% mayor (si no, el tachado casi igual queda raro)
-            } else if (oldPriceVal > 0) { product.price = oldPriceVal; product.precioTransfer = 0; product.oldPrice = 0; }
+            } else if (oldPriceVal > 0) {   // sin precio en la planilla: el de ML es el normal y transferencia = 10% menos
+                product.price = oldPriceVal; product.oldPrice = 0;
+                product.precioTransfer = (typeof window.sanouTransferDeLista === 'function') ? window.sanouTransferDeLista(oldPriceVal) : 0;
+            }
 
             if (stockRaw) product.inStock = (stockRaw === 'true' || stockRaw === 'si');
             product.featured = (destRaw === 'true' || destRaw === 'si');

@@ -10,6 +10,12 @@ window.sanouPrecioLista = function (transferencia) {
     var t = Number(transferencia) || 0;
     return t > 0 ? Math.round(t * (1 + window.SANOU_RECARGO_WEB) / 100) * 100 : 0;
 };
+// Sin precio en la planilla pero con precio de Mercado Libre: el de ML es el precio normal y el de
+// transferencia es 10% menos (la misma regla al revés: ML / 1,10, a la centena). Pedido de Nicolás 18/11/2026.
+window.sanouTransferDeLista = function (lista) {
+    var l = Number(lista) || 0;
+    return l > 0 ? Math.round(l / (1 + window.SANOU_RECARGO_WEB) / 100) * 100 : 0;
+};
 (function () {
     var EXEC = 'https://script.google.com/macros/s/AKfycbxMW0TTu37oiDySEaGgF--ZLXoz3JNEWhoHvzGViQ4vVQMJGX5AeIi-9C4IcY1Uc1P2/exec';
     var CSV_RESPALDO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtIfGdbPDoIrVhs0zQPEB_wu_rMGz5280eSTygqqTKpjqaFpcZLWN0fSet_4wKgzcZNNEuk2PfK-i0/pub?output=csv';
