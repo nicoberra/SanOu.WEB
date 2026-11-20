@@ -2751,11 +2751,20 @@ function getImgsPanel(p){
     const ext=p.ext||'jpg';
     return Array.from({length:p.imgs},(_,i)=>`productos/${cf}/${fo}/${i+1}.${ext}`);
 }
+// Miniatura: primero el PNG sin fondo (recortes/<folder>.png); si no hay, la 1.ª foto; si tampoco, el ícono.
 function imgTag(p, cls){
     const im=getImgsPanel(p);
-    return im.length
-        ? `<img src="${im[0]}" class="${cls}" loading="lazy" onerror="this.outerHTML='<div class=\\'${cls} pk-ic\\'><i class=\\'fas ${p.icon||'fa-box'}\\'></i></div>'">`
-        : `<div class="${cls} pk-ic"><i class="fas ${p.icon||'fa-box'}"></i></div>`;
+    const rec='recortes/'+encodeURIComponent(p.folder||p.name)+'.png';
+    return `<img src="${rec}" class="${cls}" loading="lazy" data-sig="${esc(im[0]||'')}" data-icon="${esc(p.icon||'fa-box')}" onerror="imgSig(this)">`;
+}
+function imgSig(el){
+    const s=el.getAttribute('data-sig');
+    if(s){ el.removeAttribute('data-sig'); el.src=s; return; }
+    // sin recorte ni foto: ícono (armado con nodos, sin HTML de texto)
+    el.onerror=null;
+    const d=document.createElement('div'); d.className=el.className+' pk-ic';
+    const i=document.createElement('i'); i.className='fas '+(el.getAttribute('data-icon')||'fa-box'); d.appendChild(i);
+    el.replaceWith(d);
 }
 
 // ── Selector de productos (con categorías y fotos) ──

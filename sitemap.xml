@@ -642,4 +642,22 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://sanou.com.ar/producto/bomba-hidraulica-manual-f700a-700-bar-con-manguera-1-8-m-89.html</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://sanou.com.ar/producto/cilindro-hidraulico-hhyg-100150-100-toneladas-carrera-150-mm-90.html</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://sanou.com.ar/producto/mandril-autoajustable-1-16-mm-jt33-sin-espiga-91.html</loc>
+    <lastmod>2026-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
