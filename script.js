@@ -943,6 +943,13 @@ function stockChipHTML(p) {
     return '<span class="stock-chip"><i class="fas fa-check"></i> En stock</span>';
 }
 
+// Precio compacto para la vista de lista del celular (tarjeta horizontal): precio + transferencia.
+function precioListaHTML(p) {
+    if (!(p.price > 0)) return '<div class="pc-lista"><span class="pc-lista-trans">Consultá el precio</span></div>';
+    const t = p.precioTransfer > 0 && p.price > p.precioTransfer ? `<span class="pc-lista-trans"><b>${fmt(p.precioTransfer)}</b> por transferencia</span>` : '';
+    return `<div class="pc-lista"><span class="pc-lista-precio">${fmt(p.price)}</span>${t}</div>`;
+}
+
 function productCardHTML(p) {
     const isFav = getFavs().includes(p.id);
     const stockChip = stockChipHTML(p);
@@ -959,12 +966,13 @@ function productCardHTML(p) {
                     ${stockChip}
                 </div>
                 <h3 class="product-name">${p.name}</h3>
+                ${precioListaHTML(p)}
                 <p class="product-desc">${p.desc}</p>
                 <div class="specs-table">${specsRows(p.specs)}</div>
                 ${priceHTML(p)}
                 <div class="product-buttons" onclick="event.stopPropagation()">
                     <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" >
-                        ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
+                        ${p.inStock === false ? 'Reservar' : '<span class="lbl-largo">Agregar al carrito</span><span class="lbl-corto"><i class="fas fa-cart-shopping" aria-hidden="true"></i> Comprar</span>'}
                     </button>
                     <button class="btn-quick-buy" onclick="quickBuy(${p.id})" >
                         ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
@@ -1048,6 +1056,15 @@ function combosHTML(p) {
         </div>`; }).join('')}</div>`;
 }
 
+// "Qué incluye": sale SOLO de la ficha técnica (características que dicen incluye / contenido / matrices / accesorios).
+function incluyeTexto(p) {
+    const s = (p.allSpecs || p.specs || []).find(x => /^(incluye|incluido|contenido|matrices incluidas|accesorios incluidos|conformadores incluidos|presentaci[oó]n)/i.test(x.l) && !/^(s[ií]|no)$/i.test(String(x.v).trim()) && !/^no /i.test(String(x.v).trim()));
+    if (!s) return '';
+    const v = String(s.v).trim();
+    if (/^(incluye|incluido|presentaci|contenido)/i.test(s.l)) return v.charAt(0).toLowerCase() + v.slice(1);
+    return s.l.replace(/\s*incluid[oa]s?$/i, '').toLowerCase() + ': ' + v;   // "matrices: 6 / 10 / 16 mm²"
+}
+
 // ─── MODAL DE DETALLE ────────────────────────────────────────────
 function openModal(id) {
     const p = products.find(x => x.id === id);
@@ -1066,21 +1083,36 @@ function openModal(id) {
             <div class="modal-details">
                 <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
                 <h2 class="modal-title">${p.name}</h2>
-                <p class="modal-desc">${p.desc}</p>
-                ${p.instagram ? `<a class="btn-ig-video" href="${p.instagram}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Ver video en Instagram</a>` : ''}
-                <div class="specs-table modal-specs">${specsRows(p.allSpecs || p.specs)}</div>
-                ${p.price > 0 ? `<div class="product-price-bar"><span class="price-label">Precio</span><div class="price-values">${p.oldPrice > 0 ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="price-amount">${fmt(p.price)}</span></div></div>${transferHTML(p)}` : '<div class="modal-consultar">Consultar precio por WhatsApp</div>'}
-                ${stockChipHTML(p)}
+                <div class="mf-precio-fila">
+                    ${p.price > 0 ? `<div class="mf-precio">${p.oldPrice > p.price ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="mf-precio-n">${fmt(p.price)}</span>${p.precioTransfer > 0 && p.price > p.precioTransfer ? `<span class="mf-trans"><b>${fmt(p.precioTransfer)}</b> por transferencia <em>(ahorrás ${fmt(p.price - p.precioTransfer)})</em></span>` : ''}</div>` : '<div class="modal-consultar">Consultá el precio por WhatsApp</div>'}
+                    ${stockChipHTML(p)}
+                </div>
+                ${incluyeTexto(p) ? `<div class="mf-incluye"><i class="fas fa-box-open" aria-hidden="true"></i> <span>Incluye ${incluyeTexto(p)}</span></div>` : ''}
                 <div class="modal-buttons">
                     <button class="btn-add-cart" onclick="addToCart(${p.id}); closeModal()" >
-                        ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
+                        <i class="fas fa-cart-shopping" aria-hidden="true"></i> ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
                     </button>
-                    <button class="btn-quick-buy" onclick="quickBuy(${p.id})" >
-                        ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
+                    <a class="btn-wa-ficha" href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola San Ou! Me interesa: ' + p.name)}" target="_blank" rel="noopener" onclick="sanouTrack('whatsapp', ${JSON.stringify(p.name).replace(/"/g, '&quot;')})">
+                        <i class="fab fa-whatsapp" aria-hidden="true"></i> Consultar por WhatsApp
+                    </a>
+                    <button class="btn-quick-buy mf-rapida" onclick="quickBuy(${p.id})" >
+                        ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'} <i class="fas fa-bolt" aria-hidden="true"></i>
                     </button>
                 </div>
                 ${combosHTML(p)}
-                ${compraInfoHTML(p)}
+                <details class="mf-acc"${window.innerWidth > 700 ? ' open' : ''}>
+                    <summary><i class="fas fa-list-ul" aria-hidden="true"></i> Características técnicas</summary>
+                    <div class="mf-acc-cuerpo">
+                        <p class="modal-desc">${p.desc}</p>
+                        ${p.instagram ? `<a class="btn-ig-video" href="${p.instagram}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Ver video en Instagram</a>` : ''}
+                        <div class="specs-table modal-specs">${specsRows(p.allSpecs || p.specs)}</div>
+                    </div>
+                </details>
+                ${incluyeTexto(p) ? `<details class="mf-acc"><summary><i class="fas fa-box-open" aria-hidden="true"></i> Qué incluye</summary><div class="mf-acc-cuerpo"><p class="modal-desc">${incluyeTexto(p)}</p></div></details>` : ''}
+                <details class="mf-acc">
+                    <summary><i class="fas fa-truck" aria-hidden="true"></i> Envíos, pagos y garantía</summary>
+                    <div class="mf-acc-cuerpo">${compraInfoHTML(p)}</div>
+                </details>
             </div>
         </div>
     `;
@@ -1324,29 +1356,7 @@ function searchProducts(query) {
         const qSeguro = String(query).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         grid.innerHTML = `<div class="tienda-vacio"><i class="fas fa-magnifying-glass"></i><h4>No encontramos "${qSeguro}"</h4><p>Probá con el modelo (ej. HHY-70A) o el tipo de herramienta. Si no lo tenemos a la vista, te lo conseguimos.</p><div class="tienda-vacio-btns"><button type="button" onclick="filterProducts('all')">Ver todos los productos</button><a href="https://wa.me/5491131751517?text=${encodeURIComponent('Hola San Ou! Busco: ' + query)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Preguntar por WhatsApp</a></div></div>`;
     } else {
-        grid.innerHTML = list.map(p => `
-            <div class="product-card${p.inStock === false ? ' a-reserva' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
-                ${cardMedia(p)}
-                <div class="product-info">
-                    <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
-                    <h3 class="product-name">${p.name}</h3>
-                    <p class="product-desc">${p.desc}</p>
-                    <div class="specs-table">${specsRows(p.specs)}</div>
-                    ${priceHTML(p)}
-                    <div class="product-buttons" onclick="event.stopPropagation()">
-                        <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" >
-                            ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
-                        </button>
-                        <button class="btn-quick-buy" onclick="quickBuy(${p.id})" >
-                            ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
-                        </button>
-                    </div>
-                    <button class="btn-ver-detalle" onclick="event.stopPropagation(); openModal(${p.id})">
-                        Ver más detalles <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
+        grid.innerHTML = list.map(productCardHTML).join('');   // misma tarjeta que el catálogo
     }
     irAProductos();
 }
