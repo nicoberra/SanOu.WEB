@@ -5455,7 +5455,7 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 @media (prefers-reduced-motion: reduce) { .combo-btn { transition: none; } }
 
 /* ═══ FICHA DE PRODUCTO v2 (20/11/2026): precio y compra arriba, desplegables abajo ═══ */
-.pc-lista, .lbl-corto { display: none; }
+
 .mf-precio-fila { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; }
 .mf-precio { display: flex; flex-direction: column; gap: 3px; }
 .mf-precio .price-old { font-size: 0.85rem; color: var(--gray); text-decoration: line-through; }
@@ -5485,32 +5485,4 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     .modal-product .modal-img, .modal-product .carousel-slide { background: #fff; }
     .modal-product .modal-img img, .modal-product .carousel-slide img { object-fit: contain !important; object-position: center !important; transform: none !important; padding: 14px; }   /* producto entero aunque tenga encuadre del CRM */
     .mf-precio-n { font-size: 2.4rem; }
-}
-
-/* ═══ CATÁLOGO EN CELULAR: tarjeta horizontal (foto a la izquierda, precio y "Comprar") ═══ */
-@media (max-width: 640px) {
-    #productsGrid { grid-template-columns: 1fr; row-gap: 12px; gap: 12px; }
-    #productsGrid .product-card { flex-direction: row; align-items: stretch; overflow: hidden; border-radius: 14px; }
-    #productsGrid .product-card:hover { transform: none; }
-    #productsGrid .product-media { flex: 0 0 38%; width: 38%; height: auto; min-height: 148px; margin: 10px 0 10px 10px; border-radius: 12px; background: #fff; overflow: hidden; }
-    #productsGrid .product-media::before { display: none; }
-    #productsGrid .product-media img.prod-base { object-fit: contain !important; object-position: center !important; padding: 8px; transform: none !important; opacity: 1 !important; }   /* el encuadre del CRM (cover) no aplica en la lista: producto entero */
-    #productsGrid .product-media img.prod-pop { display: none; }
-    #productsGrid .product-card.tiene-pop .product-media { overflow: hidden; }
-    #productsGrid .product-info { padding: 12px 12px 12px 12px; gap: 6px; flex: 1; min-width: 0; display: flex; flex-direction: column; }
-    #productsGrid .product-name { font-size: 0.95rem; line-height: 1.2; margin: 0; }
-    #productsGrid .product-chips { gap: 5px; flex-wrap: wrap; }
-    #productsGrid .product-chips .product-badge, #productsGrid .product-chips .stock-chip { font-size: 0.66rem; padding: 3px 8px; }
-    #productsGrid .product-desc, #productsGrid .specs-table, #productsGrid .product-price-bar, #productsGrid .price-transfer,
-    #productsGrid .btn-quick-buy, #productsGrid .btn-ver-detalle { display: none; }
-    #productsGrid .pc-lista { display: flex; flex-direction: column; gap: 1px; }
-    #productsGrid .pc-lista-precio { font-family: 'Bebas Neue', sans-serif; font-size: 1.7rem; line-height: 1; color: var(--yellow); letter-spacing: .5px; }
-    #productsGrid .pc-lista-trans { font-size: 0.72rem; color: var(--gray-light); }
-    #productsGrid .pc-lista-trans b { color: #fff; }
-    #productsGrid .product-buttons { display: flex; justify-content: flex-end; margin-top: auto; }
-    #productsGrid .btn-add-cart { width: auto; padding: 8px 14px; font-size: 0.78rem; border-radius: 10px; }
-    #productsGrid .lbl-largo { display: none; }
-    #productsGrid .lbl-corto { display: inline; }
-    #productsGrid .discount-badge { top: 14px; left: 14px; font-size: 0.68rem; padding: 3px 7px; }
-    #productsGrid .fav-icon-btn { top: 14px; left: calc(38% - 26px); right: auto; width: 26px; height: 26px; font-size: 0.7rem; }
 }

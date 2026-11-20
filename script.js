@@ -943,13 +943,6 @@ function stockChipHTML(p) {
     return '<span class="stock-chip"><i class="fas fa-check"></i> En stock</span>';
 }
 
-// Precio compacto para la vista de lista del celular (tarjeta horizontal): precio + transferencia.
-function precioListaHTML(p) {
-    if (!(p.price > 0)) return '<div class="pc-lista"><span class="pc-lista-trans">Consultá el precio</span></div>';
-    const t = p.precioTransfer > 0 && p.price > p.precioTransfer ? `<span class="pc-lista-trans"><b>${fmt(p.precioTransfer)}</b> por transferencia</span>` : '';
-    return `<div class="pc-lista"><span class="pc-lista-precio">${fmt(p.price)}</span>${t}</div>`;
-}
-
 function productCardHTML(p) {
     const isFav = getFavs().includes(p.id);
     const stockChip = stockChipHTML(p);
@@ -966,13 +959,12 @@ function productCardHTML(p) {
                     ${stockChip}
                 </div>
                 <h3 class="product-name">${p.name}</h3>
-                ${precioListaHTML(p)}
                 <p class="product-desc">${p.desc}</p>
                 <div class="specs-table">${specsRows(p.specs)}</div>
                 ${priceHTML(p)}
                 <div class="product-buttons" onclick="event.stopPropagation()">
                     <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" >
-                        ${p.inStock === false ? 'Reservar' : '<span class="lbl-largo">Agregar al carrito</span><span class="lbl-corto"><i class="fas fa-cart-shopping" aria-hidden="true"></i> Comprar</span>'}
+                        ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
                     </button>
                     <button class="btn-quick-buy" onclick="quickBuy(${p.id})" >
                         ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
@@ -1356,7 +1348,29 @@ function searchProducts(query) {
         const qSeguro = String(query).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         grid.innerHTML = `<div class="tienda-vacio"><i class="fas fa-magnifying-glass"></i><h4>No encontramos "${qSeguro}"</h4><p>Probá con el modelo (ej. HHY-70A) o el tipo de herramienta. Si no lo tenemos a la vista, te lo conseguimos.</p><div class="tienda-vacio-btns"><button type="button" onclick="filterProducts('all')">Ver todos los productos</button><a href="https://wa.me/5491131751517?text=${encodeURIComponent('Hola San Ou! Busco: ' + query)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Preguntar por WhatsApp</a></div></div>`;
     } else {
-        grid.innerHTML = list.map(productCardHTML).join('');   // misma tarjeta que el catálogo
+        grid.innerHTML = list.map(p => `
+            <div class="product-card${p.inStock === false ? ' a-reserva' : ''}" id="pc-${p.id}" onclick="openModal(${p.id})" style="cursor:pointer">
+                ${cardMedia(p)}
+                <div class="product-info">
+                    <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
+                    <h3 class="product-name">${p.name}</h3>
+                    <p class="product-desc">${p.desc}</p>
+                    <div class="specs-table">${specsRows(p.specs)}</div>
+                    ${priceHTML(p)}
+                    <div class="product-buttons" onclick="event.stopPropagation()">
+                        <button class="btn-add-cart" id="add-${p.id}" onclick="addToCart(${p.id})" >
+                            ${p.inStock === false ? 'Reservar' : 'Agregar al carrito'}
+                        </button>
+                        <button class="btn-quick-buy" onclick="quickBuy(${p.id})" >
+                            ${p.inStock === false ? 'Reserva rápida' : 'Compra rápida'}
+                        </button>
+                    </div>
+                    <button class="btn-ver-detalle" onclick="event.stopPropagation(); openModal(${p.id})">
+                        Ver más detalles <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
     }
     irAProductos();
 }
