@@ -708,26 +708,12 @@ window.SANOU_PRODUCTOS = [
         { l: 'Accesorios incluidos', v: '5 piezas' }
       ]
     },
-    { id: 42, name: 'Extractor de Inyectores Diésel Neumático 24 Piezas', sheetName: 'Extractor de Inyectores Diesel', slugSeo: 'extractor-de-inyectores-diesel-42', category: 'motores', price: 0, icon: 'fa-wrench', badge: '24 piezas', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: 'Extractor De Inyectores Diesel', catFolder: 'Herramientas para vehículos',
-      desc: 'Extractor neumático de inyectores diésel de 24 piezas, construido en metal para uso intensivo en taller. Retira inyectores trabados en motores common rail sin martillo de inercia manual, con amplia compatibilidad (Bosch, Delphi, Denso, Siemens). Incluye maletín de transporte para tener todas las piezas organizadas.',
+    { id: 42, name: 'Extractor de Inyectores Diésel Neumático', sheetName: 'Extractor de Inyectores Diesel', slugSeo: 'extractor-de-inyectores-diesel-42', category: 'motores', price: 0, icon: 'fa-wrench', badge: 'Neumático', imgs: ['1.jpeg','2.webp','3.webp','4.webp'], folder: 'Extractor De Inyectores Diesel', catFolder: 'Herramientas para vehículos',
+      desc: 'Extractor neumático de inyectores diésel en maletín: funciona con aire comprimido y trae manguera y adaptadores para retirar inyectores trabados sin golpear a mano. Para talleres mecánicos y de inyección.',
       specs: [
-        { l: 'Cantidad de piezas', v: '24 piezas' },
-        { l: 'Presión de trabajo', v: '5 a 8 bar / 72–116 PSI' },
-        { l: 'Material', v: 'Metal' }
-      ],
-      allSpecs: [
-        { l: 'Sistema de trabajo', v: 'Neumático / a golpe por vibración' },
-        { l: 'Accionamiento', v: 'Por aire comprimido' },
-        { l: 'Presión de trabajo', v: '72 a 116 PSI / 5 a 8 bar' },
-        { l: 'Torque de trabajo', v: 'Aprox. 20 a 30 Nm' },
-        { l: 'Cantidad de piezas', v: '24 piezas' },
-        { l: 'Compatibilidad', v: 'Inyectores Bosch, Delphi, Denso y Siemens' },
-        { l: 'Tipo de inyectores', v: 'Diésel / common rail' },
-        { l: 'Adaptadores incluidos', v: 'M8, M12, M16, M17, M18, M20, M22, M25, M26, M27, M29 y M31' },
-        { l: 'Material', v: 'Metal / acero' },
-        { l: 'Peso', v: '6,65 kg (6650 g)' },
-        { l: 'Dimensiones', v: '45 × 35 × 10 cm (alto × ancho × largo)' },
-        { l: 'Presentación', v: 'Kit completo en maletín de transporte' }
+        { l: 'Accionamiento', v: 'Neumático (aire comprimido)' },
+        { l: 'Uso', v: 'Inyectores diésel' },
+        { l: 'Presentación', v: 'Maletín' }
       ]
     },
 
