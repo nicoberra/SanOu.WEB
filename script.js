@@ -647,6 +647,14 @@ let cart = (() => {
 function saveCart() {
     try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
     catch(e) {}
+    // Checkout: "Sumá a tu pedido" muestra SOLO los complementos reales de SANOU_COMBOS, con el precio ya sincronizado.
+    try {
+        const ids = [...new Set(cart.flatMap(i => SANOU_COMBOS[i.id] || []))].filter(id => !cart.some(i => i.id === id));
+        const sug = ids.map(id => products.find(p => p.id === id)).filter(p => p && p.price > 0)
+            .map(p => ({ id: p.id, name: p.name, sheetName: p.sheetName, price: p.price, precioTransfer: p.precioTransfer, inStock: p.inStock,
+                         icon: p.icon, imgs: p.imgs, ext: p.ext, folder: p.folder, catFolder: p.catFolder, category: p.category }));
+        localStorage.setItem('sanou_sugeridos', JSON.stringify(sug.slice(0, 3)));
+    } catch(e) {}
 }
 
 // Re-sincroniza precio/stock de los ítems del carrito con los precios REALES ya cargados del Sheet.

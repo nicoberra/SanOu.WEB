@@ -263,3 +263,28 @@ body { font-size: 14px; }
 .ck-pasos li::before { position: absolute; left: 0; top: 0; }
 
 .ck-item-res{display:block;font-size:.72rem;font-weight:700;color:#93c5fd;margin-top:2px}
+
+/* ── Confianza en el checkout (23/11/2026): cuotas a la vista, sellos y "Sumá a tu pedido" ── */
+.ck-marcas { display: flex; align-items: center; gap: 7px; margin-top: 7px; font-size: 1.45rem; color: var(--gray-light); line-height: 1; }
+.ck-marcas em { font-style: normal; font-size: .72rem; color: var(--gray); }
+.ck-cuotas-txt { color: var(--yellow); font-weight: 700; }
+.ck-cuotas { margin: 10px 0 2px; padding: 9px 12px; border-radius: 10px; background: rgba(255,215,0,.07); border: 1px solid rgba(255,215,0,.22); font-size: .82rem; color: var(--gray-light); display: flex; gap: 9px; align-items: flex-start; }
+.ck-cuotas i { color: var(--yellow); margin-top: 3px; }
+.ck-cuotas b { color: #fff; }
+.ck-confianza { list-style: none; display: grid; gap: 11px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
+.ck-confianza li { display: flex; gap: 11px; align-items: flex-start; font-size: .8rem; color: var(--gray); line-height: 1.4; }
+.ck-confianza i { width: 18px; text-align: center; color: var(--green); font-size: .95rem; margin-top: 2px; flex-shrink: 0; }
+.ck-confianza b { display: block; color: #fff; font-size: .84rem; }
+.ck-confianza a { color: var(--yellow); }
+.ck-sugeridos { margin: 0 0 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.ck-sug-tit { font-size: .8rem; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--yellow); margin-bottom: 8px; display: flex; gap: 7px; align-items: center; }
+.ck-sugeridos ul { list-style: none; display: grid; gap: 8px; }
+.ck-sug { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; padding: 7px; border-radius: 10px; background: rgba(255,255,255,.035); border: 1px dashed rgba(255,255,255,.14); }
+.ck-sug .ck-item-ico { width: 44px; height: 44px; }
+.ck-sug-nom { font-size: .8rem; color: #fff; line-height: 1.3; }
+.ck-sug-nom small { display: block; color: var(--gray-light); font-weight: 600; margin-top: 2px; }
+.ck-sug-btn { border: 0; border-radius: 999px; padding: 8px 12px; min-height: 36px; font: inherit; font-size: .78rem; font-weight: 700; background: var(--yellow); color: #0D0D0D; cursor: pointer; white-space: nowrap; transition: transform .15s ease, filter .15s ease; }
+.ck-sug-btn:active { transform: scale(.96); }
+@media (hover: hover) { .ck-sug-btn:hover { filter: brightness(1.08); } }
+.ck-sug-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .ck-sug-btn { transition: none; } }

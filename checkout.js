@@ -67,6 +67,8 @@
         $('ckTotal').textContent = fmt(t.total);
         $('ckPrecioMp').innerHTML = fmt(t.sub);
         $('ckPrecioTr').innerHTML = t.sub > t.subTr ? `${fmt(t.subTr)}<small>Ahorrás ${fmt(t.sub - t.subTr)}</small>` : fmt(t.subTr);
+        $('ckCuotas').hidden = st.pago !== 'mp';
+        pintarSugeridos();
         const btn = $('ckBtn');
         btn.classList.toggle('es-mp', st.pago === 'mp');
         $('ckBtnTxt').textContent = st.pago === 'mp' ? 'Pago seguro' : 'Confirmar pedido';
@@ -74,6 +76,26 @@
             ? 'Te llevamos al sitio seguro de Mercado Pago. No vemos ni guardamos los datos de tu tarjeta.'
             : 'Reservamos tu pedido y te mostramos el alias y el CVU para transferir.';
     }
+
+    // ── "Sumá a tu pedido": complementos reales (SANOU_COMBOS de la tienda) que guardó la tienda con su precio ──
+    let sugeridos = [];
+    try { sugeridos = JSON.parse(ls.get('sanou_sugeridos') || '[]').filter(p => p && p.id && p.name && p.price > 0); } catch (e) { sugeridos = []; }
+    function pintarSugeridos() {
+        const lista = sugeridos.filter(p => !cart.some(i => i.id === p.id));
+        $('ckSug').hidden = !lista.length;
+        $('ckSugLista').innerHTML = lista.map(p => `<li class="ck-sug"><span class="ck-item-ico">${fotoDe(p) ? `<img src="${esc(fotoDe(p))}" alt="" width="44" height="44" loading="lazy" decoding="async">` : `<i class="fas ${esc(p.icon || 'fa-screwdriver-wrench')}" aria-hidden="true"></i>`}</span><span class="ck-sug-nom">${esc(p.name)}<small>${fmt(st.pago === 'transferencia' ? precioTr(p) : p.price)}</small></span><button type="button" class="ck-sug-btn" data-sug="${p.id}" aria-label="Sumar ${esc(p.name)} al pedido"><i class="fas fa-plus" aria-hidden="true"></i> Sumar</button></li>`).join('');
+    }
+    document.addEventListener('click', ev => {
+        const b = ev.target.closest('[data-sug]');
+        if (!b) return;
+        const p = sugeridos.find(x => String(x.id) === b.dataset.sug);
+        if (!p || cart.some(i => i.id === p.id)) return;
+        cart.push(Object.assign({}, p, { qty: 1 }));
+        ls.set(CART_KEY, JSON.stringify(cart));
+        if (typeof gtag !== 'undefined') gtag('event', 'add_to_cart', { currency: 'ARS', value: p.price, items: [{ item_id: String(p.id), item_name: p.name, price: p.price, quantity: 1 }] });
+        if (window.sanouMeta) window.sanouMeta('AddToCart', { currency: 'ARS', value: p.price, content_type: 'product', content_ids: ['sanou-' + p.id] });
+        pintar();
+    });
 
     // ── Detección de zona por localidad (API pública Georef, como en Suple Market) ──
     function partidoDe(depto, localidad) {

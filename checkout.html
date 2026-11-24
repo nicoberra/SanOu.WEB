@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="checkout.css?v=20261023a">
+    <link rel="stylesheet" href="checkout.css?v=20261123a">
 </head>
 <body>
 <header class="ck-header">
@@ -54,7 +54,7 @@
                     <label class="ck-opcion">
                         <input type="radio" name="pago" value="mp" checked>
                         <span class="ck-opcion-ico ck-opcion-ico--mp"><i class="fas fa-credit-card" aria-hidden="true"></i></span>
-                        <span class="ck-opcion-txt"><b>Mercado Pago</b><small>Tarjeta de crédito, débito, cuotas o dinero en cuenta.</small></span>
+                        <span class="ck-opcion-txt"><b>Mercado Pago</b><small><b class="ck-cuotas-txt">Pagalo en cuotas</b> con tarjeta de crédito, o con débito y dinero en cuenta.</small><span class="ck-marcas" aria-label="Tarjetas aceptadas: Visa, Mastercard, American Express y más"><i class="fab fa-cc-visa" aria-hidden="true"></i><i class="fab fa-cc-mastercard" aria-hidden="true"></i><i class="fab fa-cc-amex" aria-hidden="true"></i><em>y más</em></span></span>
                         <span class="ck-opcion-precio" id="ckPrecioMp"></span>
                     </label>
                     <label class="ck-opcion">
@@ -188,15 +188,27 @@
             <div class="ck-card ck-card--resumen">
                 <h2>Tu pedido</h2>
                 <ul class="ck-items" id="ckItems"></ul>
+                <div class="ck-sugeridos" id="ckSug" hidden>
+                    <p class="ck-sug-tit"><i class="fas fa-link" aria-hidden="true"></i> Sumá a tu pedido</p>
+                    <ul id="ckSugLista"></ul>
+                </div>
                 <div class="ck-fila"><span>Subtotal</span><span id="ckSubtotal">$0</span></div>
                 <div class="ck-fila"><span>Envío <small id="ckEnvioDet"></small></span><span id="ckEnvioMonto">Sin cargo</span></div>
                 <div class="ck-fila ck-fila--ahorro" id="ckAhorroFila" hidden><span><i class="fas fa-tag" aria-hidden="true"></i> Ahorro por transferencia</span><span id="ckAhorro"></span></div>
                 <div class="ck-total"><span>Total</span><span><s id="ckTotalAntes" hidden></s><b id="ckTotal">$0</b></span></div>
+                <p class="ck-cuotas" id="ckCuotas"><i class="fas fa-credit-card" aria-hidden="true"></i><span>Podés pagarlo <b>en cuotas</b> con tarjeta de crédito. Elegís la cantidad en Mercado Pago.</span></p>
                 <div class="ck-error" id="ckError" role="alert" hidden></div>
                 <button type="submit" class="ck-btn ck-btn--primario ck-btn--grande" id="ckBtn">
                     <i class="fas fa-lock" aria-hidden="true"></i> <span id="ckBtnTxt">Pago seguro</span>
                 </button>
                 <p class="ck-legal" id="ckLegal">Te llevamos al sitio seguro de Mercado Pago. No vemos ni guardamos los datos de tu tarjeta.</p>
+                <ul class="ck-confianza" aria-label="Por qué comprar tranquilo">
+                    <li><i class="fas fa-shield-halved" aria-hidden="true"></i><span><b>Pago 100% seguro</b>Se procesa en Mercado Pago, con conexión cifrada.</span></li>
+                    <li><i class="fas fa-award" aria-hidden="true"></i><span><b>Garantía de fábrica</b>Contra defectos de fabricación. <a href="envios.html" target="_blank" rel="noopener">Ver condiciones</a></span></li>
+                    <li><i class="fas fa-warehouse" aria-hidden="true"></i><span><b>Importador directo</b>Stock en nuestro depósito de Versalles (CABA).</span></li>
+                    <li><i class="fas fa-file-invoice" aria-hidden="true"></i><span><b>Compra con factura</b>Factura A o a consumidor final.</span></li>
+                    <li><i class="fab fa-whatsapp" aria-hidden="true"></i><span><b>¿Dudas antes de pagar?</b><a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Tengo%20una%20consulta%20antes%20de%20pagar" target="_blank" rel="noopener">Escribinos por WhatsApp</a>: te responde una persona.</span></li>
+                </ul>
                 <a href="index.html#productos" class="ck-seguir"><i class="fas fa-arrow-left" aria-hidden="true"></i> Seguir comprando</a>
             </div>
         </aside>
@@ -235,6 +247,6 @@
 </main>
 
 <script src="utm.js?v=20261104a"></script>
-<script src="checkout.js?v=20261118b"></script>
+<script src="checkout.js?v=20261123a"></script>
 </body>
 </html>
