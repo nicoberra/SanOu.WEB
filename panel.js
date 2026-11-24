@@ -2106,6 +2106,7 @@ function pintarMayorista(lista, q){
         return `
         <div class="prod-card" id="may-${m.row}">
             <div class="prod-top">
+                ${(() => { const cp = catalogoMay(m.producto); return cp ? `<span class="may-foto">${imgTag(cp,'may-foto-img')}</span>` : ''; })()}
                 <span class="prod-nombre">${esc(m.producto)}</span>
                 <span class="prod-ok" id="mayok-${m.row}"><i class="fas fa-check"></i> Guardado</span>
             </div>
@@ -2123,17 +2124,44 @@ function pintarMayorista(lista, q){
                         onchange="guardarMayorista(${m.row},'minimo',this.value)">
                 </label>
                 <label class="prod-num">Nota
-                    <input type="text" value="${esc(m.nota)}" placeholder="Ej: sin stock"
+                    <input type="text" value="${esc(m.nota)}" placeholder="Ej: solo unitario"
                         onchange="guardarMayorista(${m.row},'nota',this.value)">
+                </label>
+            </div>
+            <div class="prod-campos may-escalones">
+                <label class="prod-num">Cantidad 2
+                    <input type="text" value="${esc(m.minimo2||'')}" placeholder="Ej: >12 unidades"
+                        onchange="guardarMayorista(${m.row},'minimo2',this.value)">
+                </label>
+                <label class="prod-num">Precio 2
+                    <input type="text" inputmode="numeric" value="${esc(/\d/.test(m.mayorista2||'') ? precioTxt(m.mayorista2) : (m.mayorista2||''))}" placeholder="$"
+                        onchange="guardarMayorista(${m.row},'mayorista2',this.value)">
+                </label>
+                <label class="prod-num">Cantidad 3
+                    <input type="text" value="${esc(m.minimo3||'')}" placeholder="Ej: >24 unidades"
+                        onchange="guardarMayorista(${m.row},'minimo3',this.value)">
+                </label>
+                <label class="prod-num">Precio 3
+                    <input type="text" inputmode="numeric" value="${esc(/\d/.test(m.mayorista3||'') ? precioTxt(m.mayorista3) : (m.mayorista3||''))}" placeholder="$"
+                        onchange="guardarMayorista(${m.row},'mayorista3',this.value)">
                 </label>
             </div>
             ${bloqueCostoMay(m)}
         </div>`;
     }).join('');
 }
+// Producto del catálogo para una fila del mayorista: por nombre exacto, por sheetName, o sin el sufijo "(K11-80)".
+function catalogoMay(nombre){
+    const c = catalogoDe(nombre); if (c) return c;
+    const b = baseNombre(nombre);
+    return (window.SANOU_PRODUCTOS||[]).find(p => baseNombre(p.name)===b || (p.sheetName && baseNombre(p.sheetName)===b)) || null;
+}
 // Fila de la planilla Productos para un producto del mayorista (tolera el sufijo "(6–50 mm²)").
+// Primero por el catálogo (sheetName): así el precio unitario queda conectado aunque los nombres difieran.
 function filaProdMay(nombre){
-    let p = filaProd(nombre);
+    const cat = catalogoMay(nombre);
+    let p = cat ? filaProd(cat.sheetName || cat.name) : null;
+    if (!p) p = filaProd(nombre);
     if (!p) { const b = baseNombre(nombre); p = (productos||[]).find(x => baseNombre(x.nombre) === b); }
     return p || null;
 }
@@ -2196,7 +2224,7 @@ async function sincronizarPrecioAMayorista(nombreProd, valor){
     try {
         if (!mayorista.length) { const r = await crm({ action:'mayorista_list', tab:'Clientes' }); if (r && r.rows) { mayorista = r.rows; cacheSet('mayorista', mayorista); } }
         const b = baseNombre(nombreProd);
-        const m = (mayorista||[]).find(x => x.tipo === 'prod' && baseNombre(x.producto) === b);
+        const m = (mayorista||[]).find(x => x.tipo === 'prod' && (baseNombre(x.producto) === b || (filaProdMay(x.producto)||{}).nombre === nombreProd));
         if (m) { m.unitario = valor; cacheSet('mayorista', mayorista); crm({ action:'mayorista_save', tab:'Clientes', row: m.row, producto: m.producto, unitario: valor }); }
     } catch(e){ /* silencioso */ }
 }

@@ -90,6 +90,7 @@
         }
         .may-card:hover { border-color: rgba(255,215,0,.35); transform: translateY(-3px); }
         .may-card.agotado { opacity: .72; }
+        .may-escalon .lbl, .may-uni-linea.may-escalon span { font-size: .78em; }
         .may-media {
             position: relative; aspect-ratio: 1/1; background: #fff; overflow: hidden;
         }
@@ -305,6 +306,9 @@
         // Matchea un producto del sheet mayorista con el producto del catálogo (para traer la foto).
         function matchProducto(nombre) {
             const m = norm(nombre); let best = null, bl = 0;
+            for (const p of CAT) if (norm(p.name) === m || (p.sheetName && norm(p.sheetName) === m)) return p;   // mismo nombre que la tienda o que su planilla
+            for (const p of CAT) { const sn = norm(p.sheetName); if (sn && m.startsWith(sn) && sn.length > bl) { best = p; bl = sn.length; } }
+            if (best) return best;
             for (const p of CAT) { const cn = norm(p.name); if (cn && m.startsWith(cn) && cn.length > bl) { best = p; bl = cn.length; } }
             if (best) return best;
             for (const p of CAT) { const cn = norm(p.name); if (cn && m.includes(cn) && cn.length > bl) { best = p; bl = cn.length; } }
@@ -337,10 +341,30 @@
         window._mayEncuadre = aplicarEncuadre;
 
         // "solo venta unitaria": no hay precio mayorista (lo dice la nota o no hay número de mayorista).
-        const esSoloUnitario = r => /solo\s*unitari/i.test(String(r.nota || '')) || (parseNum(r.mayorista) <= 0 && !esSinStock(r.nota));
+        // "A DEFINIR" = Nicolás todavía no cargó el precio: se muestra "a consultar", no "solo venta unitaria".
+        const aDefinir = s => /a\s*definir/i.test(String(s || ''));
+        const esSoloUnitario = r => !aDefinir(r.mayorista) && (/solo\s*unitari/i.test(String(r.nota || '')) || (parseNum(r.mayorista) <= 0 && !esSinStock(r.nota)));
+        // STOCK ÚNICO (24/11/2026): el stock sale de la planilla de precios de la tienda (columna "Stock"), igual
+        // que en la web. Si en una no hay stock, en la otra tampoco. La nota "sin stock" solo vale si el producto
+        // no se pudo emparejar con la tienda.
+        let STOCK = null, PRECIO = null;
+        // PRECIO UNITARIO = el mismo de la tienda (planilla de precios, columna "Precios"). Si el producto no se
+        // emparejó con la tienda, queda el de la planilla mayorista.
+        const uniDe = r => { const p = r && r._prod; if (p && PRECIO) { const v = PRECIO[norm(p.sheetName || p.name)]; if (v > 0) return v; } return parseNum(r.unitario); };
+        const sinStockDe = r => {
+            const p = r && r._prod;
+            if (p && STOCK) { const v = STOCK[norm(p.sheetName || p.name)]; if (v !== undefined) return !v; }
+            return esSinStock(r.nota) || esSinStock(r.mayorista) || esSinStock(r.unitario);
+        };
         // Orden dentro de cada categoría: primero los que tienen mayorista, después solo-unitario, al final sin stock.
-        const rank = r => esSinStock(r.nota) || esSinStock(r.mayorista) ? 2 : (esSoloUnitario(r) ? 1 : 0);
+        const rank = r => sinStockDe(r) ? 2 : (esSoloUnitario(r) ? 1 : 0);
         // Mínimo claro: ">6 unidades" -> "Compra mínima: 6 unidades"
+        // Escalones extra por cantidad (columnas F-I de la planilla): "Desde 12 unidades: $X".
+        function escalonesHTML(r, clase) {
+            return [[r.minimo2, r.mayorista2], [r.minimo3, r.mayorista3]]
+                .filter(([q, pr]) => parseNum(pr) > 0)
+                .map(([q, pr]) => `<div class="${clase}"><span class="lbl">${parseNum(q) ? 'Desde ' + parseNum(q) + ' unidades' : esc(q || 'Más unidades')}</span><span class="val">${fmt(parseNum(pr))}</span></div>`).join('');
+        }
         function minTexto(minimo) {
             const n = parseNum(minimo);
             if (!n) return minimo ? ('Compra mínima: ' + esc(minimo)) : '';
@@ -378,12 +402,12 @@
         };
         function abrirFicha(r) {
             const p = r && r._prod; if (!p) return;
-            const sinStock = esSinStock(r.nota) || esSinStock(r.mayorista) || esSinStock(r.unitario);
+            const sinStock = sinStockDe(r);
             const soloUni = !sinStock && esSoloUnitario(r);
-            const may = parseNum(r.mayorista), uni = parseNum(r.unitario);
+            const may = parseNum(r.mayorista), uni = uniDe(r);
             const specs = (p.allSpecs && p.allSpecs.length) ? p.allSpecs : (p.specs || []);
             let precio = '';
-            if (!sinStock && !soloUni && may > 0) precio = `<div class="product-price-bar may-ficha-precio"><span class="price-label">Precio mayorista</span><div class="price-values"><span class="price-amount">${fmt(may)}</span></div></div>`;
+            if (!sinStock && !soloUni && may > 0) precio = `<div class="product-price-bar may-ficha-precio"><span class="price-label">Precio mayorista</span><div class="price-values"><span class="price-amount">${fmt(may)}</span></div></div>` + escalonesHTML(r, 'may-uni-linea may-escalon');
             else if (!sinStock && !soloUni) precio = `<div class="modal-consultar">Precio mayorista a consultar</div>`;
             const uniLinea = uni > 0 ? `<div class="may-uni-linea"><span>${soloUni ? 'Solo venta unitaria' : 'Precio unitario'}</span><b>${fmt(uni)}</b></div>` : '';
             const minB = (!sinStock && !soloUni && r.minimo) ? `<div class="may-min"><i class="fas fa-layer-group"></i> ${minTexto(r.minimo)}</div>` : '';
@@ -434,11 +458,11 @@
             const prod = r._prod;
             const folder = prod ? (prod.folder || prod.name) : '';
             const src = imgDe(prod);
-            const sinStock = esSinStock(r.nota) || esSinStock(r.mayorista) || esSinStock(r.unitario);
+            const sinStock = sinStockDe(r);
             const soloUni = !sinStock && esSoloUnitario(r);
             const apagado = sinStock || soloUni;            // línea "apagada" (como sin stock)
             const may = parseNum(r.mayorista);
-            const uni = parseNum(r.unitario);
+            const uni = uniDe(r);
 
             const media = src
                 ? `<div class="may-media"><img src="${esc(src)}" alt="${esc(r.producto)}" loading="lazy" data-folder="${esc(folder)}" onload="_mayEncuadre(this)" onerror="this.parentElement.innerHTML='<div class=\\'may-media-icon\\'><i class=\\'fas ${prod && prod.icon ? esc(prod.icon) : 'fa-screwdriver-wrench'}\\'></i></div>'">`
@@ -455,6 +479,7 @@
                 else precios += `<div class="may-solo">Sin stock</div>`;
             } else {
                 if (may > 0) precios += `<div class="may-price-may"><span class="lbl">Mayorista</span><span class="val">${fmt(may)}</span></div>`;
+                if (may > 0) precios += escalonesHTML(r, 'may-price-may may-escalon');
                 if (uni > 0) precios += `<div class="may-price-uni"><span class="lbl">Precio unitario</span><span class="val">${fmt(uni)}</span></div>`;
                 if (may <= 0 && uni <= 0) precios += `<div class="may-price-may"><span class="lbl">Mayorista</span><span class="val" style="font-size:1rem;">A consultar</span></div>`;
             }
@@ -480,7 +505,9 @@
             </div>`;
         }
 
+        let ULTIMAS = null;
         function render(rows) {
+            ULTIMAS = rows;
             const cont = document.getElementById('mayLista');
             if (rows && !rows.length) { cont.innerHTML = '<div class="may-estado"><i class="fas fa-boxes-stacked"></i><h4>La lista mayorista se está actualizando</h4><p>Pedínosla por WhatsApp y te la mandamos al toque.</p><div class="may-estado-btns"><a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Quiero%20la%20lista%20mayorista." target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Pedir por WhatsApp</a></div></div>'; return; }
             if (!rows) { cont.innerHTML = '<div class="may-estado"><i class="fas fa-triangle-exclamation"></i><h4>No se pudo cargar la lista</h4><p>Puede ser la conexión. Probá de nuevo o pedínosla por WhatsApp.</p><div class="may-estado-btns"><button type="button" onclick="location.reload()"><i class="fas fa-rotate"></i> Reintentar</button><a href="https://wa.me/5491131751517?text=Hola%20San%20Ou!%20Quiero%20la%20lista%20mayorista." target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Pedir por WhatsApp</a></div></div>'; return; }
@@ -567,9 +594,22 @@
             const c = JSON.parse(localStorage.getItem(MAY_CACHE) || 'null');
             if (c && Array.isArray(c.rows) && c.rows.length && Date.now() - c.t < 7 * 24 * 3600e3) cacheRows = c.rows;
         } catch (e) {}
-        fetch('recortes.json?_=' + Date.now()).then(r => r.ok ? r.json() : {}).then(j => { RECORTES = j || {}; }).catch(() => {})
+        // Fotos reales de cada producto (fotos.json lo mantiene el CRM, igual que en la tienda): así los productos nuevos también salen con foto.
+        const fotosOk = fetch('fotos.json?_=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : {}).then(man => {
+            CAT.forEach(p => { const f = man[(p.catFolder || p.category) + '/' + (p.folder || p.name)]; if (Array.isArray(f) && f.length) p.imgs = f; });
+        }).catch(() => {});
+        Promise.all([fotosOk, fetch('recortes.json?_=' + Date.now()).then(r => r.ok ? r.json() : {}).then(j => { RECORTES = j || {}; }).catch(() => {})])
             .finally(() => {
                 if (cacheRows) render(cacheRows);
+                // Stock de la tienda (misma planilla que la web): al llegar, se vuelve a pintar con el stock real.
+                jsonp(CRM_URL + '?action=catalogo&tab=Clientes').then(d => {
+                    if (!d || !d.ok || !d.csv) return;
+                    const celdas = l => { const o = []; let c = '', q = false; for (const ch of l) { if (ch === '"') q = !q; else if (ch === ',' && !q) { o.push(c); c = ''; } else c += ch; } o.push(c); return o; };
+                    const st = {}, pr = {};
+                    String(d.csv).split(/\r?\n/).slice(1).forEach(l => { const f = celdas(l); if (f[0] && f[0].trim()) { st[norm(f[0])] = String(f[2]).trim().toUpperCase() === 'TRUE'; pr[norm(f[0])] = parseNum(f[1]); } });
+                    STOCK = st; PRECIO = pr;
+                    if (ULTIMAS) render(ULTIMAS);
+                });
                 jsonp(CRM_URL + '?action=mayorista_list').then(d => {
                     if (d && d.ok && Array.isArray(d.rows)) {
                         try { localStorage.setItem(MAY_CACHE, JSON.stringify({ t: Date.now(), rows: d.rows })); } catch (e) {}
