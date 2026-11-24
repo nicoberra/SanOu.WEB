@@ -397,6 +397,31 @@ test('compra web: el comprador queda en Usuarios, vinculado al pedido, sin dupli
   igual(String(ped.rows[2][hp.indexOf('ClienteID')]), String(fila[0]));
 });
 
+// ── Auditoría 24/11/2026: datos de clientes que llegan del público ──
+test('alta pública con un email que ya existe: no pisa datos ni pone contraseña; suma las notas', () => {
+  const env = entorno();
+  env.llamar({ action: 'add', tab: 'Clientes', auth: env.AUTH, nombre: 'Ana Real', email: 'ana@ejemplo.com', telefono: '1155550000', ciudad: '', notas: 'cliente vip' });
+  env.llamar({ action: 'add', tab: 'Clientes', nombre: 'Atacante', email: 'ANA@ejemplo.com', telefono: '1199990000', ciudad: 'Rosario', notas: 'popup carrito', clave: 'hash-del-atacante' });
+  const cli = env.planillas[env.ctx.CRM_ID].getSheetByName('Clientes'), h = cli.rows[0], f = cli.rows[1];
+  igual(cli.rows.length - 1, 1, 'no duplica');
+  igual(f[h.indexOf('Nombre')], 'Ana Real'); igual(String(f[h.indexOf('Teléfono')]), '1155550000');
+  igual(f[h.indexOf('Ciudad')], 'Rosario', 'completa lo vacío');
+  igual(f[h.indexOf('Notas')], 'cliente vip · popup carrito');
+  verdad(!f[h.indexOf('clave')] && !f[h.indexOf('Clave')], 'no se puede poner contraseña por alta pública');
+});
+test('registrar con un email ya cargado sin contraseña: no se reclama ni devuelve datos', () => {
+  const env = entorno();
+  env.llamar({ action: 'add', tab: 'Clientes', auth: env.AUTH, nombre: 'Ana Real', email: 'ana@ejemplo.com', telefono: '1155550000' });
+  const r = env.llamar({ action: 'registrar', tab: 'Clientes', email: 'ana@ejemplo.com', clave: 'x'.repeat(64), nombre: 'Otro' }).json;
+  igual(r.ok, false); verdad(!r.cliente, 'no devuelve los datos del dueño'); verdad(/WhatsApp/.test(r.error));
+});
+test('texto público que empieza con = + - @ se guarda como texto (sin fórmulas)', () => {
+  const env = entorno();
+  env.llamar({ action: 'add', tab: 'Clientes', nombre: '=IMPORTDATA("http://x")', email: 'b@ejemplo.com', telefono: '+54 11 5555 0000' });
+  const cli = env.planillas[env.ctx.CRM_ID].getSheetByName('Clientes'), h = cli.rows[0], f = cli.rows[1];
+  igual(f[h.indexOf('Nombre')], "'=IMPORTDATA(\"http://x\")"); igual(String(f[h.indexOf('Teléfono')]), "'+54 11 5555 0000");
+});
+
 // ── v30: categorías y productos nuevos desde el CRM ──
 function conRepo() {
   const env = entorno(); const repo = {};
