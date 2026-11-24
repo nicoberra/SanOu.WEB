@@ -361,7 +361,7 @@
         // Mínimo claro: ">6 unidades" -> "Compra mínima: 6 unidades"
         // Escalones extra por cantidad (columnas F-I de la planilla): "Desde 12 unidades: $X".
         function escalonesHTML(r, clase) {
-            return [[r.minimo2, r.mayorista2], [r.minimo3, r.mayorista3]]
+            return [[r.esc2q, r.esc2p], [r.esc3q, r.esc3p]]   // columnas K-N (F-G son los costos: nunca mostrarlos)
                 .filter(([q, pr]) => parseNum(pr) > 0)
                 .map(([q, pr]) => `<div class="${clase}"><span class="lbl">${parseNum(q) ? 'Desde ' + parseNum(q) + ' unidades' : esc(q || 'Más unidades')}</span><span class="val">${fmt(parseNum(pr))}</span></div>`).join('');
         }
