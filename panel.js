@@ -2130,20 +2130,20 @@ function pintarMayorista(lista, q){
             </div>
             <div class="prod-campos may-escalones">
                 <label class="prod-num">Cantidad 2
-                    <input type="text" value="${esc(m.minimo2||'')}" placeholder="Ej: >12 unidades"
-                        onchange="guardarMayorista(${m.row},'minimo2',this.value)">
+                    <input type="text" value="${esc(m.esc2q||'')}" placeholder="Ej: >12 unidades"
+                        onchange="guardarMayorista(${m.row},'esc2q',this.value)">
                 </label>
                 <label class="prod-num">Precio 2
-                    <input type="text" inputmode="numeric" value="${esc(/\d/.test(m.mayorista2||'') ? precioTxt(m.mayorista2) : (m.mayorista2||''))}" placeholder="$"
-                        onchange="guardarMayorista(${m.row},'mayorista2',this.value)">
+                    <input type="text" inputmode="numeric" value="${esc(/\d/.test(m.esc2p||'') ? precioTxt(m.esc2p) : (m.esc2p||''))}" placeholder="$"
+                        onchange="guardarMayorista(${m.row},'esc2p',this.value)">
                 </label>
                 <label class="prod-num">Cantidad 3
-                    <input type="text" value="${esc(m.minimo3||'')}" placeholder="Ej: >24 unidades"
-                        onchange="guardarMayorista(${m.row},'minimo3',this.value)">
+                    <input type="text" value="${esc(m.esc3q||'')}" placeholder="Ej: >24 unidades"
+                        onchange="guardarMayorista(${m.row},'esc3q',this.value)">
                 </label>
                 <label class="prod-num">Precio 3
-                    <input type="text" inputmode="numeric" value="${esc(/\d/.test(m.mayorista3||'') ? precioTxt(m.mayorista3) : (m.mayorista3||''))}" placeholder="$"
-                        onchange="guardarMayorista(${m.row},'mayorista3',this.value)">
+                    <input type="text" inputmode="numeric" value="${esc(/\d/.test(m.esc3p||'') ? precioTxt(m.esc3p) : (m.esc3p||''))}" placeholder="$"
+                        onchange="guardarMayorista(${m.row},'esc3p',this.value)">
                 </label>
             </div>
             ${bloqueCostoMay(m)}
