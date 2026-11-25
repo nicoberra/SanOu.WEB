@@ -1509,6 +1509,11 @@ function bloqueCosto(p, i){
             </div>` : (costo ? '<div class="prod-costo-info"><div class="prod-costo-pesos">—</div></div>' : '')}
         </div>`;
 }
+// Enter en cualquier campo de Productos = guardar (saca el foco y dispara el guardado).
+document.addEventListener('keydown', e => {
+    const t = e.target;
+    if (e.key === 'Enter' && t && t.tagName === 'INPUT' && t.type !== 'checkbox' && t.closest && t.closest('#listaProd')) { e.preventDefault(); t.blur(); }
+});
 // ─── Productos + Mayorista en una sola ficha ───
 const _prodAbiertos = new Set();
 function toggleProd(i){
@@ -1558,11 +1563,19 @@ function pintarResumenProd(lista, mayDe){
         <div class="${sinMay?'warn':''}"><b>${sinMay}</b><span>sin precio mayorista</span></div>
         <div class="${sinCosto?'warn':''}"><b>${sinCosto}</b><span>sin costo cargado</span></div>`;
 }
+// Cantidades del mayorista: se escribe solo el número ("10") y queda ">10 unidades".
+const CAMPOS_CANT_MAY = ['minimo', 'esc2q', 'esc3q'], CAMPOS_PRECIO_MAY = ['mayorista', 'unitario', 'esc2p', 'esc3p'];
+function cantMayTxt(v){ const s = String(v == null ? '' : v).trim(); const n = s.match(/^>?\s*(\d+)\s*(u|un|unid|unidades?)?\.?$/i); return n ? '>' + parseInt(n[1], 10) + ' unidades' : s; }
+function valorMayTxt(campo, v){
+    if (CAMPOS_PRECIO_MAY.includes(campo)) return /\d/.test(v || '') ? precioTxt(v) : (v || '');
+    if (CAMPOS_CANT_MAY.includes(campo)) return cantMayTxt(v);
+    return v || '';
+}
 function campoMay(m, campo, label, ph, precio){
-    const v = m[campo] || '';
+    const cant = CAMPOS_CANT_MAY.includes(campo);
     return `<label class="prod-num">${label}
-        <input type="text"${precio ? ' inputmode="numeric"' : ''} value="${esc(precio && /\d/.test(v) ? precioTxt(v) : v)}" placeholder="${ph}"
-            onchange="guardarMayorista(${m.row},'${campo}',this.value)"></label>`;
+        <input type="text"${precio || cant ? ' inputmode="numeric"' : ''} value="${esc(valorMayTxt(campo, m[campo]))}" placeholder="${ph}"
+            onchange="guardarMayorista(${m.row},'${campo}',this.value,this)"></label>`;
 }
 function bloqueMayProd(p, m){
     if (!m) return `<div class="prod-blk"><p class="prod-blk-t"><i class="fas fa-boxes-stacked"></i> Mayorista</p>
@@ -1571,11 +1584,11 @@ function bloqueMayProd(p, m){
     return `<div class="prod-blk"><p class="prod-blk-t"><i class="fas fa-boxes-stacked"></i> Mayorista <small>lista para clientes</small>
             <span class="prod-ok" id="mayok-${m.row}"><i class="fas fa-check"></i> Guardado</span></p>
         <div class="prod-campos">
-            ${campoMay(m,'minimo','Cantidad mínima','Ej: >6 unidades')}
+            ${campoMay(m,'minimo','Cantidad mínima','Ej: 6')}
             ${campoMay(m,'mayorista','Precio mayorista','A definir',true)}
-            ${campoMay(m,'esc2q','Escalón 2','Ej: >12 unidades')}
+            ${campoMay(m,'esc2q','Escalón 2','Ej: 12')}
             ${campoMay(m,'esc2p','Precio 2','$',true)}
-            ${campoMay(m,'esc3q','Escalón 3','Ej: >24 unidades')}
+            ${campoMay(m,'esc3q','Escalón 3','Ej: 24')}
             ${campoMay(m,'esc3p','Precio 3','$',true)}
         </div>
         <div class="prod-campos prod-campos-1">${campoMay(m,'nota','Nota','Ej: solo unitario')}</div>
@@ -1592,7 +1605,7 @@ function mayoristaSueltos(mayDe){
         sueltos.map(m => `<div class="prod-card"><div class="prod-blk"><p class="prod-blk-t">${esc(m.producto)}
             <span class="prod-ok" id="mayok-${m.row}"><i class="fas fa-check"></i> Guardado</span></p>
             <div class="prod-campos">${campoMay(m,'mayorista','Precio mayorista','A definir',true)}${campoMay(m,'unitario','Precio unitario','$',true)}
-            ${campoMay(m,'minimo','Cantidad mínima','Ej: >6 unidades')}${campoMay(m,'nota','Nota','')}</div></div></div>`).join('');
+            ${campoMay(m,'minimo','Cantidad mínima','Ej: 6')}${campoMay(m,'nota','Nota','')}</div></div></div>`).join('');
 }
 
 let _prodTimers = {};
@@ -1609,7 +1622,7 @@ async function guardarProducto(i, campo, valor) {
         if (valor && p.cantidad === 0) p.cantidad = '';
     }
     if (campo !== 'cantidad') p[campo] = valor;
-    if (campo === 'costousd' || campo === 'stock' || campo === 'precio') filtrarProductos();   // actualizar pesos/ganancia o el cartel "Sin stock"
+    if (campo === 'costousd' || campo === 'stock' || campo === 'precio' || campo === 'ml') filtrarProductos();   // actualizar pesos/ganancia o el cartel "Sin stock"
     if (campo === 'precio') sincronizarPrecioAMayorista(p.nombre, valor);  // conectado con el unitario del mayorista
     try {
         await crmW({ action: 'productos_save', tab: 'Clientes', nombre: p.nombre, [campo]: valor });
@@ -2339,8 +2352,10 @@ function costoUsdFlex(nombre){
     return p ? (parseFloat(String(p.costousd||'').replace(/[^\d.]/g,'')) || 0) : 0;
 }
 let _mayTimers = {};
-async function guardarMayorista(row, campo, valor){
+async function guardarMayorista(row, campo, valor, el){
     const m = mayorista.find(x => x.row === row); if(!m) return;
+    if (CAMPOS_CANT_MAY.includes(campo)) valor = cantMayTxt(valor);          // "10" → ">10 unidades"
+    if (el) el.value = valorMayTxt(campo, valor);                             // precios siempre con $ y puntos
     m[campo] = valor;
     try {
         await crmW({ action:'mayorista_save', tab:'Clientes', row, producto: m.producto, [campo]: valor });
