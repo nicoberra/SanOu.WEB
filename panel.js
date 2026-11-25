@@ -3080,7 +3080,7 @@ function abrirFormPedido(id, prefill){
                     <button type="button" class="pd-nuevo-cli" onclick="pedNuevoCliente(false)"><i class="fas fa-arrow-left"></i> Elegir uno existente</button>
                 </div>
                 <div class="panel-form-2">
-                    <div><label>Teléfono</label><input type="tel" id="pdTel" value="${esc(p.telefono)}" readonly placeholder="Se completa solo"></div>
+                    <div><label>Teléfono</label><input type="tel" inputmode="tel" id="pdTel" value="${esc(p.telefono)}" readonly placeholder="Se completa solo"></div>
                     <div><label>Fecha de la venta</label><input type="date" id="pdFecha" value="${id&&p.fecha?String(p.fecha).slice(0,10):hoyISO()}"></div>
                 </div>
                 <label>Productos</label>
@@ -3250,7 +3250,7 @@ function abrirFormSeguimiento(id){
                 <input type="text" id="sgCliente" list="dlClientes" value="${esc(s.cliente)}" onchange="autoTel('sg')" autocomplete="off">
                 ${clientesDatalist()}
                 <label>Teléfono</label>
-                <input type="tel" id="sgTel" value="${esc(s.telefono)}">
+                <input type="tel" inputmode="tel" id="sgTel" value="${esc(s.telefono)}">
                 <label>Motivo</label>
                 <textarea id="sgMotivo" rows="2" placeholder="Ej: llamar por presupuesto, avisar que llegó stock…">${esc(s.motivo)}</textarea>
                 <div class="panel-form-2">

@@ -237,7 +237,7 @@ function formAccesoHTML(modo) {
         <form class="cuenta-form" onsubmit="hacerRegistro(event)">
             <input type="text"  id="acNombre"  placeholder="Nombre y apellido *" required autocomplete="name">
             <input type="email" id="acEmail"   placeholder="Email *" required autocomplete="email">
-            <input type="tel"   id="acTel"     placeholder="Teléfono / WhatsApp *" required autocomplete="tel">
+            <input type="tel" inputmode="tel" id="acTel"     placeholder="Teléfono / WhatsApp *" required autocomplete="tel">
             <input type="text"  id="acEmpresa" placeholder="Empresa / Rubro (opcional)" autocomplete="organization">
             <input type="password" id="acPass" placeholder="Contraseña (mín. 6) *" required minlength="6" autocomplete="new-password">
             <div class="cuenta-err" id="acErr"></div>
@@ -319,7 +319,7 @@ function formularioCuentaHTML(pref) {
         <form class="cuenta-form" onsubmit="registrarCliente(event)">
             <input type="text"  id="ccNombre"   placeholder="Nombre y apellido *" value="${pref.nombre||''}" required autocomplete="name">
             <input type="email" id="ccEmail"    placeholder="Email *" value="${pref.email||''}" required autocomplete="email">
-            <input type="tel"   id="ccTelefono" placeholder="Teléfono / WhatsApp *" value="${pref.telefono||''}" required autocomplete="tel">
+            <input type="tel" inputmode="tel" id="ccTelefono" placeholder="Teléfono / WhatsApp *" value="${pref.telefono||''}" required autocomplete="tel">
             <input type="text"  id="ccEmpresa"  placeholder="Empresa / Rubro (opcional)" value="${pref.empresa||''}" autocomplete="organization">
             <input type="text"  id="ccCiudad"   placeholder="Ciudad (opcional)" value="${pref.ciudad||''}" autocomplete="address-level2">
             <button type="submit" class="cuenta-submit">Crear mi cuenta</button>
