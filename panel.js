@@ -1212,7 +1212,20 @@ function filtrarProductos() {
     let lista = productos;
     if (prodCat !== 'all') lista = lista.filter(p => catDeProducto(p.nombre) === prodCat);
     if (q) lista = lista.filter(p => p.nombre.toLowerCase().includes(q));
+    if (prodCat === 'pinzas') lista = ordenarPinzas(lista);
     pintarProductos(lista, q);
+}
+// Pinzas ordenadas por medida: primero la manual HHYJ-50, después de menor a mayor (70, 120, 150, 300, 400, 500);
+// a igual medida, sin bomba antes que con bomba; las que no tienen medida (engrafadora) van al final.
+function medidaPinza(nombre){
+    const n = String(nombre || '').toUpperCase();
+    if (/HHYJ/.test(n)) return 0;
+    const m = n.match(/HHY-?(\d+)/);
+    return m ? parseInt(m[1], 10) : 99999;
+}
+function ordenarPinzas(lista){
+    return lista.map((p, i) => ({ p, i, k: medidaPinza(p.nombre), b: /BOMBA/i.test(p.nombre) ? 1 : 0 }))
+        .sort((a, b) => a.k - b.k || a.b - b.b || a.i - b.i).map(x => x.p);
 }
 
 function precioTxt(v) {
