@@ -132,8 +132,18 @@ function crm(params) {
 
 // Escrituras: si el backend responde ok:false (sesión vencida, límite, fila no encontrada) o
 // no confirma el cambio, se trata como error. Así nunca se muestra "guardado" cuando no se guardó.
+// La clave guardada en este dispositivo ya no vale (cambió la clave del CRM o venció):
+// en vez de fallar en cada cambio, se borra la sesión y vuelve a pedir la clave (una sola vez).
+let _sesionVencida = false;
+function sesionVencida() {
+    if (_sesionVencida) return; _sesionVencida = true;
+    try { localStorage.removeItem('sanou_panel_ok'); localStorage.removeItem('sanou_auth'); } catch (e) {}
+    alert('La sesión de esta compu ya no es válida (seguramente cambió la clave del CRM). Entrá de nuevo con la clave y volvé a hacer el cambio.');
+    location.reload();
+}
 async function crmW(params) {
     const r = await crm(params);
+    if (r && r.error === 'No autorizado') { sesionVencida(); return new Promise(() => {}); }   // la página se recarga: sin cartel de error extra
     if (!r || r.ok !== true) throw new Error((r && r.error) || 'Sin respuesta del servidor');
     if (r.updated === false || r.deleted === false || r.saved === false || r.guardado === false || r.borrada === false || r.ordenado === false)
         throw new Error('El servidor no encontró el registro');
