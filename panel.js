@@ -173,11 +173,12 @@ let clientes = [];
 
 const SECCIONES = [
     ['facturacion','$$','Facturación'], ['clientes','fa-users','Usuarios'], ['productos','fa-screwdriver-wrench','Productos'],
-    ['mayorista','fa-boxes-stacked','Mayorista'], ['pedidos','fa-box','Pedidos'], ['cotizaciones','fa-file-invoice-dollar','Cotizaciones'],
+    ['pedidos','fa-box','Pedidos'], ['cotizaciones','fa-file-invoice-dollar','Cotizaciones'],
     ['leads','fa-bullseye','Leads'], ['estadisticas','fa-chart-pie','Estadísticas'], ['marketing','fa-bullhorn','Marketing']];
 const esCelu = () => { try { return matchMedia('(max-width:899px)').matches; } catch (e) { return false; } };
 function navegar(sec, opts) {
     opts = opts || {};
+    if (sec === 'mayorista') sec = 'productos';   // el mayorista ahora está dentro de cada producto
     const antes = seccionActual;
     seccionActual = sec;
     // Celular: cada sección se abre a pantalla completa con "‹ Inicio" arriba y queda en el historial,
@@ -1121,7 +1122,7 @@ function pintarBarraDolar(){
         <button class="dol-refresh" onclick="refrescarDolar()" title="Actualizar"><i class="fas fa-rotate"></i></button>`
         : `<span class="dol-off">Sin cotización del dólar (revisá tu conexión)</span>`;
 }
-function repintarPreciosSec(){ if(seccionActual==='mayorista') filtrarMayorista(); else if(seccionActual==='productos') filtrarProductos(); }
+function repintarPreciosSec(){ if(seccionActual==='productos') filtrarProductos(); }
 function cambiarDolarTipo(t){ dolar.tipo=t; pintarBarraDolar(); repintarPreciosSec(); }
 async function refrescarDolar(){ const el=document.getElementById('barraDolar'); if(el)el.innerHTML='<i class="fas fa-rotate fa-spin"></i>'; await ensureDolar(true); pintarBarraDolar(); repintarPreciosSec(); }
 
@@ -1129,7 +1130,18 @@ async function renderProductos() {
     prodCat = 'all';
     fotosActuales().then(cambio => { if (cambio && seccionActual === 'productos' && productos.length) filtrarProductos(); });
     const v = document.getElementById('vista');
+    const LINK_MAY = 'https://sanou.com.ar/mayorista.html';
+    const msgMay = '¡Hola! Te paso la lista de precios mayoristas de San Ou 🔧: ' + LINK_MAY;
+    if (!mayorista.length) mayorista = cacheGet('mayorista') || [];
     v.innerHTML = `
+        <div class="may-link">
+            <div class="may-link-txt"><b><i class="fas fa-link"></i> Lista mayorista</b><span>${LINK_MAY}</span></div>
+            <div class="may-link-btns">
+                <button class="panel-btn-add" onclick="copiarLink('${LINK_MAY}', this)"><i class="fas fa-copy"></i> Copiar link</button>
+                <a class="panel-btn-add may-link-wa" href="https://wa.me/?text=${encodeURIComponent(msgMay)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Mandar lista</a>
+                <a class="cli-btn" href="${LINK_MAY}" target="_blank" rel="noopener" title="Abrir la lista"><i class="fas fa-arrow-up-right-from-square"></i></a>
+            </div>
+        </div>
         <div class="dol-bar" id="barraDolar"></div>
         <div class="panel-sec-head">
             <div class="panel-buscar">
@@ -1139,11 +1151,16 @@ async function renderProductos() {
             <button class="panel-btn-add" onclick="abrirFormProductoNuevo()"><i class="fas fa-plus"></i> Nuevo producto</button>
             <button class="panel-btn-add prod-btn-cat" onclick="abrirFormCategoria()"><i class="fas fa-folder-plus"></i> Nueva categoría</button>
         </div>
-        <p class="prod-ayuda">Precio, stock, destacado y costo en USD. Se guarda al instante. El costo se convierte a pesos al dólar actual.</p>
+        <p class="prod-ayuda">Tocá un producto para abrir su ficha: costo, precio al público (web y Marketplace) y precio mayorista. Un solo precio unitario para todo. Se guarda al instante.</p>
         <div class="prod-cats" id="prodCats"></div>
+        <div class="prod-resumen" id="prodResumen"></div>
         <div class="panel-lista" id="listaProd">${productos.length ? '' : skel()}</div>`;
     ensureDolar().then(()=>{ pintarBarraDolar(); if(seccionActual==='productos' && productos.length) filtrarProductos(); });
     ensurePedidos().then(()=>{ if(seccionActual==='productos' && productos.length) filtrarProductos(); });   // para "X vendidos"
+    crm({ action:'mayorista_list', tab:'Clientes' }).then(r => {   // precios mayoristas de cada producto
+        if (r && r.ok && r.rows) { mayorista = r.rows; cacheSet('mayorista', mayorista); _mayoristaCargado = true; }
+        if (seccionActual === 'productos' && productos.length) filtrarProductos();
+    }).catch(() => {});
     if (productos.length) { renderProdCats(); filtrarProductos(); }   // instantáneo desde caché/memoria
     try {
         const r = await crm({ action: 'productos_list', tab: 'Clientes' });
@@ -1178,10 +1195,17 @@ function renderProdCats(){
     const orden = Object.keys(nombres).filter(k => conProd[k] || extraCats.includes(k));
     Object.keys(conProd).forEach(k => { if(!orden.includes(k)) orden.push(k); });
     const claves = ['all', ...orden];
-    cont.innerHTML = claves.map(k =>
-        `<button class="prod-cat${k===prodCat?' active':''}" onclick="prodCategoria('${k}')">${k==='all'?'Todas':esc(nombres[k]||k)}</button>`).join('');
+    const nom = k => k==='all' ? 'Todas las categorías' : esc(nombres[k]||k);
+    // Botón que despliega TODAS las categorías juntas (sin deslizar de costado); al elegir una se cierra.
+    cont.classList.add('cats-plegables'); cont.classList.toggle('abiertas', _catsAbiertas);
+    cont.innerHTML = `<button type="button" class="cats-toggle" aria-expanded="${_catsAbiertas}" onclick="toggleCats()">
+            <i class="fas fa-layer-group"></i><span>${nom(prodCat)}</span><i class="fas fa-chevron-down cats-chev"></i></button>
+        <div class="cats-grid">${claves.map(k =>
+            `<button class="prod-cat${k===prodCat?' active':''}" onclick="prodCategoria('${k}')">${k==='all'?'Todas':esc(nombres[k]||k)}</button>`).join('')}</div>`;
 }
-function prodCategoria(k){ prodCat = k; renderProdCats(); filtrarProductos(); }
+let _catsAbiertas = false;
+function toggleCats(){ _catsAbiertas = !_catsAbiertas; renderProdCats(); }
+function prodCategoria(k){ prodCat = k; _catsAbiertas = false; renderProdCats(); filtrarProductos(); }
 
 function filtrarProductos() {
     const q = (document.getElementById('buscarProd').value || '').toLowerCase().trim();
@@ -1298,21 +1322,45 @@ function pintarProductos(lista, q) {
         return;
     }
     const ventas = ventasPorProducto(productos);   // con TODOS los productos, así cada venta va a uno solo
+    const mayDe = mapaMayorista();
+    pintarResumenProd(lista, mayDe);
+    const unico = lista.length === 1;
     cont.innerHTML = lista.map(p => {
         const i = productos.indexOf(p);
         const vt = ventasDe(p.nombre, ventas);
         const cp = catalogoDe(p.nombre);
         const fo = cp ? (cp.folder || cp.name) : '';
+        const m = mayDe.get(p);
+        const abierto = unico || _prodAbiertos.has(p.nombre);
+        const sinMay = m && !/\d/.test(m.mayorista || '');
+        const sinCosto = !(parseFloat(String(p.costousd||'').replace(/[^\d.]/g,'')) > 0);
         return `
-        <div class="prod-card${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
+        <div class="prod-card prod-plegable${abierto ? ' abierto' : ''}${p.stock ? '' : ' prod-card-sinstock'}" id="prod-${i}">
+            <button type="button" class="prod-head" aria-expanded="${abierto}" onclick="toggleProd(${i})">
+                <span class="prod-head-foto">${cp ? imgTag(cp, 'prod-head-img') : '<i class="fas fa-box"></i>'}</span>
+                <span class="prod-head-txt">
+                    <span class="prod-nombre">${esc(p.nombre)}</span>
+                    <span class="prod-tags">
+                        ${p.stock ? `<span class="ptag ok">${p.cantidad > 0 ? p.cantidad + ' en stock' : 'En stock'}</span>` : '<span class="ptag bad">Sin stock</span>'}
+                        ${!m ? '<span class="ptag">No está en el mayorista</span>' : sinMay ? '<span class="ptag warn">Falta mayorista</span>' : ''}
+                        ${sinCosto ? '<span class="ptag warn">Sin costo</span>' : ''}
+                    </span>
+                </span>
+                <span class="prod-head-precios">
+                    <b>${precioTxt(p.precio) || '—'}</b>
+                    <span>May. ${m && /\d/.test(m.mayorista || '') ? precioTxt(m.mayorista) : '—'}</span>
+                    <i class="fas fa-chevron-down prod-chev"></i>
+                </span>
+            </button>
+            <div class="prod-body"><div class="prod-body-in">
             <div class="prod-top">
-                ${cp ? imgTag(cp, 'prod-mini') : ''}
-                <span class="prod-nombre">${esc(p.nombre)}${p.stock ? (p.cantidad > 0 ? ` <span class="prod-badge-cant${p.cantidad <= 2 ? ' poco' : ''}">${p.cantidad} en stock</span>` : '') : ' <span class="prod-badge-sinstock">Sin stock · reserva 20 días</span>'}</span>
                 <button type="button" class="prod-vendidos${vt.vend ? '' : ' cero'}" onclick="verCompradores(${i})" title="Ver quiénes lo compraron"><i class="fas fa-bag-shopping"></i> ${vt.vend} vendido${vt.vend === 1 ? '' : 's'}${vt.curso ? ` <small>+${vt.curso} en curso</small>` : ''}</button>
                 <span class="prod-ok" id="prodok-${i}"><i class="fas fa-check"></i> Guardado</span>
             </div>
+            ${bloqueCosto(p, i)}
+            <div class="prod-blk"><p class="prod-blk-t"><i class="fas fa-globe"></i> Público <small>web y Marketplace</small></p>
             <div class="prod-campos">
-                <label class="prod-num">Precio
+                <label class="prod-num">Precio unitario (transferencia)
                     <input type="text" inputmode="numeric" value="${esc(precioTxt(p.precio))}"
                         onchange="guardarProducto(${i},'precio',this.value)">
                 </label>
@@ -1333,7 +1381,9 @@ function pintarProductos(lista, q) {
                     <span class="prod-sw-track"></span> Destacado
                 </label>
             </div>
-            ${bloqueCosto(p, i)}
+            ${gananciaTxt(p, parseInt(String(p.precio).replace(/[^\d]/g,''),10) || 0)}
+            </div>
+            ${bloqueMayProd(p, m)}
             ${!cp && borradoDe(p.nombre) ? `<div class="prod-borrado"><span><i class="fas fa-eye-slash"></i> Sacado de la web</span>
                 <button class="prod-fotos-btn" onclick="restaurarProducto(${borradoDe(p.nombre).id})"><i class="fas fa-rotate-left"></i> Volver a publicar</button></div>` : ''}
             ${cp ? `<div class="prod-rec-fila"><div class="prod-rec rec-cargando" id="rec-${i}" data-folder="${esc(fo)}"><i class="fas fa-spinner fa-spin"></i> Buscando recorte…</div>
@@ -1349,8 +1399,9 @@ function pintarProductos(lista, q) {
                 <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadreFoto('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-up-down-left-right"></i> Encuadre foto</button>
                 <button class="prod-fotos-btn prod-enc-btn" onclick="abrirEncuadre('${esc(p.nombre).replace(/'/g,"\\'")}')"><i class="fas fa-crop-simple"></i> Encuadre 3D</button>
             </div>` : ''}
+            </div></div>
         </div>`;
-    }).join('');
+    }).join('') + mayoristaSueltos(mayDe);
     marcarRecortes();
 }
 // Marca en cada tarjeta si el producto ya tiene recorte PNG (recortes/<folder>.png).
@@ -1455,9 +1506,93 @@ function bloqueCosto(p, i){
             </label>
             ${hayInfo ? `<div class="prod-costo-info">
                 <div class="prod-costo-pesos">≈ ${fmtMoney(costoPesos)} <span>en pesos</span></div>
-                ${precioNum ? `<div class="prod-margen ${ganancia<0?'neg':''}">Ganancia ${fmtMoney(ganancia)}${margen!=null?` · ${margen}%`:''}</div>` : ''}
             </div>` : (costo ? '<div class="prod-costo-info"><div class="prod-costo-pesos">—</div></div>' : '')}
         </div>`;
+}
+// ─── Productos + Mayorista en una sola ficha ───
+const _prodAbiertos = new Set();
+function toggleProd(i){
+    const p = productos[i], el = document.getElementById('prod-' + i); if (!p || !el) return;
+    const ab = !el.classList.contains('abierto');
+    el.classList.toggle('abierto', ab); el.querySelector('.prod-head').setAttribute('aria-expanded', ab);
+    if (ab) _prodAbiertos.add(p.nombre); else _prodAbiertos.delete(p.nombre);
+}
+// Cada fila de la planilla mayorista, asignada a su producto de la planilla de precios.
+function mapaMayorista(){
+    const mapa = new Map();
+    (mayorista || []).forEach(m => {
+        if (m.tipo !== 'prod') return;
+        const f = filaProdMay(m.producto);
+        if (f && !mapa.has(f)) mapa.set(f, m); else mapa.set(m, null);   // m→null: fila sin producto (va al final)
+    });
+    // 2ª pasada: las filas que no coincidieron por nombre se asignan por MODELO (HHY-300, mordaza 80 mm…)
+    // o por palabras en común, solo entre productos libres y solo si hay un único candidato claro.
+    const libres = () => (productos || []).filter(p => !mapa.has(p));
+    const nombresDe = p => { const cp = catalogoDe(p.nombre); return [p.nombre].concat(cp ? [cp.name, cp.sheetName || ''] : []).filter(Boolean); };
+    [...mapa.entries()].filter(([k, v]) => v === null).forEach(([m]) => {
+        const mods = modelosDe(m.producto);
+        let cand = mods.size ? libres().filter(p => nombresDe(p).some(n => [...modelosDe(n)].some(z => mods.has(z)))) : [];
+        if (cand.length !== 1) {
+            const tm = tokensDe(m.producto);
+            const sim = p => Math.max(...nombresDe(p).map(n => { const t = tokensDe(n), inter = [...tm].filter(x => t.has(x)).length; return inter / (tm.size + t.size - inter || 1); }));
+            const orden = libres().map(p => [p, sim(p)]).sort((a, b) => b[1] - a[1]);
+            cand = orden.length && orden[0][1] >= 0.45 && (!orden[1] || orden[0][1] - orden[1][1] >= 0.15) ? [orden[0][0]] : [];
+        }
+        if (cand.length === 1) { mapa.delete(m); mapa.set(cand[0], m); }
+    });
+    return mapa;
+}
+function costoPesosDe(p){ const c = parseFloat(String(p.costousd||'').replace(/[^\d.]/g,'')) || 0, r = dolarValor(); return (c && r) ? Math.round(c * r) : 0; }
+function gananciaTxt(p, precio){
+    const c = costoPesosDe(p);
+    if (!precio) return '';
+    if (!c) return '<div class="prod-gan na">Cargá el costo para ver la ganancia</div>';
+    const g = precio - c, pc = Math.round(g / precio * 100);
+    return `<div class="prod-margen ${g<0?'neg':''}">Ganancia ${fmtMoney(g)} · ${pc}%</div>`;
+}
+function pintarResumenProd(lista, mayDe){
+    const el = document.getElementById('prodResumen'); if (!el) return;
+    const sinMay = lista.filter(p => { const m = mayDe.get(p); return m && !/\d/.test(m.mayorista || ''); }).length;
+    const sinCosto = lista.filter(p => !(parseFloat(String(p.costousd||'').replace(/[^\d.]/g,'')) > 0)).length;
+    el.innerHTML = `<div><b>${lista.length}</b><span>producto${lista.length===1?'':'s'}</span></div>
+        <div class="${sinMay?'warn':''}"><b>${sinMay}</b><span>sin precio mayorista</span></div>
+        <div class="${sinCosto?'warn':''}"><b>${sinCosto}</b><span>sin costo cargado</span></div>`;
+}
+function campoMay(m, campo, label, ph, precio){
+    const v = m[campo] || '';
+    return `<label class="prod-num">${label}
+        <input type="text"${precio ? ' inputmode="numeric"' : ''} value="${esc(precio && /\d/.test(v) ? precioTxt(v) : v)}" placeholder="${ph}"
+            onchange="guardarMayorista(${m.row},'${campo}',this.value)"></label>`;
+}
+function bloqueMayProd(p, m){
+    if (!m) return `<div class="prod-blk"><p class="prod-blk-t"><i class="fas fa-boxes-stacked"></i> Mayorista</p>
+        <div class="prod-gan na">Este producto no está en la planilla mayorista, así que no aparece en la lista para clientes.</div></div>`;
+    const may = parseInt(String(m.mayorista).replace(/[^\d]/g,''),10) || 0;
+    return `<div class="prod-blk"><p class="prod-blk-t"><i class="fas fa-boxes-stacked"></i> Mayorista <small>lista para clientes</small>
+            <span class="prod-ok" id="mayok-${m.row}"><i class="fas fa-check"></i> Guardado</span></p>
+        <div class="prod-campos">
+            ${campoMay(m,'minimo','Cantidad mínima','Ej: >6 unidades')}
+            ${campoMay(m,'mayorista','Precio mayorista','A definir',true)}
+            ${campoMay(m,'esc2q','Escalón 2','Ej: >12 unidades')}
+            ${campoMay(m,'esc2p','Precio 2','$',true)}
+            ${campoMay(m,'esc3q','Escalón 3','Ej: >24 unidades')}
+            ${campoMay(m,'esc3p','Precio 3','$',true)}
+        </div>
+        <div class="prod-campos prod-campos-1">${campoMay(m,'nota','Nota','Ej: solo unitario')}</div>
+        ${may ? gananciaTxt(p, may) : '<div class="prod-gan na">Sin precio mayorista: no se muestra precio en la lista para clientes.</div>'}
+    </div>`;
+}
+// Filas de la planilla mayorista que no coinciden con ningún producto: se muestran al final para no perderlas.
+function mayoristaSueltos(mayDe){
+    if (prodCat !== 'all') return '';
+    const q = (document.getElementById('buscarProd')?.value || '').toLowerCase().trim();
+    const sueltos = [...mayDe.entries()].filter(([k, v]) => v === null && (!q || k.producto.toLowerCase().includes(q))).map(([k]) => k);
+    if (!sueltos.length) return '';
+    return `<p class="prod-ayuda prod-sueltos-t"><i class="fas fa-circle-info"></i> Solo en la lista mayorista (no coinciden con un producto de la planilla de precios)</p>` +
+        sueltos.map(m => `<div class="prod-card"><div class="prod-blk"><p class="prod-blk-t">${esc(m.producto)}
+            <span class="prod-ok" id="mayok-${m.row}"><i class="fas fa-check"></i> Guardado</span></p>
+            <div class="prod-campos">${campoMay(m,'mayorista','Precio mayorista','A definir',true)}${campoMay(m,'unitario','Precio unitario','$',true)}
+            ${campoMay(m,'minimo','Cantidad mínima','Ej: >6 unidades')}${campoMay(m,'nota','Nota','')}</div></div></div>`).join('');
 }
 
 let _prodTimers = {};
@@ -1474,7 +1609,7 @@ async function guardarProducto(i, campo, valor) {
         if (valor && p.cantidad === 0) p.cantidad = '';
     }
     if (campo !== 'cantidad') p[campo] = valor;
-    if (campo === 'costousd' || campo === 'stock') filtrarProductos();   // actualizar pesos/ganancia o el cartel "Sin stock"
+    if (campo === 'costousd' || campo === 'stock' || campo === 'precio') filtrarProductos();   // actualizar pesos/ganancia o el cartel "Sin stock"
     if (campo === 'precio') sincronizarPrecioAMayorista(p.nombre, valor);  // conectado con el unitario del mayorista
     try {
         await crmW({ action: 'productos_save', tab: 'Clientes', nombre: p.nombre, [campo]: valor });
@@ -2217,7 +2352,7 @@ async function guardarMayorista(row, campo, valor){
         }
         const ok = document.getElementById('mayok-' + row);
         if (ok) { ok.classList.add('on'); clearTimeout(_mayTimers[row]); _mayTimers[row] = setTimeout(()=>ok.classList.remove('on'), 1800); }
-        if (campo === 'mayorista' || campo === 'unitario') filtrarMayorista();   // refrescar la ganancia
+        if (campo === 'mayorista' || campo === 'unitario') repintarPreciosSec();   // refrescar la ganancia
     } catch(e){ alert('No se pudo guardar "' + m.producto + '". Reintentá.'); }
 }
 // Guarda el costo (USD) del producto en la planilla de Productos, desde la sección Mayorista.
@@ -2226,7 +2361,7 @@ async function guardarCostoMay(nombreProd, valor){
     if (fila) { fila.costousd = valor; cacheSet('productos', productos); }
     try {
         await crmW({ action:'productos_save', tab:'Clientes', nombre: nombreProd, costousd: valor });
-        filtrarMayorista();   // recomputar ganancia con el costo nuevo
+        repintarPreciosSec();   // recomputar ganancia con el costo nuevo
     } catch(e){ alert('No se pudo guardar el costo. Reintentá.'); }
 }
 // Sincroniza el precio de Productos hacia el "precio unitario" del mayorista (mismo producto).
