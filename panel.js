@@ -2695,7 +2695,7 @@ function tarjetaPedidoWeb(p){
                 ${PEDIDO_ESTADOS.map(e=>`<option value="${e}" ${e===estPed(p.estado)?'selected':''}>${e==='Entregado'?'✓ ':''}${e}</option>`).join('')}
             </select>
             <button class="cli-btn ped-ver" onclick="verPedidoWeb('${p.id}')"><i class="fas fa-eye"></i> Ver todo</button>
-            <button class="cli-btn" onclick="copiarDatosPedido('${p.id}', this)" title="Copiar los datos del cliente"><i class="far fa-copy"></i> Datos</button>
+            <button class="cli-btn ped-ver ped-datos" onclick="copiarDatosPedido('${p.id}', this)" title="Copiar los datos del cliente"><i class="far fa-copy"></i> Datos</button>
             ${p.comprobante?`<button class="cli-btn" onclick="verComprobante('${p.comprobante}')" title="Ver comprobante"><i class="fas fa-receipt"></i></button>`:''}
             ${wa?`<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>`:''}
             <button class="cli-btn cli-del" onclick="borrarRegistro('Pedidos','${p.id}')"><i class="fas fa-trash"></i></button>
@@ -2720,7 +2720,7 @@ function datosPedidoTxt(p){
 }
 function copiarDatosPedido(id, btn){
     const p = pedidos.find(x => String(x.id) === String(id)); if (!p) return;
-    copiarTexto(datosPedidoTxt(p), btn, '¡Datos copiados!');
+    copiarTexto(datosPedidoTxt(p), btn, btn && btn.classList.contains('ped-datos') ? 'Copiado' : '¡Datos copiados!');
 }
 // Un dato suelto: se copia tocándolo.
 function datoCopiable(k, v, ancho){

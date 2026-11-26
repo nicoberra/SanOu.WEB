@@ -1079,3 +1079,8 @@ button.prod-vendidos:active{transform:scale(.96)}
 .hist-del:active{transform:scale(.94)}
 @media (hover:hover){.hist-del:hover{color:#f85149;border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}}
 @media (prefers-reduced-motion:reduce){.hist-del{transition:none}.hist-del:active{transform:none}}
+
+/* Pedido web: botón "Datos" (copiar datos del cliente) igual que "Ver todo" */
+.ped-datos{white-space:nowrap;flex:none}
+.ped-datos.copiado{color:#3fb950!important;border-color:rgba(63,185,80,.5)!important;background:rgba(63,185,80,.12)!important}
+@media (max-width:520px){.rec-web .rec-acciones{flex-wrap:wrap}.rec-web .rec-estado{flex:1 1 100%;height:38px}.rec-web .ped-ver{flex:1 1 0}}
