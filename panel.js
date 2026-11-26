@@ -3026,7 +3026,7 @@ let pickerCat = 'all';
 
 function abrirPicker(){
     ensureProductosPrecios().then(()=>{
-        pickerCat='all';
+        pickerCat='all'; _pkCatsAbiertas=false;
         renderPickerCats();
         renderPicker();
         document.getElementById('pickerOverlay').classList.add('active');
@@ -3040,10 +3040,17 @@ function cerrarPicker(){
 function renderPickerCats(){
     const cats=catNombres();
     const chips=['all', ...Object.keys(cats).filter(k=>catProds().some(p=>p.category===k))];
-    document.getElementById('pickerCats').innerHTML = chips.map(k=>
-        `<button class="pk-cat${k===pickerCat?' active':''}" onclick="pickerCategoria('${k}')">${k==='all'?'Todas':esc(cats[k]||k)}</button>`).join('');
+    // Mismo menú que en Productos: un botón con la categoría actual que despliega todas juntas.
+    const cont = document.getElementById('pickerCats');
+    cont.classList.add('cats-plegables'); cont.classList.toggle('abiertas', _pkCatsAbiertas);
+    cont.innerHTML = `<button type="button" class="cats-toggle" aria-expanded="${_pkCatsAbiertas}" onclick="togglePickerCats()">
+            <i class="fas fa-layer-group"></i><span>${pickerCat==='all'?'Todas las categorías':esc(cats[pickerCat]||pickerCat)}</span><i class="fas fa-chevron-down cats-chev"></i></button>
+        <div class="cats-grid">${chips.map(k=>
+            `<button type="button" class="pk-cat${k===pickerCat?' active':''}" onclick="pickerCategoria('${k}')">${k==='all'?'Todas':esc(cats[k]||k)}</button>`).join('')}</div>`;
 }
-function pickerCategoria(k){ pickerCat=k; renderPickerCats(); renderPicker(); }
+let _pkCatsAbiertas = false;
+function togglePickerCats(){ _pkCatsAbiertas = !_pkCatsAbiertas; renderPickerCats(); }
+function pickerCategoria(k){ pickerCat=k; _pkCatsAbiertas=false; renderPickerCats(); renderPicker(); }
 function renderPicker(){
     const q=(document.getElementById('pickerBuscar').value||'').toLowerCase().trim();
     let lista=catProds();
