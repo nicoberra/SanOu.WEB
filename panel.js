@@ -2709,14 +2709,13 @@ function partesDireccion(d){
 }
 function datosPedidoTxt(p){
     const L = [], add = (k, v) => { if (v) L.push(k + ': ' + v); };
-    add('Nombre', p.cliente); add('Celular', p.telefono); add('Email', p.email); add('DNI', p.dni);
+    add('Nombre', p.cliente); add('Celular', p.telefono); add('DNI', p.dni);
     if (p.envio !== 'Sí') L.push('Entrega: retira en el depósito');
     else { const a = partesDireccion(p.direccion); add('Envío', p.entrega || 'Envío'); add('Dirección', a.dir); add('Localidad', a.loc); add('Código postal', a.cp); }
     if (p.factura) add('Factura', p.factura.replace(/^Factura A · /, 'A · '));
     const its = itemsPedido(p);
     if (its.length) L.push('Productos: ' + its.map(i => i.q + ' × ' + i.n).join(', ')); else add('Productos', p.detalle);
     if (montoVenta(p)) add('Total', fmtMoney(montoVenta(p)));
-    add('Pago', p.pago);
     return L.join(String.fromCharCode(10));
 }
 function copiarDatosPedido(id, btn){
