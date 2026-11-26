@@ -1073,3 +1073,9 @@ button.prod-vendidos:active{transform:scale(.96)}
 .pw-datos .pw-copia.copiado i::before{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;color:#3fb950}
 @media (hover:hover){.pw-datos .pw-copia:hover{border-color:rgba(255,255,255,.18)}}
 @media (prefers-reduced-motion:reduce){.pw-datos .pw-copia{transition:none}.pw-datos .pw-copia:active{transform:none}}
+
+/* Historial de la ficha del cliente: borrar pedido o presupuesto */
+.hist-del{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;border:1px solid var(--linea);background:transparent;color:var(--gris);cursor:pointer;transition:color .2s,border-color .2s,background-color .2s,transform .12s}
+.hist-del:active{transform:scale(.94)}
+@media (hover:hover){.hist-del:hover{color:#f85149;border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.1)}}
+@media (prefers-reduced-motion:reduce){.hist-del{transition:none}.hist-del:active{transform:none}}

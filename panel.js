@@ -985,17 +985,32 @@ async function verCliente(id) {
         cots.map(x => `<div class="hist-item hist-click" onclick="pasarCotizacionAPedido('${x.id}')">
             <span class="hist-tipo hist-cot"><i class="fas fa-file-invoice-dollar"></i></span>
             <div><div class="hist-det">${esc(x.detalle) || 'Cotización'}</div><div class="hist-sub">${montoTxt(x.monto)}${x.fecha ? ' · ' + fechaTxt(x.fecha) : ''}</div></div>
-            <span class="hist-topedido"><i class="fas fa-arrow-right"></i> Pedido</span></div>`).join('') +
+            <span class="hist-topedido"><i class="fas fa-arrow-right"></i> Pedido</span>${btnBorrarHist('Cotizaciones', x.id)}</div>`).join('') +
         peds.map(p => esPedWeb(p) ? `<div class="hist-item hist-click hist-web" onclick="if(!event.target.closest('[data-comp]'))verPedidoWeb('${p.id}')">
             <span class="hist-tipo hist-ped"><i class="fas fa-globe"></i></span>
             <div><div class="hist-det">${esc(p.detalle) || 'Compra web'}</div><div class="hist-sub">Compra web · ${fmtMoney(montoVenta(p))}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''} · ${esc(p.pago || '')}${p.pagoestado ? ' (' + esc(p.pagoestado) + ')' : ''}</div>
             ${p.comprobante ? `<div class="hist-comp" data-comp="${esc(p.comprobante)}"><span class="hist-comp-cargando">Cargando comprobante…</span></div>` : ''}</div>
-            ${badgeEstado(estPed(p.estado))}</div>`
+            ${badgeEstado(estPed(p.estado))}${btnBorrarHist('Pedidos', p.id)}</div>`
           : `<div class="hist-item hist-click" onclick="cerrarModal(); setTimeout(()=>abrirFormPedido('${p.id}'),200)">
             <span class="hist-tipo hist-ped"><i class="fas fa-box"></i></span>
             <div><div class="hist-det">${esc(p.detalle) || 'Pedido'}</div><div class="hist-sub">${montoTxt(p.monto)}${p.fecha ? ' · ' + fechaTxt(p.fecha) : ''}</div></div>
-            ${badgeEstado(estPed(p.estado))}</div>`).join('');
+            ${badgeEstado(estPed(p.estado))}${btnBorrarHist('Pedidos', p.id)}</div>`).join('');
     cargarComprobantesMini(hist);
+}
+
+// Borrar un pedido o presupuesto desde el historial de la ficha del cliente.
+function btnBorrarHist(tab, id){
+    return `<button type="button" class="hist-del" title="Eliminar" aria-label="Eliminar" onclick="event.stopPropagation();borrarDeHistorial('${tab}','${esc(String(id))}',this)"><i class="fas fa-trash"></i></button>`;
+}
+async function borrarDeHistorial(tab, id, btn){
+    const ped = tab === 'Pedidos';
+    if (!(await confirmar(ped ? '¿Eliminar este pedido? No se puede deshacer.' : '¿Eliminar este presupuesto? No se puede deshacer.'))) return;
+    if (ped) { const i = pedidos.findIndex(x => String(x.id) === String(id)); if (i >= 0) pedidos.splice(i, 1); }
+    else { cotizaciones = cotizaciones.filter(x => String(x.id) !== String(id)); cacheSet('cotizaciones', cotizaciones); }
+    const it = btn && btn.closest('.hist-item'), box = it && it.parentElement;
+    if (it) it.remove();
+    if (box && !box.querySelector('.hist-item')) box.innerHTML = '<div class="panel-vacio-chico">Todavía no hay pedidos ni cotizaciones de este cliente.</div>';
+    try { await crmW({ action: 'delete', tab, id }); } catch (e) { alert('No se pudo eliminar en el servidor. Recargá y probá de nuevo.'); }
 }
 
 // Pasa una cotización a un pedido nuevo (precarga cliente, teléfono, productos y monto).
