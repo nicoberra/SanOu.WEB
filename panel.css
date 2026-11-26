@@ -1061,3 +1061,15 @@ button.prod-vendidos:active{transform:scale(.96)}
 .prod-blk .prod-campos-1{grid-template-columns:minmax(0,1fr)}
 .prod-blk .prod-num,.prod-blk .prod-sw{min-width:0}
 .prod-blk .prod-num input{width:100%;min-width:0;box-sizing:border-box}
+
+/* Compra web: copiar datos del cliente (todos juntos o cada uno con un toque) */
+.pw-copiar-todo{width:100%;justify-content:center;margin:4px 0 2px}
+.pw-copia-ayuda{margin:2px 0 6px;font-size:.78rem;color:var(--gris);text-align:center}
+.pw-datos .pw-copia{position:relative;display:block;text-align:left;background:var(--neg3);border:1px solid transparent;border-radius:10px;padding:9px 32px 9px 11px;font:inherit;font-size:.88rem;color:inherit;word-break:break-word;cursor:pointer;transition:border-color .2s,background-color .2s,transform .12s}
+.pw-datos .pw-copia .pw-copia-v{background:none;padding:0;border-radius:0;font-size:inherit}
+.pw-datos .pw-copia i{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--gris);font-size:.85rem}
+.pw-datos .pw-copia:active{transform:scale(.98)}
+.pw-datos .pw-copia.copiado{border-color:#3fb950;background:rgba(63,185,80,.12)}
+.pw-datos .pw-copia.copiado i::before{content:"\f00c";font-family:"Font Awesome 6 Free";font-weight:900;color:#3fb950}
+@media (hover:hover){.pw-datos .pw-copia:hover{border-color:rgba(255,255,255,.18)}}
+@media (prefers-reduced-motion:reduce){.pw-datos .pw-copia{transition:none}.pw-datos .pw-copia:active{transform:none}}

@@ -1483,11 +1483,13 @@ function pintarRecBadge(el, tiene){
 // Copia el link directo a la ficha del producto en la web (abre ese producto solo).
 function copiarLinkProducto(id, btn){ copiarLink('https://sanou.com.ar/#producto-' + id, btn); }
 // Copia un link al portapapeles y el botón confirma "¡Link copiado!".
-function copiarLink(url, btn){
+function copiarLink(url, btn){ copiarTexto(url, btn, '¡Link copiado!'); }
+function copiarTexto(url, btn, msg){
     const ok = () => {
+        if (!btn) return;
         const orig = btn.innerHTML;
         btn.classList.add('copiado');
-        btn.innerHTML = '<i class="fas fa-check"></i> ¡Link copiado!';
+        btn.innerHTML = '<i class="fas fa-check"></i> ' + (msg || '¡Copiado!');
         setTimeout(() => { btn.classList.remove('copiado'); btn.innerHTML = orig; }, 1800);
     };
     const fallback = () => {
@@ -1496,7 +1498,7 @@ function copiarLink(url, btn){
             ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
             document.body.appendChild(ta); ta.focus(); ta.select();
             document.execCommand('copy'); ta.remove(); ok();
-        } catch(e){ prompt('Copiá el link:', url); }
+        } catch(e){ prompt('Copiá:', url); }
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(ok, fallback);
@@ -2678,11 +2680,42 @@ function tarjetaPedidoWeb(p){
                 ${PEDIDO_ESTADOS.map(e=>`<option value="${e}" ${e===estPed(p.estado)?'selected':''}>${e==='Entregado'?'✓ ':''}${e}</option>`).join('')}
             </select>
             <button class="cli-btn ped-ver" onclick="verPedidoWeb('${p.id}')"><i class="fas fa-eye"></i> Ver todo</button>
+            <button class="cli-btn" onclick="copiarDatosPedido('${p.id}', this)" title="Copiar los datos del cliente"><i class="far fa-copy"></i> Datos</button>
             ${p.comprobante?`<button class="cli-btn" onclick="verComprobante('${p.comprobante}')" title="Ver comprobante"><i class="fas fa-receipt"></i></button>`:''}
             ${wa?`<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>`:''}
             <button class="cli-btn cli-del" onclick="borrarRegistro('Pedidos','${p.id}')"><i class="fas fa-trash"></i></button>
         </div>
     </div>`;
+}
+// Datos del cliente de una compra web, listos para pegar en un chat (cada dato en su renglón).
+function partesDireccion(d){
+    const m = String(d || '').match(/^(.*),\s*([^,]+?)\s*\(CP\s*([^)]+)\)\s*$/);
+    return m ? { dir: m[1].trim(), loc: m[2].trim(), cp: m[3].trim() } : { dir: String(d || '').trim(), loc: '', cp: '' };
+}
+function datosPedidoTxt(p){
+    const L = [], add = (k, v) => { if (v) L.push(k + ': ' + v); };
+    add('Nombre', p.cliente); add('Celular', p.telefono); add('Email', p.email); add('DNI', p.dni);
+    if (p.envio !== 'Sí') L.push('Entrega: retira en el depósito');
+    else { const a = partesDireccion(p.direccion); add('Envío', p.entrega || 'Envío'); add('Dirección', a.dir); add('Localidad', a.loc); add('Código postal', a.cp); }
+    if (p.factura) add('Factura', p.factura.replace(/^Factura A · /, 'A · '));
+    const its = itemsPedido(p);
+    if (its.length) L.push('Productos: ' + its.map(i => i.q + ' × ' + i.n).join(', ')); else add('Productos', p.detalle);
+    if (montoVenta(p)) add('Total', fmtMoney(montoVenta(p)));
+    add('Pago', p.pago);
+    return L.join(String.fromCharCode(10));
+}
+function copiarDatosPedido(id, btn){
+    const p = pedidos.find(x => String(x.id) === String(id)); if (!p) return;
+    copiarTexto(datosPedidoTxt(p), btn, '¡Datos copiados!');
+}
+// Un dato suelto: se copia tocándolo.
+function datoCopiable(k, v, ancho){
+    if (!v) return `<span${ancho ? ' class="pw-ancho"' : ''}><b>${k}</b>-</span>`;
+    return `<button type="button" class="pw-copia${ancho ? ' pw-ancho' : ''}" data-v="${esc(v)}" onclick="copiarDato(this)" title="Tocá para copiar"><b>${k}</b><span class="pw-copia-v">${esc(v)}</span><i class="far fa-copy"></i></button>`;
+}
+function copiarDato(el){
+    copiarTexto(el.dataset.v, null);
+    el.classList.add('copiado'); setTimeout(() => el.classList.remove('copiado'), 1400);
 }
 function verPedidoWeb(id){
     const p = pedidos.find(x => String(x.id) === String(id)); if (!p) return;
@@ -2699,17 +2732,22 @@ function verPedidoWeb(id){
             <h4><i class="fas fa-box"></i> Productos</h4>
             <table class="pw-tabla"><thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead><tbody>${filas}</tbody>
             <tfoot>${envio ? `<tr><td colspan="3">Envío</td><td class="num">${fmtMoney(envio)}</td></tr>` : ''}<tr class="pw-total"><td colspan="3">Total ${p.pago === 'Transferencia' ? '(precio transferencia)' : ''}</td><td class="num">${fmtMoney(montoVenta(p))}</td></tr></tfoot></table>
+            <button type="button" class="panel-btn-add pw-copiar-todo" onclick="copiarDatosPedido('${p.id}', this)"><i class="far fa-copy"></i> Copiar todos los datos</button>
+            <p class="pw-copia-ayuda">O tocá un dato para copiar solo ese.</p>
             <h4><i class="fas fa-user"></i> Comprador</h4>
             <div class="pw-datos">
-                <span><b>Nombre</b>${esc(p.cliente || '-')}</span>
-                <span><b>Celular</b>${esc(p.telefono || '-')}</span>
-                <span><b>Email</b>${esc(p.email || '-')}</span>
-                ${p.dni ? `<span><b>DNI</b>${esc(p.dni)}</span>` : ''}
+                ${datoCopiable('Nombre', p.cliente)}
+                ${datoCopiable('Celular', p.telefono)}
+                ${datoCopiable('Email', p.email)}
+                ${p.dni ? datoCopiable('DNI', p.dni) : ''}
             </div>
             <h4><i class="fas ${retiro ? 'fa-warehouse' : 'fa-truck'}"></i> Entrega</h4>
             <div class="pw-datos">
                 ${retiro ? `<span class="pw-ancho"><b>Retira en el depósito</b>Marcelo Gamboa 6306, Versalles — coordinar día y horario por WhatsApp.</span>`
-                         : `<span class="pw-ancho"><b>${esc(p.entrega || 'Envío')}</b>${esc(p.direccion || '-')}</span>
+                         : (() => { const a = partesDireccion(p.direccion); return `<span class="pw-ancho"><b>${esc(p.entrega || 'Envío')}</b></span>
+                            ${datoCopiable('Dirección', a.dir, true)}
+                            ${a.loc ? datoCopiable('Localidad', a.loc) : ''}
+                            ${a.cp ? datoCopiable('Código postal', a.cp) : ''}`; })() + `
                             <span><b>Costo de envío</b>${envio ? fmtMoney(envio) + (p.enviocobrado === 'Sí' ? ' (cobrado)' : '') : 'A coordinar'}</span>`}
             </div>
             <h4><i class="fas fa-file-invoice"></i> Facturación</h4>
