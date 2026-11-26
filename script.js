@@ -1066,6 +1066,25 @@ function incluyeTexto(p) {
 }
 
 // ─── MODAL DE DETALLE ────────────────────────────────────────────
+// Precio de la ficha. Si los precios del Sheet todavía no llegaron (link compartido que abre el
+// producto directo), muestra "Cargando precio…" y se actualiza solo cuando llegan: nunca
+// "Consultá el precio" para un producto que tiene precio publicado.
+let _preciosListos = false;
+function precioFichaHTML(p) {
+    const precio = p.price > 0
+        ? `<div class="mf-precio">${p.oldPrice > p.price ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="mf-precio-n">${fmt(p.price)}</span>${p.precioTransfer > 0 && p.price > p.precioTransfer ? `<span class="mf-trans"><b>${fmt(p.precioTransfer)}</b> por transferencia <em>(ahorrás ${fmt(p.price - p.precioTransfer)})</em></span>` : ''}</div>`
+        : (_preciosListos ? '<div class="modal-consultar">Consultá el precio por WhatsApp</div>' : '<div class="modal-consultar mf-precio-cargando" aria-live="polite">Cargando precio…</div>');
+    return precio + stockChipHTML(p);
+}
+function refrescarFichaAbierta() {
+    const modal = document.getElementById('productModal');
+    const m = (location.hash || '').match(/^#producto-(\d+)$/);
+    if (!modal || !modal.classList.contains('active') || !m) return;
+    const p = products.find(x => x.id === parseInt(m[1], 10));
+    const fila = modal.querySelector('.mf-precio-fila');
+    if (p && fila) fila.innerHTML = precioFichaHTML(p);
+}
+
 function openModal(id) {
     const p = products.find(x => x.id === id);
     if (!p) return;   // si el producto no existe, no hacemos nada (evita que se corte el JS)
@@ -1084,8 +1103,7 @@ function openModal(id) {
                 <span class="product-badge">${p.badge || CAT_NAMES[p.category]}</span>
                 <h2 class="modal-title">${p.name}</h2>
                 <div class="mf-precio-fila">
-                    ${p.price > 0 ? `<div class="mf-precio">${p.oldPrice > p.price ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}<span class="mf-precio-n">${fmt(p.price)}</span>${p.precioTransfer > 0 && p.price > p.precioTransfer ? `<span class="mf-trans"><b>${fmt(p.precioTransfer)}</b> por transferencia <em>(ahorrás ${fmt(p.price - p.precioTransfer)})</em></span>` : ''}</div>` : '<div class="modal-consultar">Consultá el precio por WhatsApp</div>'}
-                    ${stockChipHTML(p)}
+                    ${precioFichaHTML(p)}
                 </div>
                 ${incluyeTexto(p) ? `<div class="mf-incluye"><i class="fas fa-box-open" aria-hidden="true"></i> <span>Incluye ${incluyeTexto(p)}</span></div>` : ''}
                 <div class="modal-buttons">
@@ -2483,7 +2501,8 @@ function sumarCategoriasExtra() {
 sumarCategoriasExtra();
 
 // Cargar precios + manifest de fotos y luego dibujar (o refrescar si la red de seguridad ya dibujó).
-Promise.all([loadPricesFromSheet(), loadFotosManifest()]).finally(() => {
+const _cargaPrecios = loadPricesFromSheet().finally(() => { _preciosListos = true; refrescarFichaAbierta(); });
+Promise.all([_cargaPrecios, loadFotosManifest()]).finally(() => {
     sumarCategoriasExtra();   // ya con las fotos reales: fondo de las categorías nuevas
     syncCartPrices();   // corrige precios viejos/placeholder del carrito con los reales del Sheet
     if (typeof updateCartUI === 'function') updateCartUI();

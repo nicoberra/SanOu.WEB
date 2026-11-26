@@ -5486,3 +5486,8 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
     .modal-product .modal-img img, .modal-product .carousel-slide img { object-fit: contain !important; object-position: center !important; transform: none !important; padding: 14px; }   /* producto entero aunque tenga encuadre del CRM */
     .mf-precio-n { font-size: 2.4rem; }
 }
+
+/* Ficha: precio cargando (link compartido que abre el producto antes de que lleguen los precios) */
+.mf-precio-cargando{animation:mfPrecioPulso 1.1s ease-in-out infinite alternate}
+@keyframes mfPrecioPulso{from{opacity:.45}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.mf-precio-cargando{animation:none}}
