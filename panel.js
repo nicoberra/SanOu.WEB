@@ -172,7 +172,7 @@ let seccionActual = 'clientes';
 let clientes = [];
 
 const SECCIONES = [
-    ['facturacion','$$','Facturación'], ['clientes','fa-users','Usuarios'], ['productos','fa-screwdriver-wrench','Productos'],
+    ['facturacion','$$','Facturación'], ['clientes','fa-users','Clientes'], ['productos','fa-screwdriver-wrench','Productos'],
     ['pedidos','fa-box','Pedidos'], ['cotizaciones','fa-file-invoice-dollar','Cotizaciones'],
     ['leads','fa-bullseye','Leads'], ['estadisticas','fa-chart-pie','Estadísticas'], ['marketing','fa-bullhorn','Marketing']];
 const esCelu = () => { try { return matchMedia('(max-width:899px)').matches; } catch (e) { return false; } };
@@ -372,9 +372,9 @@ function pintarDashboard(){
             ${card('Este año', nVentasAnio, nVentasAnio === 1 ? 'venta' : 'ventas', 'fa-calendar', 'pedidos')}
         </div>
 
-        <h4 class="dash-sec">👥 Usuarios</h4>
+        <h4 class="dash-sec">👥 Clientes</h4>
         <div class="dash-cards">
-            ${card('Usuarios', clientes.length, web + ' de la web', 'fa-users', 'clientes')}
+            ${card('Clientes', clientes.length, web + ' de la web', 'fa-users', 'clientes')}
             ${card('Compraron', nComp, 'hicieron pedidos', 'fa-cart-shopping', 'clientes')}
             ${card('No compraron', noComp, 'todavía', 'fa-user-clock', 'clientes')}
         </div>
@@ -384,7 +384,7 @@ function pintarDashboard(){
             ${card('Cotizaciones abiertas', cotAbiertas.length, '', 'fa-file-invoice-dollar', 'cotizaciones')}
         </div>
 
-        ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin usuario)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}
+        ${listaMini('💰 Pedidos por cobrar', porCobrar.slice(0, 5).map(p => `${p.cliente || '(sin cliente)'} · ${montoTxt(p.monto) || '-'} (${p.estado || 'Pendiente'})`), 'pedidos')}
         </div>`;
     _homeFoto = v.innerHTML;   // para mostrar el inicio "atrás" mientras se desliza para volver
 
@@ -414,7 +414,7 @@ async function renderCotizador() {
         </div>
         <div class="panel-lista" id="listaCot">${cotizaciones.length ? '' : skel()}</div>`;
     if (cotizaciones.length) pintarCotizaciones(cotizaciones);
-    // Cargar usuarios (si falta) para poder resolver el WhatsApp por nombre.
+    // Cargar clientes (si falta) para poder resolver el WhatsApp por nombre.
     ensureClientes().then(() => { if (seccionActual === 'cotizaciones' && (_cotCargadas || cotizaciones.length)) pintarCotizaciones(cotizaciones); });
     try {
         const r = await crm({ action: 'list', tab: 'Cotizaciones' });
@@ -440,7 +440,7 @@ function pintarCotizaciones(lista) {
     cont.innerHTML = lista.map(c => {
         const web = esCotWeb(c);
         const reabrible = datosReabrir(c);   // tiene datos completos → se puede reabrir el PDF
-        // Si la cotización no guardó teléfono, lo buscamos en los usuarios por nombre.
+        // Si la cotización no guardó teléfono, lo buscamos en los clientes por nombre.
         const tel = c.telefono || telDeCliente(c.cliente);
         const wa = waLink(tel, msgPresupuesto(c));
         return `<div class="rec-card">
@@ -827,22 +827,22 @@ async function renderClientes() {
     const v = document.getElementById('vista');
     v.innerHTML = `
         <div class="cli-tabs">
-            <button class="cli-tab active" data-v="mis" onclick="cambiarVistaClientes('mis')">Mis usuarios <span id="cntMis"></span></button>
-            <button class="cli-tab" data-v="web" onclick="cambiarVistaClientes('web')">Usuarios web <span id="cntWeb"></span></button>
+            <button class="cli-tab active" data-v="mis" onclick="cambiarVistaClientes('mis')">Mis clientes <span id="cntMis"></span></button>
+            <button class="cli-tab" data-v="web" onclick="cambiarVistaClientes('web')">Clientes web <span id="cntWeb"></span></button>
         </div>
         <div class="panel-sec-head">
             <div class="panel-buscar">
                 <i class="fas fa-search"></i>
                 <input type="text" id="buscarCli" placeholder="Buscar por nombre, empresa, teléfono…" oninput="filtrarClientes()">
             </div>
-            <button class="panel-btn-add" onclick="abrirFormCliente()"><i class="fas fa-plus"></i> Nuevo usuario</button>
+            <button class="panel-btn-add" onclick="abrirFormCliente()"><i class="fas fa-plus"></i> Nuevo cliente</button>
         </div>
         <div class="panel-lista" id="listaClientes">${clientes.length ? '' : skel()}</div>`;
     document.querySelectorAll('.cli-tab').forEach(b => b.classList.toggle('active', b.dataset.v === vistaClientes));
     if (clientes.length) { actualizarContadores(); filtrarClientes(); }   // pintar al instante desde caché/memoria
     try {
         // Solo re-descargamos si no está cargado o si pasaron +40s (TTL): evita el
-        // tironeo de pedir la planilla cada vez que entrás a Usuarios.
+        // tironeo de pedir la planilla cada vez que entrás a Clientes.
         if (!_clientesCargados || stale('clientes')) {
             const r = await crm({ action: 'list', tab: 'Clientes' });
             if (r && r.ok && r.rows) { clientes = r.rows; cacheSet('clientes', clientes); _clientesCargados = true; }
@@ -853,7 +853,7 @@ async function renderClientes() {
         ensurePedidos().then(() => { if (seccionActual === 'clientes') filtrarClientes(); }); // sumar contador de pedidos
     } catch (e) {
         if (!clientes.length) document.getElementById('listaClientes').innerHTML =
-            errorCarga('No se pudieron cargar los usuarios. Revisá tu conexión.', 'renderClientes()');
+            errorCarga('No se pudieron cargar los clientes. Revisá tu conexión.', 'renderClientes()');
     }
 }
 
@@ -898,7 +898,7 @@ function coincideBusqueda(texto, q){
 function filtrarClientes() {
     const q = (document.getElementById('buscarCli')?.value || '').trim();
     if (!q) { pintarClientes(clientes.filter(c => vistaClientes === 'web' ? esWeb(c) : !esWeb(c))); return; }
-    // Con algo escrito se busca en TODOS los usuarios (web y cargados por vos), en todos sus datos.
+    // Con algo escrito se busca en TODOS los clientes (web y cargados por vos), en todos sus datos.
     const campos = c => [c.nombre, c.empresa, c.razon, c.cuit, c.telefono, c.email, c.ciudad, c.direccion, c.notas].filter(Boolean).join(' ');
     const conPuntaje = clientes.map(c => ({ c, p: coincideBusqueda(campos(c), q) })).filter(x => x.p);
     const exactos = conPuntaje.filter(x => x.p === 2);
@@ -913,7 +913,7 @@ function pintarClientes(lista) {
         cont.innerHTML = qCli ? vacio('fa-magnifying-glass', 'Sin resultados', 'Probá con otro nombre, empresa o teléfono.')
             : vistaClientes === 'web'
             ? vacio('fa-globe', 'Todavía no se registró nadie desde la web', 'Cuando alguien cree su cuenta o pida presupuesto en sanou.com.ar, aparece acá.')
-            : vacio('fa-user-plus', 'No hay usuarios cargados', 'Cargá tu primer cliente para seguir sus pedidos y presupuestos.', '<i class="fas fa-plus"></i> Nuevo usuario', 'abrirFormCliente()');
+            : vacio('fa-user-plus', 'No hay clientes cargados', 'Cargá tu primer cliente para seguir sus pedidos y presupuestos.', '<i class="fas fa-plus"></i> Nuevo cliente', 'abrirFormCliente()');
         return;
     }
     // Por fecha: el más reciente arriba y el más antiguo al final.
@@ -947,7 +947,7 @@ function pintarClientes(lista) {
 async function verCliente(id) {
     const c = clientes.find(x => x.id === id);
     if (!c) return;
-    document.getElementById('modalTitulo').textContent = c.nombre || 'Usuario';
+    document.getElementById('modalTitulo').textContent = c.nombre || 'Cliente';
     document.getElementById('modalBody').innerHTML = `
         <div class="ficha-datos">
             ${c.razon ? `<div class="ficha-fila"><span>Razón social</span><b>${esc(c.razon)}</b></div>` : ''}
@@ -964,7 +964,7 @@ async function verCliente(id) {
             <button class="panel-btn-add" onclick="abrirFormPedidoDesde('${esc(c.nombre)}','${esc(c.telefono)}')"><i class="fas fa-plus"></i> Nuevo pedido</button>
             ${waLink(c.telefono, `¡Hola ${(c.nombre||'').split(' ')[0]}! Te escribo de San Ou 🔧.`) ? `<a class="cli-btn cli-wa" href="${waLink(c.telefono, `¡Hola ${(c.nombre||'').split(' ')[0]}! Te escribo de San Ou 🔧.`)}" target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>` : ''}
             <button class="cli-btn" onclick="abrirFormCliente('${c.id}')" title="Editar"><i class="fas fa-pen"></i></button>
-            <button class="cli-btn cli-del" onclick="cerrarModal(); borrarCliente('${c.id}')" title="Eliminar usuario"><i class="fas fa-trash"></i></button>
+            <button class="cli-btn cli-del" onclick="cerrarModal(); borrarCliente('${c.id}')" title="Eliminar cliente"><i class="fas fa-trash"></i></button>
         </div>
         <h4 class="ficha-tit">Historial</h4>
         <div id="fichaHist" class="ficha-hist">${skel('chico')}</div>`;
@@ -978,7 +978,7 @@ async function verCliente(id) {
     const hist = document.getElementById('fichaHist');
     if (!hist) return;
     if (!peds.length && !cots.length) {
-        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos ni cotizaciones de este usuario.</div>`;
+        hist.innerHTML = `<div class="panel-vacio-chico">Todavía no hay pedidos ni cotizaciones de este cliente.</div>`;
         return;
     }
     hist.innerHTML =
@@ -998,7 +998,7 @@ async function verCliente(id) {
     cargarComprobantesMini(hist);
 }
 
-// Pasa una cotización a un pedido nuevo (precarga usuario, teléfono, productos y monto).
+// Pasa una cotización a un pedido nuevo (precarga cliente, teléfono, productos y monto).
 function pasarCotizacionAPedido(id){
     const x = cotizaciones.find(c => c.id === id); if(!x) return;
     const tel = x.telefono || telDeCliente(x.cliente) || '';
@@ -1014,7 +1014,7 @@ function abrirFormPedidoDesde(nombre, tel) {
 
 function abrirFormCliente(id) {
     const c = id ? clientes.find(x => x.id === id) : {};
-    document.getElementById('modalTitulo').textContent = id ? 'Editar usuario' : 'Nuevo usuario';
+    document.getElementById('modalTitulo').textContent = id ? 'Editar cliente' : 'Nuevo cliente';
     document.getElementById('modalBody').innerHTML = `
         <form class="panel-form" onsubmit="guardarCliente(event, '${id || ''}')">
             <label>Nombre *</label>
@@ -1087,7 +1087,7 @@ async function guardarCliente(e, id) {
 
 async function borrarCliente(id) {
     const c = clientes.find(x => x.id === id);
-    if (!(await confirmar(`¿Eliminar a ${c ? c.nombre : 'este usuario'}? No se puede deshacer.`))) return;
+    if (!(await confirmar(`¿Eliminar a ${c ? c.nombre : 'este cliente'}? No se puede deshacer.`))) return;
     clientes = clientes.filter(x => x.id !== id);       // sacarlo en el acto
     actualizarContadores();
     filtrarClientes();
@@ -2515,20 +2515,20 @@ async function ensureClientes(force){
 function clientesDatalist(){
     return `<datalist id="dlClientes">${clientes.map(c=>`<option value="${esc(c.nombre)}"></option>`).join('')}</datalist>`;
 }
-// Lista desplegable de usuarios (para el pedido: se elige, no se escribe).
+// Lista desplegable de clientes (para el pedido: se elige, no se escribe).
 function clientesSelect(selected){
     const sel = selected || '';
     let opts = clientes.map(c=>`<option value="${esc(c.nombre)}" ${norm(c.nombre)===norm(sel)?'selected':''}>${esc(c.nombre)}</option>`).join('');
     if (sel && !clientes.some(c=>norm(c.nombre)===norm(sel)))
         opts = `<option value="${esc(sel)}" selected>${esc(sel)}</option>` + opts;
-    return `<select id="pdCliente" onchange="autoTel('pd')"><option value="">— Elegí un usuario —</option>${opts}</select>`;
+    return `<select id="pdCliente" onchange="autoTel('pd')"><option value="">— Elegí un cliente —</option>${opts}</select>`;
 }
 function telDeCliente(nombre){ const n=norm(nombre); const c=clientes.find(x=>norm(x.nombre)===n); return c?c.telefono:''; }
 function autoTel(pref){
     const tel = telDeCliente(document.getElementById(pref+'Cliente').value);
     const campo = document.getElementById(pref+'Tel');
     if (!campo) return;
-    if (campo.readOnly) campo.value = tel || '';        // pedido: refleja el del usuario, no se edita
+    if (campo.readOnly) campo.value = tel || '';        // pedido: refleja el del cliente, no se edita
     else if (tel && !campo.value) campo.value = tel;    // seguimiento: completa si está vacío
 }
 // Link de WhatsApp. Se sacan los emojis "nuevos" (fuera del plano básico, ej. 🔧): la app de
@@ -2631,7 +2631,7 @@ async function renderPedidos(){
         <div class="ped-tabs" id="pedTabs" role="tablist"></div>
         <div class="panel-sec-head">
             <div class="panel-buscar"><i class="fas fa-search"></i>
-                <input type="text" id="buscarPed" placeholder="Buscar por usuario, detalle…" oninput="filtrarPedidos()"></div>
+                <input type="text" id="buscarPed" placeholder="Buscar por cliente, detalle…" oninput="filtrarPedidos()"></div>
             <button class="panel-btn-add" id="pedAdd" onclick="abrirFormPedido()"><i class="fas fa-plus"></i> Nuevo pedido</button>
             <button class="panel-btn-add ped-noti" id="pedNoti" style="display:none" onclick="activarNotificaciones()"></button>
         </div>
@@ -2920,7 +2920,7 @@ function pintarPedidos(lista){
         const g = gananciaPedido(p);
         return `<div class="rec-card">
             <div class="rec-top">
-                <span class="rec-nombre">${esc(p.cliente)||'(sin usuario)'}</span>
+                <span class="rec-nombre">${esc(p.cliente)||'(sin cliente)'}</span>
                 ${badgeEstado(estPed(p.estado))}
             </div>
             ${p.detalle?`<div class="rec-detalle">${esc(p.detalle)}</div>`:''}
@@ -3121,7 +3121,7 @@ function abrirFormPedido(id, prefill){
         document.getElementById('modalTitulo').textContent = id?'Editar pedido':'Nuevo pedido';
         document.getElementById('modalBody').innerHTML = `
             <form class="panel-form" onsubmit="guardarPedido(event,'${id||''}')">
-                <label>Usuario</label>
+                <label>Cliente</label>
                 <div id="pdUsuarioSel">
                     ${clientesSelect(p.cliente)}
                     <button type="button" class="pd-nuevo-cli" onclick="pedNuevoCliente(true)"><i class="fas fa-user-plus"></i> Cliente nuevo</button>
@@ -3162,7 +3162,7 @@ function abrirFormPedido(id, prefill){
         abrirModal();
     });
 }
-// Alterna entre elegir un usuario existente y cargar uno nuevo, dentro del form de pedido.
+// Alterna entre elegir un cliente existente y cargar uno nuevo, dentro del form de pedido.
 function pedNuevoCliente(nuevo){
     const sel = document.getElementById('pdUsuarioSel');
     const nue = document.getElementById('pdUsuarioNuevo');
@@ -3198,7 +3198,7 @@ async function guardarPedido(e,id){
         try {
             const rc = await crmW({ action:'add', tab:'Clientes', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
             clienteId = (rc&&rc.id) || '';
-            // Sumarlo a la lista local para que aparezca al instante en Usuarios.
+            // Sumarlo a la lista local para que aparezca al instante en Clientes.
             clientes.unshift({ id: clienteId||('tmp'+Date.now()), fecha:'', nombre:clienteNombre, telefono:clienteTel, origen:'pedido' });
             cacheSet('clientes', clientes);
         } catch(err){ /* si falla el alta del cliente, igual guardamos el pedido con el nombre escrito */ }
@@ -3272,7 +3272,7 @@ function pintarSeguimientos(lista){
         const venc = esVencido(s);
         return `<div class="rec-card${venc?' rec-card-venc':''}">
             <div class="rec-top">
-                <span class="rec-nombre">${esc(s.cliente)||'(sin usuario)'}</span>
+                <span class="rec-nombre">${esc(s.cliente)||'(sin cliente)'}</span>
                 ${badgeEstado(s.estado)}
             </div>
             ${s.motivo?`<div class="rec-detalle">${esc(s.motivo)}</div>`:''}
@@ -3297,7 +3297,7 @@ function abrirFormSeguimiento(id){
         document.getElementById('modalTitulo').textContent = id?'Editar seguimiento':'Nuevo seguimiento';
         document.getElementById('modalBody').innerHTML = `
             <form class="panel-form" onsubmit="guardarSeguimiento(event,'${id||''}')">
-                <label>Usuario</label>
+                <label>Cliente</label>
                 <input type="text" id="sgCliente" list="dlClientes" value="${esc(s.cliente)}" onchange="autoTel('sg')" autocomplete="off">
                 ${clientesDatalist()}
                 <label>Teléfono</label>
@@ -3537,7 +3537,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 
 // ─── LEADS (Instagram → lista.html → "Te asesoramos") ───────────
 // Se guardan en la pestaña "Leads" del CRM. Filtro por fecha y por utm_campaign; "Pasar a cliente"
-// crea (o vincula, si el WhatsApp ya existe) el usuario y deja el lead atado por su ID permanente.
+// crea (o vincula, si el WhatsApp ya existe) el cliente y deja el lead atado por su ID permanente.
 let leads = cacheGet('leads') || [], _leadsCargados = false;
 const leadF = { desde: '', hasta: '', camp: '' };
 function fechaISO(f){ const d = parseFechaCRM(f); if (!d) return ''; const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
@@ -3595,7 +3595,7 @@ function pintarLeads(lista){
         const wa = waLink(l.whatsapp, '¡Hola ' + (l.nombre || '') + '! Te escribo de San Ou por la consulta que dejaste en la lista de precios.');
         const camp = [l.utmsource, l.utmmedium, l.utmcampaign].filter(Boolean).join(' / ');
         const btn = l.clienteid
-            ? `<button class="cli-btn lead-ok" onclick="verClienteDeLead('${esc(l.clienteid)}')" title="Ver el usuario"><i class="fas fa-user-check"></i></button>`
+            ? `<button class="cli-btn lead-ok" onclick="verClienteDeLead('${esc(l.clienteid)}')" title="Ver el cliente"><i class="fas fa-user-check"></i></button>`
             : `<button class="panel-btn-add lead-pasar" id="lp_${esc(l.id)}" onclick="pasarLeadACliente('${esc(l.id)}')"><i class="fas fa-user-plus"></i> Pasar a cliente</button>`;
         return `
         <div class="cli-card lead-card">
@@ -3623,9 +3623,9 @@ async function pasarLeadACliente(id){
         const r = await crmW({ action: 'lead_a_cliente', tab: 'Clientes', id });   // "listo" solo con ok:true del servidor
         const l = leads.find(x => x.id === id);
         if (l) { l.clienteid = r.clienteid; l.estado = 'Cliente'; cacheSet('leads', leads); }
-        _clientesCargados = false;   // que Usuarios lo traiga en la próxima visita
+        _clientesCargados = false;   // que Clientes lo traiga en la próxima visita
         filtrarLeads();
-        alert(r.existente ? 'Ese WhatsApp ya era un usuario: el lead quedó vinculado a él.' : 'Listo: el lead ya está en Usuarios.');
+        alert(r.existente ? 'Ese WhatsApp ya era un cliente: el lead quedó vinculado a él.' : 'Listo: el lead ya está en Clientes.');
     } catch (e) {
         if (b) { b.disabled = false; b.innerHTML = '<i class="fas fa-user-plus"></i> Pasar a cliente'; }
         alert('No se pudo pasar a cliente: ' + e.message);
@@ -3637,7 +3637,7 @@ async function verClienteDeLead(cid){
         try { const r = await crm({ action: 'list', tab: 'Clientes' }); if (r && r.ok && r.rows) { clientes = r.rows; cacheSet('clientes', clientes); _clientesCargados = true; } } catch (e) {}
     }
     if (clientes.some(c => String(c.id) === String(cid))) verCliente(String(cid));
-    else alert('No encontré ese usuario. Puede que lo hayan borrado de la planilla.');
+    else alert('No encontré ese cliente. Puede que lo hayan borrado de la planilla.');
 }
 
 // ── Aviso de leads nuevos: número en el botón "Leads" y tarjeta en el Panel ──
