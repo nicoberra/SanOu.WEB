@@ -222,7 +222,7 @@ function head(opts) {
 function header() {
   return `<body>
     <div class="top-bar">
-        <img src="/camion_amarillo.png" alt="" class="topbar-truck">
+        <img src="/camion_amarillo.webp" alt="" class="topbar-truck">
         🚚 Envíos a todo el país &nbsp;|&nbsp; ⚡ Respuesta rápida por WhatsApp &nbsp;|&nbsp; 🔧 Herramientas profesionales
     </div>
     <header class="header">
@@ -265,6 +265,12 @@ function footerCategorias(actual) {
                 <a href="https://wa.me/${WA}" target="_blank" class="seo-btn-wa"><i class="fab fa-whatsapp"></i> Consultar por WhatsApp</a>
             </div>
         </div>
+    <nav class="pie-legal" aria-label="Información legal" style="max-width:1100px;margin:0 auto;padding:18px 16px 26px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center">
+        <a href="/terminos.html" style="color:#9aa0a6;text-decoration:none">Términos y Condiciones</a>
+        <a href="/privacidad.html" style="color:#9aa0a6;text-decoration:none">Política de Privacidad</a>
+        <a href="/envios.html" style="color:#9aa0a6;text-decoration:none">Envíos y Garantía</a>
+        <a href="/arrepentimiento.html" style="color:#FFD700;font-weight:700;text-decoration:underline">Botón de arrepentimiento</a>
+    </nav>
     </footer>
 </body>
 </html>`;
@@ -466,6 +472,7 @@ const fijas = [
   { loc: SITE + '/guia-como-crimpar-cables.html', pri: '0.7', freq: 'monthly' },
   { loc: SITE + '/envios.html', pri: '0.5', freq: 'yearly' },
   { loc: SITE + '/terminos.html', pri: '0.3', freq: 'yearly' },
+  { loc: SITE + '/arrepentimiento.html', pri: '0.3', freq: 'yearly' },
   { loc: SITE + '/privacidad.html', pri: '0.3', freq: 'yearly' },
 ];
 const all = fijas.concat(urls);
@@ -480,6 +487,13 @@ ${all.map(u => `  <url>
 </urlset>
 `;
 fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), xml, 'utf8');
+
+// Lista de recortes PNG que existen (recortes/lista.json): la tienda solo pide los que están,
+// así no hay pedidos 404 por productos sin recorte. Se regenera sola con el workflow.
+try {
+  const recs = fs.readdirSync(path.join(ROOT, 'recortes')).filter(f => /\.png$/i.test(f)).map(f => f.replace(/\.png$/i, '')).sort();
+  fs.writeFileSync(path.join(ROOT, 'recortes', 'lista.json'), JSON.stringify(recs), 'utf8');
+} catch (e) { console.warn('recortes/lista.json:', e.message); }
 
 console.log('Categorías:', Object.keys(CATS).length, '| Productos:', nProd, '| con precio real:', Object.keys(PRECIOS).length ? PRODS.filter(p => (PRECIOS[String(p.sheetName || p.name).trim().toLowerCase()] || {}).precio > 0).length : 0, '| URLs en sitemap:', all.length);
 })();

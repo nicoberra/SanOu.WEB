@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VLTJZZW8JF"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-VLTJZZW8JF');
+    </script>
+    <script src="/meta-pixel.js?v=20261118b"></script>
+    <link rel="icon" type="image/png" href="tuerca-icon.png">
+    <link rel="apple-touch-icon" href="tuerca-icon.png">
+    <title>Botón de arrepentimiento — San Ou</title>
+    <meta name="description" content="Botón de arrepentimiento de San Ou: revocá tu compra dentro de los 10 días corridos (art. 34, Ley 24.240). Completá el formulario y te respondemos.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://sanou.com.ar/arrepentimiento.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Botón de arrepentimiento — San Ou">
+    <meta property="og:description" content="Revocá tu compra dentro de los 10 días corridos. Completá el formulario y te respondemos con el código de tu solicitud.">
+    <meta property="og:url" content="https://sanou.com.ar/arrepentimiento.html">
+    <meta property="og:image" content="https://sanou.com.ar/sticker.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .arr-form{display:grid;gap:12px;margin-top:18px}
+        .arr-form label{display:grid;gap:6px;font-weight:600;font-size:.9rem}
+        .arr-form input,.arr-form textarea{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#111;color:#fff;padding:11px 12px;font:inherit;font-size:16px}
+        .arr-form input:focus,.arr-form textarea:focus{outline:none;border-color:#FFD700}
+        .arr-form small{font-weight:400;color:#9aa0a6}
+        .arr-btn{border:0;border-radius:12px;background:#FFD700;color:#111;font-weight:800;font-size:1rem;padding:14px;cursor:pointer;transition:transform .12s}
+        .arr-btn:active{transform:scale(.98)}
+        .arr-ok{margin-top:18px;padding:16px;border-radius:12px;border:1px solid rgba(63,185,80,.5);background:rgba(63,185,80,.1)}
+        .arr-ok[hidden]{display:none}
+        .arr-codigo{display:inline-block;margin:6px 0;font:800 1.25rem/1.2 ui-monospace,Consolas,monospace;color:#FFD700;letter-spacing:.04em}
+        .arr-err{color:#f85149;font-size:.85rem;min-height:1em;margin:0}
+        @media (prefers-reduced-motion:reduce){.arr-btn{transition:none}.arr-btn:active{transform:none}}
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo-img-link">
+                <img src="sticker.webp" alt="San Ou" class="header-logo">
+            </a>
+            <nav class="nav">
+                <a href="index.html#inicio" class="nav-link">Inicio</a>
+                <a href="index.html#productos" class="nav-link">Productos</a>
+                <a href="index.html#contacto" class="nav-link">Contacto</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="legal-page">
+        <div class="container">
+            <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+            <div class="legal-card">
+                <h1 class="legal-title">Botón de arrepentimiento</h1>
+                <p>Podés revocar la compra dentro de los 10 días corridos desde que recibiste el producto o se celebró el contrato, lo último que ocurra (art. 34, Ley 24.240). Te respondemos con el código de tu solicitud.</p>
+                <p>Completá tus datos y tocá <strong>Enviar solicitud</strong>: se abre WhatsApp con la solicitud armada y te mostramos un código para que lo guardes.</p>
+
+                <form class="arr-form" id="arrForm" novalidate>
+                    <label>Nombre y apellido *<input id="arrNombre" type="text" autocomplete="name" required></label>
+                    <label>Email *<input id="arrEmail" type="email" autocomplete="email" required></label>
+                    <label>Teléfono *<input id="arrTel" type="tel" inputmode="tel" autocomplete="tel" required></label>
+                    <label>N.º de pedido o fecha de compra *<input id="arrPedido" type="text" required></label>
+                    <label>Producto *<input id="arrProducto" type="text" required></label>
+                    <label>Motivo <small>(opcional)</small><textarea id="arrMotivo" rows="3"></textarea></label>
+                    <p class="arr-err" id="arrErr" role="alert"></p>
+                    <button type="submit" class="arr-btn"><i class="fab fa-whatsapp"></i> Enviar solicitud</button>
+                </form>
+
+                <div class="arr-ok" id="arrOk" hidden>
+                    <p><strong>Tu código de solicitud:</strong><br><span class="arr-codigo" id="arrCodigo"></span></p>
+                    <p>Guardalo: lo vas a necesitar para el seguimiento. Si WhatsApp no se abrió, <a id="arrLink" href="#" target="_blank" rel="noopener">tocá acá para enviar la solicitud</a> o escribinos a <a href="mailto:ventas@sanou.com.ar">ventas@sanou.com.ar</a> con el código.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var $ = function (id) { return document.getElementById(id); };
+        function codigo() {
+            var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+            var r = Math.random().toString(36).slice(2, 6).toUpperCase().padEnd(4, 'X');
+            return 'ARR-' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + '-' + r;
+        }
+        $('arrForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var v = function (id) { return ($(id).value || '').trim(); };
+            var falta = ['arrNombre', 'arrEmail', 'arrTel', 'arrPedido', 'arrProducto'].filter(function (id) { return !v(id); });
+            if (falta.length) { $('arrErr').textContent = 'Completá los campos obligatorios (*).'; $(falta[0]).focus(); return; }
+            if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('arrEmail'))) { $('arrErr').textContent = 'Revisá el email.'; $('arrEmail').focus(); return; }
+            $('arrErr').textContent = '';
+            var c = codigo();
+            var txt = 'Hola San Ou, quiero ejercer el derecho de arrepentimiento (art. 34, Ley 24.240).\n' +
+                'Código de solicitud: ' + c + '\n' +
+                'Nombre: ' + v('arrNombre') + '\nEmail: ' + v('arrEmail') + '\nTeléfono: ' + v('arrTel') + '\n' +
+                'Pedido o fecha de compra: ' + v('arrPedido') + '\nProducto: ' + v('arrProducto') +
+                (v('arrMotivo') ? '\nMotivo: ' + v('arrMotivo') : '');
+            var url = 'https://wa.me/5491131751517?text=' + encodeURIComponent(txt);
+            $('arrCodigo').textContent = c; $('arrLink').href = url; $('arrOk').hidden = false;
+            try { localStorage.setItem('sanou_arrepentimiento', JSON.stringify({ codigo: c, fecha: new Date().toISOString() })); } catch (e2) {}
+            window.open(url, '_blank', 'noopener');
+            $('arrOk').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+        });
+    })();
+    </script>
+    <nav class="pie-legal" aria-label="Información legal" style="max-width:1100px;margin:0 auto;padding:18px 16px 26px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;font:500 13px/1.4 Inter,system-ui,sans-serif;text-align:center">
+        <a href="/terminos.html" style="color:#9aa0a6;text-decoration:none">Términos y Condiciones</a>
+        <a href="/privacidad.html" style="color:#9aa0a6;text-decoration:none">Política de Privacidad</a>
+        <a href="/envios.html" style="color:#9aa0a6;text-decoration:none">Envíos y Garantía</a>
+        <a href="/arrepentimiento.html" style="color:#FFD700;font-weight:700;text-decoration:underline">Botón de arrepentimiento</a>
+    </nav>
+</body>
+</html>

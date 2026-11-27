@@ -10,6 +10,7 @@ on:
       - catalogo-productos.js
       - fotos.json
       - gen-seo-paginas.js
+      - 'recortes/*.png'
   schedule:
     - cron: '0 12 * * *'   # 9:00 Argentina
     - cron: '0 21 * * *'   # 18:00 Argentina
@@ -34,12 +35,12 @@ jobs:
         run: node tests/test-front.js
       - name: Publicar si cambió algo
         run: |
-          if git diff --quiet -- producto categoria sitemap.xml && [ -z "$(git ls-files --others --exclude-standard producto categoria)" ]; then
+          if git diff --quiet -- producto categoria sitemap.xml recortes/lista.json && [ -z "$(git ls-files --others --exclude-standard producto categoria)" ]; then
             echo "Sin cambios"; exit 0
           fi
           git config user.name "sanou-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add producto categoria sitemap.xml
+          git add producto categoria sitemap.xml recortes/lista.json
           git commit -m "Páginas SEO: regeneradas automáticamente tras cambios del CRM"
           for i in 1 2 3; do git pull --rebase -q && git push -q && exit 0; sleep 5; done
           exit 1

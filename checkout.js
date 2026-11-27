@@ -196,7 +196,7 @@
         );
         if (st.entrega === 'envio') reglas.push(
             ['ckDni', /^\d{7,9}$/.test(v('ckDni').replace(/\D/g, '')) ? '' : 'DNI de 7 u 8 números.'],
-            ['ckCp', v('ckCp').length >= 4 ? '' : 'Código postal.'],
+            ['ckCp', /^(\d{4}|[A-Z]\d{4}[A-Z]{3})$/.test(v('ckCp').toUpperCase().replace(/\s/g, '')) ? '' : 'Código postal de 4 números (ej: 1406) o CPA (ej: C1406ABC).'],
             ['ckDir', v('ckDir').length >= 5 ? '' : 'Calle y número.'],
             ['ckLoc', v('ckLoc').length >= 3 ? '' : 'Localidad o barrio.']
         );
@@ -348,6 +348,9 @@
         $('ckCotizar').addEventListener('click', cotizarEnvio);
         $('ckProv').addEventListener('change', onProv);
         $('ckPart').addEventListener('change', () => { if ($('ckPart').value === 'otro') aplicarZona({ zona: 'interior', lugar: 'Buenos Aires' }); else onPart(); });
+        // Filtro al escribir: DNI solo números; celular números, +, espacios, guiones y paréntesis; CP letras y números en mayúscula.
+        const filtrar = (id, re, max, mayus) => $(id).addEventListener('input', () => { const el = $(id); let x = el.value.replace(re, ''); if (mayus) x = x.toUpperCase(); if (max) x = x.slice(0, max); if (x !== el.value) el.value = x; });
+        filtrar('ckDni', /\D/g, 9); filtrar('ckTel', /[^\d+\s()\-]/g, 25); filtrar('ckCp', /[^A-Za-z0-9]/g, 8, true);
         ['ckNombre', 'ckTel', 'ckEmail', 'ckDni', 'ckCp', 'ckDir', 'ckLoc', 'ckRazon', 'ckCuit', 'ckDomF'].forEach(id => $(id).addEventListener('input', () => { if ($(id).closest('.ck-campo').classList.contains('es-error')) marcar(id, ''); }));
         $('ckForm').addEventListener('submit', enviar);
         $('ckComp').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) subirComprobante(f); e.target.value = ''; });

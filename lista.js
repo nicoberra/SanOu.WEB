@@ -13,7 +13,8 @@
     var $ = function (id) { return document.getElementById(id); };
     var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); };
     var slug = function (s) { return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); };
-    var ficha = function (p) { return '/producto/' + slug(p.name) + '-' + p.id + '.html'; };
+    // Mismo slug que gen-seo-paginas.js (prodSlug): slugSeo si existe, si no nombre del catálogo + id.
+    var ficha = function (p) { return '/producto/' + (p.slugSeo || (slug(p.name) + '-' + p.id)) + '.html'; };
     var fmt = function (n) { return '$' + Number(n).toLocaleString('es-AR'); };
     var precios = {};   // id → { lista, transfer, stock }
 

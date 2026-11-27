@@ -5491,3 +5491,15 @@ button, .btn-primary, .btn-wa-hero, .wa-canal-btn, .category-card { touch-action
 .mf-precio-cargando{animation:mfPrecioPulso 1.1s ease-in-out infinite alternate}
 @keyframes mfPrecioPulso{from{opacity:.45}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.mf-precio-cargando{animation:none}}
+
+/* Carrito: franja para guardar el carrito con el email (reemplaza al modal que tapaba el carrito) */
+.kl-franja{margin:0 0 10px;padding:10px 12px;border:1px solid rgba(255,215,0,.35);border-radius:12px;background:rgba(255,215,0,.07)}
+.kl-franja[hidden]{display:none}
+.kl-franja label{display:block;font-size:.8rem;font-weight:700;color:#fff;margin-bottom:7px}
+.kl-franja label i{color:var(--yellow);margin-right:4px}
+.kl-franja-fila{display:flex;gap:6px}
+.kl-franja input{flex:1;min-width:0;height:38px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:#111;color:#fff;padding:0 10px;font:inherit;font-size:.85rem}
+.kl-franja input:focus{outline:none;border-color:var(--yellow)}
+.kl-franja button{flex:none;height:38px;padding:0 14px;border:0;border-radius:9px;background:var(--yellow);color:#111;font-weight:800;font-size:.82rem;cursor:pointer;transition:transform .12s}
+.kl-franja button:active{transform:scale(.96)}
+@media (prefers-reduced-motion:reduce){.kl-franja button{transition:none}.kl-franja button:active{transform:none}}

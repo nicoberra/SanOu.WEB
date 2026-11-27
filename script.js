@@ -426,6 +426,19 @@ function cerrarKlModal() {
     document.getElementById('klOverlay').classList.remove('active');
 }
 
+// Franja "¿Te guardamos el carrito?" dentro del carrito: visible si hay productos y todavía no dejó el email.
+function actualizarKlFranja() {
+    const f = document.getElementById('klFranja'); if (!f) return;
+    f.hidden = !!klUserEmail || !(typeof cart !== 'undefined' && cart.length);
+}
+function guardarEmailFranja(e) {
+    e.preventDefault();
+    const v = (document.getElementById('klFranjaEmail').value || '').trim(); if (!v) return;
+    const em = document.getElementById('klEmail'); if (em) em.value = v;
+    guardarEmailKlaviyo(e);
+    actualizarKlFranja();
+}
+
 function abrirKlModalDesdeNotif() {
     cerrarIosNotif();
     klModalMostrado = false;
@@ -827,6 +840,11 @@ function _popLoaded(img){
     const card = img.closest('.product-card, .feat-card');
     if (card) card.classList.add('tiene-pop');
 }
+// Recortes que existen (recortes/lista.json, lo genera gen-seo-paginas.js): solo se piden esos,
+// así los productos sin recorte no generan pedidos 404. Si la lista no carga, se comporta como antes.
+let _recLista = null;
+try { fetch('recortes/lista.json?_=' + Math.floor(Date.now() / 3600000)).then(r => r.ok ? r.json() : null).then(a => { if (Array.isArray(a)) _recLista = new Set(a); }).catch(() => {}); } catch (e) {}
+function _hayRecorte(folder) { return !_recLista || _recLista.has(String(folder)); }
 function cardMedia(p) {
     const imgs = getImgs(p);
     // Recorte transparente opcional (carpeta /recortes/<folder>.png): al pasar el mouse,
@@ -839,7 +857,7 @@ function cardMedia(p) {
     // FD_PNG_ALRAS: el recorte se muestra SIEMPRE (como en destacados), al ras izquierda+abajo.
     const _alras = (typeof FD_PNG_ALRAS !== 'undefined') && FD_PNG_ALRAS.indexOf(folder) !== -1;
     const _srcAttr = (_alras || _sinHover()) ? `src="${_rec}"` : `data-pop="${_rec}"`;
-    const pop = `<img class="prod-pop${_alras ? ' prod-pop-alras' : ''}" alt="" aria-hidden="true" data-folder="${String(folder).replace(/"/g,'&quot;')}" ${_srcAttr} onload="_popLoaded(this)" onerror="this.remove()">`;
+    const pop = !_hayRecorte(folder) ? '' : `<img class="prod-pop${_alras ? ' prod-pop-alras' : ''}" alt="" aria-hidden="true" data-folder="${String(folder).replace(/"/g,'&quot;')}" ${_srcAttr} onload="_popLoaded(this)" onerror="this.remove()">`;
     if (imgs.length > 0) {
         const fdata = `data-folder="${String(folder).replace(/"/g,'&quot;')}"`;
         return `<div class="product-media${_alras ? ' product-media-alras' : ''}"><img class="prod-base" ${fdata} src="${imgs[0]}" alt="${p.name}" loading="lazy" onload="_baseLoaded(this)" onerror="this.parentElement.outerHTML='<div class=\\'product-media product-media-icon\\'><i class=\\'fas ${p.icon}\\'></i></div>'">${pop}</div>`;
@@ -852,7 +870,7 @@ document.addEventListener('mouseover', function (e) {
     const card = e.target.closest && e.target.closest('.product-card, .feat-card');
     if (!card) return;
     const pop = card.querySelector('.prod-pop[data-pop]');
-    if (pop) { pop.src = pop.getAttribute('data-pop'); pop.removeAttribute('data-pop'); }
+    if (pop) { if (!_hayRecorte(pop.dataset.folder)) { pop.remove(); return; } pop.src = pop.getAttribute('data-pop'); pop.removeAttribute('data-pop'); }
 }, { passive: true });
 
 function getVideo(p) {
@@ -1418,7 +1436,7 @@ function addToCart(id) {
     const existing = cart.find(i => i.id === id);
     // Klaviyo — mostrar modal si no tenemos email aún
     setTimeout(() => {
-        if (!klUserEmail) abrirKlModal();
+        if (!klUserEmail) actualizarKlFranja();   // franja dentro del carrito (antes: modal que tapaba el carrito)
         else klTrackCart();
     }, 600);
 
@@ -1467,6 +1485,7 @@ function clearCart() {
 }
 
 function updateCartUI() {
+    try { actualizarKlFranja(); } catch (e) {}
     const total    = cart.reduce((s, i) => s + i.price * i.qty, 0);
     const count    = cart.reduce((s, i) => s + i.qty, 0);
     const itemsEl  = document.getElementById('cartItems');
@@ -2975,6 +2994,9 @@ function initHeroVideo() {
     if (!video) return;
 
     const chosen = videos[Math.floor(Math.random() * videos.length)];
+    // Poster WebP liviano (primer cuadro del mismo video): se pinta enseguida y no espera a los MB del video.
+    const idx = videos.indexOf(chosen) + 1;
+    if (idx > 0 && !video.getAttribute('poster')) video.setAttribute('poster', 'hero-poster-' + idx + '.webp');
 
     // El video pesa varios MB. Se carga recién cuando la página ya terminó
     // de cargar lo importante (fotos, precios, textos), así no compite con eso.
