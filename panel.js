@@ -3009,7 +3009,10 @@ function gananciaPedido(p){
     let costo = 0, medible = items.length > 0 && dv > 0;
     items.forEach(it => { const cu = costoUsdDe(it.nombre); if (!cu) medible = false; costo += cu * dv * (it.cantidad || 1); });
     const venta = numAR(p.monto);   // solo productos: el envío cobrado se le paga al transporte, no es ganancia
-    const gan = venta - costo;
+    // Comisión real de Mercado Pago: lo cobrado (productos + envío) menos lo que te queda neto (dato del pago).
+    const neto = String(p.pagodet || '').match(/te queda \$([\d.]+)/);
+    const comision = (p.pago === 'Mercado Pago' && neto) ? Math.max(0, montoVenta(p) - numAR(neto[1])) : 0;
+    const gan = venta - costo - comision;
     return { costo, ganancia: gan, pct: venta > 0 ? Math.round(gan / venta * 100) : 0, medible, venta };
 }
 // Fotos actuales de cada producto (fotos.json, igual que la tienda): así se ven las recién cambiadas.
