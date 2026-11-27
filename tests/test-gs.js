@@ -63,6 +63,7 @@ function entorno() {
       computeDigest: (alg, texto) => [...crypto.createHash('sha256').update(String(texto), 'utf8').digest()].map(x => (x > 127 ? x - 256 : x)),
       DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
       getUuid: () => crypto.randomUUID(),
+      sleep: () => {},
       newBlob: (b, mime, nombre) => ({ getDataAsString: () => Buffer.from(b).toString('utf8'), getBytes: () => [...Buffer.from(b)].map(x => (x > 127 ? x - 256 : x)), mime, nombre }),
     },
     DriveApp: {
@@ -90,7 +91,9 @@ function entorno() {
     const t = out.texto; const m = t.match(/^[\w.$]+\(([\s\S]*)\);$/);
     return { raw: t, json: JSON.parse(m ? m[1] : t) };
   };
-  return { ctx, planillas, cache, fetches, llamar, props, drive, AUTH: props.PANEL_PASS_HASH };
+  // El CRM opera con un token de sesión que da panel_login (la clave fija ya no autoriza).
+  const AUTH = llamar({ action: 'panel_login', h: props.PANEL_PASS_HASH }).json.token;
+  return { ctx, planillas, cache, fetches, llamar, props, drive, AUTH };
 }
 
 // ── Mini framework ──
@@ -155,11 +158,36 @@ test('el CRM (con clave) no tiene límite', () => {
   igual(r.ok, true); igual(filasDe(env, 'Seguimientos'), 40);
 });
 
-test('fuerza bruta del panel: el intento 31 en 10 min se frena', () => {
+test('fuerza bruta del panel: muchos intentos fallidos se frenan pero NO te dejan afuera', () => {
   const env = entorno();
-  let r;
-  for (let i = 0; i < 31; i++) r = env.llamar({ action: 'panel_login', h: 'mal' + i }).json;
-  igual(r.ok, false); verdad(/Demasiadas/.test(r.error));
+  let r, esperas = 0;
+  env.ctx.Utilities.sleep = () => { esperas++; };
+  for (let i = 0; i < 35; i++) r = env.llamar({ action: 'panel_login', h: 'mal' + i }).json;
+  igual(r.ok, false); verdad(!r.token, 'sin token con clave mala');
+  verdad(esperas >= 4, 'pasados 30 fallidos cada intento espera');
+  const bien = env.llamar({ action: 'panel_login', h: env.props.PANEL_PASS_HASH }).json;
+  igual(bien.ok, true); verdad(/^ses_[0-9a-f]{64}$/.test(bien.token), 'la clave correcta entra igual');
+});
+
+test('sesiones: la clave fija no autoriza, el token sí, y Salir lo anula', () => {
+  const env = entorno();
+  igual(env.llamar({ action: 'list', tab: 'Clientes', auth: env.props.PANEL_PASS_HASH }).json.error, 'No autorizado');
+  igual(env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.ok, true);
+  igual(env.llamar({ action: 'panel_logout', tok: env.AUTH }).json.ok, true);
+  igual(env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.error, 'No autorizado');
+});
+
+test('sesiones: cambiar la clave anula todos los dispositivos', () => {
+  const env = entorno();
+  igual(env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.ok, true);
+  env.props.PANEL_PASS_HASH = 'otraclavenueva';
+  igual(env.llamar({ action: 'list', tab: 'Clientes', auth: env.AUTH }).json.error, 'No autorizado');
+});
+
+test('precios: formato argentino con miles y centavos', () => {
+  const env = entorno(), pn = env.ctx.precioNumero;
+  igual(pn('$84.999'), 84999); igual(pn('12.500,50'), 12501); igual(pn(12500.5), 12501);
+  igual(pn('1.234.567'), 1234567); igual(pn('85000'), 85000); igual(pn(''), 0); igual(pn(null), 0);
 });
 
 test('borrar / actualizar con id vacío NO toca ninguna fila', () => {

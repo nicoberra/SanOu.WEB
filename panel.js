@@ -34,6 +34,7 @@ function desbloquear() {
 }
 async function cerrarSesionPanel() {
     await bajaAvisos();   // revoca el permiso de avisos de este dispositivo (antes de borrar la clave)
+    try { const tok = localStorage.getItem('sanou_auth') || ''; if (tok.startsWith('ses_')) await crm({ action: 'panel_logout', tok }); } catch (e) {}   // anula la sesión en el servidor
     try { localStorage.removeItem('sanou_panel_ok'); localStorage.removeItem('sanou_auth'); } catch (e) {}
     try { if ('caches' in window) await caches.delete('sanou-push'); } catch (e) {}
     location.reload();
@@ -94,7 +95,7 @@ async function probarClave() {
         try { r = await crm({ action: 'panel_login', h: h }); } catch (e) {}
         if (r && r.ok) {
             entro = true;
-            try { localStorage.setItem('sanou_auth', h); } catch (e) {}
+            try { localStorage.setItem('sanou_auth', r.token || h); } catch (e) {}   // token de sesión (se anula al salir); el hash solo si el backend es viejo
             // Éxito: el campo se cierra en un ✓, la tarjeta brilla en verde y recién ahí entra.
             const campo = document.getElementById('glassCampo');
             campo.style.setProperty('--sx', (campo.offsetHeight / Math.max(campo.offsetWidth, 1)).toFixed(3));
@@ -217,7 +218,24 @@ let cotizaciones = [], _cotCargadas = false;
 const COT_DIAS_VISIBLES = 21;
 function cotVigentes(rows){ const lim = Date.now() - COT_DIAS_VISIBLES * 864e5; return (rows || []).filter(c => { const f = parseFechaCRM(c.fecha); return !f || f.getTime() >= lim; }); }
 async function ensureCotizaciones(force){ if(_cotCargadas && !force) return; try{ const r=await crm({action:'list',tab:'Cotizaciones'}); if(r&&r.ok&&r.rows){ cotizaciones=cotVigentes(r.rows); cacheSet('cotizaciones',cotizaciones);} _cotCargadas=true; }catch(e){} }
-function sumaMontos(arr){ return arr.reduce((s,x)=>s+(parseInt(String(x.monto||'').replace(/[^\d]/g,''),10)||0),0); }
+// Montos en formato argentino: "$84.999" → 84999, "12.500,50" → 12501, número 12500.5 → 12501.
+// (Antes se sacaba todo lo que no era dígito y "12.500,50" daba 1.250.050.)
+function numAR(v){
+    if (typeof v === 'number') return isFinite(v) ? Math.round(v) : 0;
+    let s = String(v == null ? '' : v).replace(/[^\d.,]/g, '');
+    if (!s) return 0;
+    if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+    const n = parseFloat(s); return isNaN(n) ? 0 : Math.round(n);
+}
+function sumaMontos(arr){ return arr.reduce((s,x)=>s+numAR(x.monto),0); }
+// Búsqueda: texto normal o, si escribiste números, los dígitos (así "11 3175" encuentra "1131751517").
+function coincideBusq(texto, q){
+    const t = String(texto == null ? '' : texto).toLowerCase();
+    if (t.includes(q)) return true;
+    const dq = q.replace(/\D/g, '');
+    return dq.length >= 3 && /^[\d\s()+.-]+$/.test(q) && t.replace(/\D/g, '').includes(dq);
+}
 function fmtMoney(n){ return '$'+Number(n||0).toLocaleString('es-AR'); }
 
 // ── Caché local (para abrir al instante y refrescar en 2do plano) ──
@@ -274,7 +292,7 @@ function pintarDashboard(){
 
     const ahora = new Date();
     const iniSemana = lunesDe(ahora), iniMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1), iniAnio = new Date(ahora.getFullYear(), 0, 1);
-    const ventas = pedidos.map(p => ({ fecha: parseFechaCRM(p.fecha), monto: montoVenta(p) })).filter(x => x.fecha);
+    const ventas = pedidos.filter(ventaCobrada).map(p => ({ fecha: parseFechaCRM(p.fecha), monto: montoVenta(p) })).filter(x => x.fecha);   // solo lo cobrado
     const nVentasSemana = ventas.filter(x => x.fecha >= iniSemana).length;
     const nVentasMes    = ventas.filter(x => x.fecha >= iniMes).length;
     const nVentasAnio   = ventas.filter(x => x.fecha >= iniAnio).length;
@@ -282,7 +300,7 @@ function pintarDashboard(){
     const factMes    = ventas.filter(x => x.fecha >= iniMes).reduce((s, x) => s + x.monto, 0);
 
     const pend      = pedidos.filter(p => p.estado === 'Pendiente');
-    const porCobrar = pedidos.filter(p => estPed(p.estado) !== 'Entregado');
+    const porCobrar = pedidos.filter(p => !['Entregado','Cancelado'].includes(estPed(p.estado)));
     const cobrados  = pedidos.filter(p => estPed(p.estado) === 'Entregado');
     const segPend   = seguimientos.filter(s => s.estado !== 'Hecho');
     const segVenc   = seguimientos.filter(esVencido);
@@ -318,7 +336,7 @@ function pintarDashboard(){
             ${items.map(t => `<div class="dash-li">${esc(t)}</div>`).join('')}
         </div>`;
 
-    const webPend = pedidos.filter(p => esPedWeb(p) && estPed(p.estado) !== 'Entregado');
+    const webPend = pedidos.filter(p => esPedWeb(p) && !['Entregado','Cancelado'].includes(estPed(p.estado)));
     const webNue = webNuevos();
     const webHTML = (webPend.length || webNue.length) ? `
         <button class="dash-web${webNue.length ? ' nuevo' : ''}" onclick="pedTab='web';navegar('pedidos')">
@@ -424,7 +442,7 @@ async function renderCotizador() {
 }
 function filtrarCotizaciones() {
     const q = (document.getElementById('buscarCot').value || '').toLowerCase().trim();
-    pintarCotizaciones(!q ? cotizaciones : cotizaciones.filter(c => (c.cliente + ' ' + c.detalle + ' ' + c.telefono).toLowerCase().includes(q)));
+    pintarCotizaciones(!q ? cotizaciones : cotizaciones.filter(c => coincideBusq(c.cliente + ' ' + c.detalle + ' ' + c.telefono, q)));
 }
 function esCotWeb(c) { return String(c.notas || '').startsWith('web|'); }
 // Datos completos del presupuesto si se guardaron (web con 'web|' o CRM con 'cot|'); si no, null.
@@ -592,9 +610,17 @@ function parseFechaCRM(f){
 }
 function hoyISO(){ const d=new Date(),p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
 function montoVenta(p){
-    let m = parseInt(String(p.monto || '').replace(/[^\d]/g, ''), 10) || 0;
-    if (p.enviocobrado === 'Sí') m += parseInt(String(p.enviomonto || '').replace(/[^\d]/g, ''), 10) || 0;
+    let m = numAR(p.monto);
+    if (p.enviocobrado === 'Sí') m += numAR(p.enviomonto);
     return m;
+}
+// ¿La venta se cobró? Facturación y ganancia cuentan SOLO lo cobrado:
+//  - compras web: pago acreditado ("Pagado"); nunca pendientes, rechazadas, devueltas ni "Revisar importe".
+//  - pedidos cargados a mano: "Entregado" (= entregado y cobrado). Los "Cancelado" nunca cuentan.
+function ventaCobrada(p){
+    if (estPed(p.estado) === 'Cancelado') return false;
+    if (esPedWeb(p)) return p.pagoestado === 'Pagado';
+    return estPed(p.estado) === 'Entregado';
 }
 function lunesDe(d){ const x=new Date(d); const day=(x.getDay()+6)%7; x.setDate(x.getDate()-day); x.setHours(0,0,0,0); return x; }
 const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -607,7 +633,7 @@ async function renderFacturacion(){
     if (seccionActual !== 'facturacion') return;
 
     // Cada venta: monto (facturación) + ganancia (facturación − costo). medible = tiene todos los costos cargados.
-    const ventas = pedidos.map(p => {
+    const ventas = pedidos.filter(ventaCobrada).map(p => {
         const g = gananciaPedido(p);
         return { fecha: parseFechaCRM(p.fecha), monto: montoVenta(p), ganancia: g.ganancia, medible: g.medible, items: parseDetalle(p.detalle), cliente: p.cliente };
     }).filter(x => x.fecha);
@@ -787,11 +813,14 @@ async function ensureSeguimientos(force){ if(_segCargados && !force) return; try
 // como respaldo para pedidos viejos. Así editar nombre/teléfono NUNCA desconecta un pedido.
 function pedidosDeCliente(nombre, tel, cid){
     const n=norm(nombre), td=tel?soloDigitos(tel):'';
-    return pedidos.filter(p=>
-        (cid && p.clienteid && String(p.clienteid)===String(cid)) ||
-        norm(p.cliente)===n ||
-        (td && td.length>=6 && soloDigitos(p.telefono)===td)
-    );
+    return pedidos.filter(p => esDelCliente(p, cid, n, td));
+}
+// ¿Este pedido/cotización/seguimiento es de este cliente? Si el registro está atado a un cliente
+// por ID, manda el ID (así dos "Juan Pérez" no se mezclan). Nombre o teléfono solo para registros viejos sin ID.
+function esDelCliente(r, cid, nNorm, telDig){
+    if (r.clienteid) return !!cid && String(r.clienteid) === String(cid);
+    if (nNorm && norm(r.cliente) === nNorm) return true;
+    return !!(telDig && telDig.length >= 6 && soloDigitos(r.telefono) === telDig);
 }
 function segsDeCliente(nombre){ const n=norm(nombre); return seguimientos.filter(s=>norm(s.cliente)===n); }
 // Al renombrar un cliente, cambia su nombre en pedidos/cotizaciones/seguimientos (match por nombre viejo o teléfono).
@@ -802,8 +831,7 @@ async function renombrarEnRegistros(viejo, tel, nuevo, cid){
         try { await ensureCotizaciones(); } catch(e){}
         try { await ensureSeguimientos(); } catch(e){}
         const nv = norm(viejo), td = tel ? soloDigitos(tel) : '';
-        const coincide = r => (cid && r.clienteid && String(r.clienteid)===String(cid)) ||
-                              norm(r.cliente)===nv || (td && td.length>=6 && soloDigitos(r.telefono)===td);
+        const coincide = r => esDelCliente(r, cid, nv, td);   // nunca toca registros atados a OTRO cliente
         const tareas = [];
         const barrer = (arr, tab) => (arr||[]).forEach(r => {
             if (!coincide(r)) return;
@@ -925,7 +953,7 @@ function pintarClientes(lista) {
         const nped = _pedidosCargados ? pedidosDeCliente(c.nombre, c.telefono, c.id).length : 0;
         return `
         <div class="cli-card" onclick="verCliente('${c.id}')">
-            <div class="cli-avatar">${esc((c.nombre || '?').charAt(0).toUpperCase())}</div>
+            <div class="cli-avatar">${esc(String(c.nombre || '?').charAt(0).toUpperCase())}</div>
             <div class="cli-info">
                 <div class="cli-nombre">${esc(c.nombre) || '(sin nombre)'}<span class="cli-ped-badge${nped ? '' : ' cli-ped-0'}" title="Compras (pedidos) hechas"><i class="fas fa-bag-shopping"></i> ${nped} ${nped === 1 ? 'compra' : 'compras'}</span></div>
                 ${sub ? `<div class="cli-sub">${esc(sub)}</div>` : ''}
@@ -972,7 +1000,7 @@ async function verCliente(id) {
     await ensurePedidos();
     await ensureCotizaciones();
     const n = norm(c.nombre), td = soloDigitos(c.telefono);
-    const coincide = x => (x.clienteid && String(x.clienteid)===String(c.id)) || norm(x.cliente)===n || (td && td.length>=6 && soloDigitos(x.telefono)===td);
+    const coincide = x => esDelCliente(x, c.id, n, td);
     const peds = pedidosDeCliente(c.nombre, c.telefono, c.id);
     const cots = cotizaciones.filter(coincide);
     const hist = document.getElementById('fichaHist');
@@ -2575,10 +2603,10 @@ function msgPresupuesto(c){
 }
 function badgeEstado(e){
     const cls = {'Pendiente':'est-pend','Entregado':'est-cobr','Cobrado':'est-cobr','Hecho':'est-hecho',
-                 'Abierta':'est-abierta','Ganada':'est-cobr','Perdida':'est-perd'}[e]||'est-pend';
+                 'Abierta':'est-abierta','Ganada':'est-cobr','Perdida':'est-perd','Cancelado':'est-perd'}[e]||'est-pend';
     return `<span class="est ${cls}">${esc(e||'Pendiente')}</span>`;
 }
-function montoTxt(v){ const n=String(v==null?'':v).replace(/[^\d]/g,''); return n?'$'+parseInt(n,10).toLocaleString('es-AR'):''; }
+function montoTxt(v){ const n=numAR(v); return n?'$'+n.toLocaleString('es-AR'):''; }
 
 async function cambiarEstadoRegistro(tab, id, valor){
     const arr = tab==='Pedidos'?pedidos:seguimientos;
@@ -2597,12 +2625,14 @@ async function borrarCotizacionesDeCliente(ped){
     const nom = String(ped.cliente||'').trim().toLowerCase();
     const cid = ped.clienteid;
     const telP = dig(ped.telefono);
-    const match = c =>
-        (cid && c.clienteid && String(c.clienteid)===String(cid)) ||
-        (telP && dig(c.telefono) && dig(c.telefono)===telP) ||
-        (nom && String(c.cliente||'').trim().toLowerCase()===nom);
+    const match = c => c.clienteid
+        ? (!!cid && String(c.clienteid)===String(cid))   // atada a un cliente: solo si es el mismo
+        : ((telP.length >= 6 && dig(c.telefono)===telP) || (!!nom && String(c.cliente||'').trim().toLowerCase()===nom));
     const aBorrar = cotizaciones.filter(match);
     if(!aBorrar.length) return 0;
+    const q = aBorrar.length === 1 ? `El pedido quedó entregado. ¿Borro también el presupuesto de ${ped.cliente || 'este cliente'} (${aBorrar[0].detalle || 'sin detalle'})?`
+                                   : `El pedido quedó entregado. ¿Borro también los ${aBorrar.length} presupuestos de ${ped.cliente || 'este cliente'}?`;
+    if (!(await confirmar(q, 'Borrar'))) return 0;
     cotizaciones = cotizaciones.filter(c => !match(c));
     cacheSet('cotizaciones', cotizaciones);
     if (typeof pintarCotizaciones==='function' && document.getElementById('listaCot')) pintarCotizaciones(cotizaciones);
@@ -2620,7 +2650,7 @@ async function borrarRegistro(tab, id){
 
 // ─── PEDIDOS ────────────────────────────────────────────────────
 let pedidos = [];
-const PEDIDO_ESTADOS = ['Pendiente','Entregado'];
+const PEDIDO_ESTADOS = ['Pendiente','Entregado','Cancelado'];
 // Entregado = entregado y cobrado. Los pedidos viejos con "Cobrado" se muestran como "Entregado".
 function estPed(e){ return e === 'Cobrado' ? 'Entregado' : (e || 'Pendiente'); }
 
@@ -2670,7 +2700,7 @@ function badgeCampania(p){
     return t ? `<span class="pg-badge pg-utm" title="Vino de una campaña (utm_source · utm_campaign)"><i class="fas fa-bullhorn"></i> ${esc(t)}</span> ` : '';
 }
 function badgePago(p){
-    const e = p.pagoestado || '', cls = e === 'Pagado' ? 'pg-ok' : e === 'Comprobante recibido' ? 'pg-comp' : 'pg-esp';
+    const e = p.pagoestado || '', cls = e === 'Pagado' ? 'pg-ok' : e === 'Comprobante recibido' ? 'pg-comp' : e === 'Revisar importe' ? 'pg-revisar' : 'pg-esp';
     const ic = p.pago === 'Mercado Pago' ? 'fa-credit-card' : 'fa-building-columns';
     return `<span class="pg-badge ${cls}"><i class="fas ${ic}"></i> ${esc(p.pago || '')}${e ? ' · ' + esc(e) : ''}</span>`;
 }
@@ -2691,7 +2721,7 @@ function tarjetaPedidoWeb(p){
         </div>
         ${p.pago === 'Transferencia' ? `<div class="rec-confirmar">${botonConfirmarPago(p)}</div>` : ''}
         <div class="rec-acciones">
-            <select class="rec-estado ${estPed(p.estado)==='Entregado'?'est-entregado':'est-pendiente'}" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
+            <select class="rec-estado ${estPed(p.estado)==='Entregado'?'est-entregado':estPed(p.estado)==='Cancelado'?'est-cancelado':'est-pendiente'}" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
                 ${PEDIDO_ESTADOS.map(e=>`<option value="${e}" ${e===estPed(p.estado)?'selected':''}>${e==='Entregado'?'✓ ':''}${e}</option>`).join('')}
             </select>
             <button class="cli-btn ped-ver" onclick="verPedidoWeb('${p.id}')"><i class="fas fa-eye"></i> Ver todo</button>
@@ -2916,7 +2946,7 @@ function msgPedido(p){
 function filtrarPedidos(){
     const q=(document.getElementById('buscarPed').value||'').toLowerCase().trim();
     const base = pedidos.filter(p => pedTab === 'web' ? esPedWeb(p) : !esPedWeb(p));
-    pintarPedidos(!q?base:base.filter(p=>(p.cliente+' '+p.detalle+' '+p.telefono+' '+p.estado+' '+p.id+' '+(p.email||'')+' '+(p.dni||'')+' '+(p.direccion||'')).toLowerCase().includes(q)));
+    pintarPedidos(!q?base:base.filter(p=>coincideBusq(p.cliente+' '+p.detalle+' '+p.telefono+' '+p.estado+' '+p.id+' '+(p.email||'')+' '+(p.dni||'')+' '+(p.direccion||''), q)));
 }
 function pintarPedidos(lista){
     const cont=document.getElementById('listaPed'); if(!cont) return;
@@ -2924,7 +2954,8 @@ function pintarPedidos(lista){
     // Pendientes siempre arriba y, dentro de cada grupo, por fecha: el más reciente
     // primero y el más antiguo al final.
     lista = [...lista].sort((a,b)=>{
-        const ep = (estPed(a.estado)==='Entregado'?1:0) - (estPed(b.estado)==='Entregado'?1:0);
+        const ord = e => e==='Cancelado' ? 2 : e==='Entregado' ? 1 : 0;   // pendientes arriba, cancelados al final
+        const ep = ord(estPed(a.estado)) - ord(estPed(b.estado));
         if(ep) return ep;
         return (parseFechaCRM(b.fecha)?.getTime() || 0) - (parseFechaCRM(a.fecha)?.getTime() || 0);
     });
@@ -2945,7 +2976,7 @@ function pintarPedidos(lista){
                 ${p.telefono?`<span><i class="fas fa-phone"></i> ${esc(p.telefono)}</span>`:''}
             </div>
             <div class="rec-acciones">
-                <select class="rec-estado ${estPed(p.estado)==='Entregado'?'est-entregado':'est-pendiente'}" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
+                <select class="rec-estado ${estPed(p.estado)==='Entregado'?'est-entregado':estPed(p.estado)==='Cancelado'?'est-cancelado':'est-pendiente'}" onchange="cambiarEstadoRegistro('Pedidos','${p.id}',this.value)">
                     ${PEDIDO_ESTADOS.map(e=>`<option value="${e}" ${e===estPed(p.estado)?'selected':''}>${e==='Entregado'?'✓ ':''}${e}</option>`).join('')}
                 </select>
                 ${wa?`<a class="cli-btn cli-wa" href="${wa}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>`:''}
@@ -2967,7 +2998,7 @@ async function ensureProductosPrecios(force){
 function sheetKeyDe(nombre){ const n=norm(nombre); const cat=(window.SANOU_PRODUCTOS||[]).find(p=>norm(p.name)===n); return cat&&cat.sheetName?norm(cat.sheetName):n; }
 function filaProd(nombre){ const k=sheetKeyDe(nombre); return (productos||[]).find(x=>norm(x.nombre)===k); }
 // Precio de venta: usa el Precio normal; si está en 0/vacío, cae al Precio ML.
-function precioDe(nombre){ const p=filaProd(nombre); if(!p) return 0; return (parseInt(String(p.precio).replace(/[^\d]/g,''),10)||0) || (parseInt(String(p.ml).replace(/[^\d]/g,''),10)||0); }
+function precioDe(nombre){ const p=filaProd(nombre); if(!p) return 0; return numAR(p.precio) || numAR(p.ml); }
 function costoUsdDe(nombre){ const p=filaProd(nombre); return p?(parseFloat(String(p.costousd||'').replace(/[^\d.]/g,''))||0):0; }
 // Stock de un producto según la planilla: true / false, o null si no está en la planilla (no lo marcamos).
 function stockDe(nombre){ const p=filaProd(nombre); return p ? !!p.stock : null; }
@@ -2977,7 +3008,7 @@ function gananciaPedido(p){
     const items = parseDetalle(p.detalle);
     let costo = 0, medible = items.length > 0 && dv > 0;
     items.forEach(it => { const cu = costoUsdDe(it.nombre); if (!cu) medible = false; costo += cu * dv * (it.cantidad || 1); });
-    const venta = montoVenta(p);
+    const venta = numAR(p.monto);   // solo productos: el envío cobrado se le paga al transporte, no es ganancia
     const gan = venta - costo;
     return { costo, ganancia: gan, pct: venta > 0 ? Math.round(gan / venta * 100) : 0, medible, venta };
 }
@@ -3127,7 +3158,13 @@ function actualizarDescuento(){
 }
 function parseDetalle(det){
     if(!det) return [];
-    return String(det).split(',').map(s=>{ const m=s.trim().match(/^(\d+)x\s+(.+)$/); return m?{nombre:m[2].trim(),cantidad:parseInt(m[1],10)}:null; }).filter(Boolean);
+    // Separa por comas que NO estén entre paréntesis: "1x Amoladora (RESERVA, entrega en 20 días)" es un solo ítem.
+    const partes = []; let prof = 0, act = '';
+    for (const ch of String(det)) { if (ch === '(') prof++; else if (ch === ')') prof = Math.max(0, prof - 1); if (ch === ',' && !prof) { partes.push(act); act = ''; } else act += ch; }
+    partes.push(act);
+    return partes.map(s=>{ const m=s.trim().match(/^(\d+)x\s+(.+)$/); if(!m) return null;
+        const nombre = m[2].replace(/\s*\((?:RESERVA|Reserva|reserva)[^)]*\)\s*$/, '').trim();
+        return {nombre, cantidad:parseInt(m[1],10)}; }).filter(Boolean);
 }
 function toggleEnvio(){ document.getElementById('pdEnvioDet').style.display = document.getElementById('pdEnvio').checked?'block':'none'; }
 function toggleEnvioCobr(){ document.getElementById('pdEnvioMontoWrap').style.display = document.getElementById('pdEnvioCobr').checked?'block':'none'; }
@@ -3274,7 +3311,7 @@ async function renderSeguimientos(){
 }
 function filtrarSeguimientos(){
     const q=(document.getElementById('buscarSeg').value||'').toLowerCase().trim();
-    pintarSeguimientos(!q?seguimientos:seguimientos.filter(s=>(s.cliente+' '+s.motivo+' '+s.telefono+' '+s.estado).toLowerCase().includes(q)));
+    pintarSeguimientos(!q?seguimientos:seguimientos.filter(s=>coincideBusq(s.cliente+' '+s.motivo+' '+s.telefono+' '+s.estado, q)));
 }
 function fechaTxt(iso){
     if(!iso) return '';
@@ -3620,7 +3657,7 @@ function pintarLeads(lista){
             : `<button class="panel-btn-add lead-pasar" id="lp_${esc(l.id)}" onclick="pasarLeadACliente('${esc(l.id)}')"><i class="fas fa-user-plus"></i> Pasar a cliente</button>`;
         return `
         <div class="cli-card lead-card">
-            <div class="cli-avatar">${esc((l.nombre || '?').charAt(0).toUpperCase())}</div>
+            <div class="cli-avatar">${esc(String(l.nombre || '?').charAt(0).toUpperCase())}</div>
             <div class="cli-info">
                 <div class="cli-nombre">${esc(l.nombre) || '(sin nombre)'} ${l.rubro ? `<span class="lead-rubro">${esc(l.rubro)}</span>` : ''}${l.clienteid ? '<span class="lead-estado">Cliente</span>' : ''}</div>
                 ${l.trabajo ? `<div class="cli-sub lead-trabajo">${esc(l.trabajo)}</div>` : ''}
